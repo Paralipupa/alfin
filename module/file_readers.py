@@ -57,7 +57,6 @@ class XlsFile(DataFile):
         super(XlsFile, self).__init__(
             fname, sheet_name, first_line, range(columns))
         self._book = xlrd.open_workbook(fname, logfile=open(os.devnull, 'w'))
-        # self._book = xlrd.open_workbook(fname, logfile=open(os.devnull, 'w'), ignore_workbook_corruption=True)
         if self._sheet_name:
             sheet = self._book.sheet_by_name(self._sheet_name)
         else:

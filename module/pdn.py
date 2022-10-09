@@ -18,7 +18,8 @@ class Pdn(Report):
                 self.docs[-1]['dogovor'].append({})
                 self.docs[-1]['dogovor'][-1]['number'] = rec[FLDPDN_NUMBER]
                 self.docs[-1]['dogovor'][-1]['date'] = rec[FLDPDN_DATE]
-                self.docs[-1]['dogovor'][-1]['beg_debet'] = rec[FLDPDN_SUMMA]
+                self.docs[-1]['dogovor'][-1]['summa'] = rec[FLDPDN_SUMMA]
                 self.docs[-1]['dogovor'][-1]['pdn'] = rec[FLDPDN_PDN]
+                self.checksum['summa'] += float(rec[FLDPDN_SUMMA]) if rec[FLDPDN_SUMMA] else 0
         self.set_reference()
         self.write('rep_pdn')

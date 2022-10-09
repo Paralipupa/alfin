@@ -14,4 +14,7 @@ if __name__ == '__main__':
     reportIrk = Irkom(file_irk)
     reportIrk.get_parser()
     report58.union_all(reportPdn, reportIrk)
-    report58.write('result','docs')
+    report58.write('docs','docs')
+    report58.weighted_average()
+    report58.write('wa','result')
+    report58.write_full_csv()
