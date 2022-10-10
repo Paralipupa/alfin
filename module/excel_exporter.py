@@ -15,7 +15,7 @@ class ExcelExporter:
             raise Exception(f'file reading error: {self.name}')
         return data_writer
 
-    def write(self, report) -> bool:
+    def write(self, report) -> str:
         data_excel = self._get_data_xls()
         sh = data_excel.book.add_sheet("Лист 1")
         self.write_docs(sh, report.docs)
@@ -23,7 +23,8 @@ class ExcelExporter:
         self.write_result_weighted_average(sh, report.result)
         sh = data_excel.book.add_sheet("Лист 3")
         self.write_kategoria(sh, report.kategoria)
-        data_excel.save()
+        return data_excel.save()
+
 
     def write_docs(self, sh, docs) -> bool:
         names = [{'name': 'number', 'title': 'Номер', 'type': ''}, {'name': 'date', 'title': 'Дата', 'type': ''},

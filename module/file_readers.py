@@ -134,7 +134,7 @@ class XlsWrite:
         self.name = filename
         self.book = xlwt.Workbook(encoding="utf-8")
 
-    def save(self):
+    def save(self) -> str:
         try:
             i = 0
             name = self.name
@@ -142,8 +142,10 @@ class XlsWrite:
                 i += 1
                 name = f'{self.name}({i})'
             self.book.save(pathlib.Path('output', f'{name}.xls'))
+            return pathlib.Path('output', f'{name}.xls')
         except Exception as ex:
             logger.error(f'{ex}')
+        return None
 
 
 def get_file_reader(fname):

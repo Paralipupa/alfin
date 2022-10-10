@@ -39,9 +39,9 @@ class Report:
                               ensure_ascii=False)
             file.write(jstr)
 
-    def write_to_excel(self, filename: str = 'output_full'):
+    def write_to_excel(self, filename: str = 'output_full') -> str:
         exel = ExcelExporter('output_excel')
-        exel.write(self)
+        return exel.write(self)
 
     def set_reference(self):
         for doc in self.docs:
@@ -158,8 +158,9 @@ class Report:
                         data[t]['count4'] += 1
                         data[t]['summa5'] += (summa_main)
                         data[t]['summa3'] += (summa_end_main + summa_end_proc)
-                        if count_days > 90 and (summa_end_main + summa_end_proc)>0:
-                            data[t]['summa6'] += (summa_end_main + summa_end_proc)
+                        if count_days > 90 and (summa_end_main + summa_end_proc) > 0:
+                            data[t]['summa6'] += (summa_end_main +
+                                                  summa_end_proc)
 
                         data[t]['items'].append(
                             {'name': doc['name'], 'number': item['number'], 'main': summa_main, 'proc': summa_proc,
