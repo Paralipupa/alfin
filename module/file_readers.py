@@ -3,7 +3,7 @@ import csv
 import os
 
 from openpyxl import load_workbook
-import xlrd
+import xlrd, xlwt
 
 
 def rchop(s, sub):
@@ -125,6 +125,14 @@ class XlsxFile(DataFile):
         except AttributeError:
             return -1
 
+class XlsWrite:
+    def __init__(self, filename:str):
+        self.name = filename
+        self.book = xlwt.Workbook(encoding="utf-8")
+
+    def save(self):
+        self.book.save(f'output/{self.name}.xls')
+
 
 def get_file_reader(fname):
     """Get class for reading file as iterable"""
@@ -139,3 +147,6 @@ def get_file_reader(fname):
     if file_extension == '.csv':
         return CsvFile
     raise Exception("Unknown file type")
+
+def get_file_write(fname):
+    return XlsWrite
