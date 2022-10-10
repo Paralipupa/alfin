@@ -5,7 +5,7 @@ from module.excel_importer import ExcelImporter
 from module.report import Report
 from module.settings import *
 
-class Oborot58(Report):
+class Oborot76(Report):
 
     def get_parser(self):
         self.read()
@@ -21,10 +21,11 @@ class Oborot58(Report):
                 elif re.search(PATT_DOG_NUMBER, rec[FLD58_NAME], re.IGNORECASE):
                     self.docs[-1]['dogovor'][-1]['number'] = rec[FLD58_NAME]
                     self.docs[-1]['dogovor'][-1]['summa'] = rec[FLD58_BEG_DEBET]
-                    self.docs[-1]['dogovor'][-1]['beg_debet'] = rec[FLD58_BEG_DEBET]
-                    self.docs[-1]['dogovor'][-1]['turn_debet'] = rec[FLD58_TURN_DEBET]
-                    self.docs[-1]['dogovor'][-1]['turn_credit'] = rec[FLD58_TURN_CREDIT]
-                    self.docs[-1]['dogovor'][-1]['end_debet'] = rec[FLD58_END_DEBET]
+                    self.docs[-1]['dogovor'][-1]['beg_debet_proc'] = rec[FLD58_BEG_DEBET]
+                    self.docs[-1]['dogovor'][-1]['turn_debet_proc'] = rec[FLD58_TURN_DEBET]
+                    self.docs[-1]['dogovor'][-1]['turn_credit_proc'] = rec[FLD58_TURN_CREDIT]
+                    self.docs[-1]['dogovor'][-1]['end_debet_proc'] = rec[FLD58_END_DEBET]
+
                     self.docs[-1]['dogovor'][-1]['row'] = index
                     self.checksum['debet'] += float(rec[FLD58_BEG_DEBET]) if rec[FLD58_BEG_DEBET] else 0
                     self.checksum['current'] += float(rec[FLD58_TURN_DEBET]) if rec[FLD58_TURN_DEBET] else 0

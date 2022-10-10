@@ -25,9 +25,10 @@ class Irkom(Report):
                 self.docs[-1]['dogovor'][-1]['passport'] = rec[FLDIRK_PASSPORT]
                 self.docs[-1]['dogovor'][-1]['period_common'] = rec[FLDIRK_PERIOD_COMMON]
                 self.docs[-1]['dogovor'][-1]['period'] = rec[FLDIRK_PERIOD]
-                self.docs[-1]['dogovor'][-1]['summa_deb_common'] = rec[FLDIRK_SUMMA_DEB_COMMOT]
-                self.docs[-1]['dogovor'][-1]['summa_deb_main'] = rec[FLDIRK_SUMMA_DEB_MAIN]
-                self.docs[-1]['dogovor'][-1]['summa_deb_proc'] = rec[FLDIRK_SUMMA_DEB_PROC]
+                self.docs[-1]['dogovor'][-1]['end_debet_common'] = rec[FLDIRK_SUMMA_DEB_COMMOT]
+                self.docs[-1]['dogovor'][-1]['end_debet_main'] = rec[FLDIRK_SUMMA_DEB_MAIN]
+                self.docs[-1]['dogovor'][-1]['end_debet_proc'] = rec[FLDIRK_SUMMA_DEB_PROC]
+                
                 self.checksum['summa'] += float(rec[FLDIRK_SUMMA]) if rec[FLDIRK_SUMMA] else 0
                 self.checksum['debet'] += float(rec[FLDIRK_SUMMA_DEB_COMMOT]) if rec[FLDIRK_SUMMA_DEB_COMMOT] else 0
                 self.checksum['current'] += float(rec[FLDIRK_SUMMA_DEB_MAIN]) if rec[FLDIRK_SUMMA_DEB_MAIN] else 0

@@ -39,20 +39,3 @@ PATT_DOG_DATE='^[0-9]{1,2}\.[0-9]{2}\.20[1-9]{2}'
 PATT_DOG_NUMBER='^20[0-9]{2}[0-9]{2}[0-9]{2}[0-9]{4}$'
 
 
-OFLD_NAME = 'name'
-
-                # "date": "18.08.2022 0:00:00",
-                # "number": "202208180002",
-                # "beg_debet": "9000",
-                # "turn_debet": "9000",
-                # "turn_credit": "",
-                # "end_debet": "9000",
-                # "found": true,
-                # "pdn": "16.9",
-                # "proc": "0.85",
-                # "tarif": "Постоянный",
-                # "passport": "2511 638379",
-                # "period": "59",
-                # "summa_deb_common": "10836",
-                # "summa_deb_main": "9000",
-                # "summa_deb_proc": "1836"

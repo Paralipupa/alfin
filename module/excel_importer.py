@@ -1,8 +1,7 @@
 from module.file_readers import get_file_reader
 import csv
 import json
-
-
+import pathlib
 class ExcelImporter:
 
     def __init__(self, file_name: str, page_name: str = None):
@@ -46,12 +45,12 @@ class ExcelImporter:
         return True
 
     def write(self, file_output: str = 'output') -> bool:
-        with open(f'{file_output}.json', mode='w', encoding='utf-8') as file:
+        with open(pathlib.Path('output',f'{file_output}.json'), mode='w', encoding='utf-8') as file:
             jstr = json.dumps(self.records, indent=4,
                               ensure_ascii=False)
             file.write(jstr)
 
-        with open(f'{file_output}.csv', mode='w', encoding='utf-8') as file:
+        with open(pathlib.Path('output',f'{file_output}.csv'), mode='w', encoding='utf-8') as file:
             names = [x for x in self.records[0]]
             file_writer = csv.DictWriter(file, delimiter=";",
                                          lineterminator="\r", fieldnames=names)

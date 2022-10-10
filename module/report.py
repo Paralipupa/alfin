@@ -1,6 +1,7 @@
 import re
 import csv
 import json
+import pathlib
 from module.excel_importer import ExcelImporter
 from module.excel_exporter import ExcelExporter
 from module.settings import *
@@ -28,11 +29,11 @@ class Report:
             docs = self.kategoria
         else:
             docs = self.reference
-        with open(f'{filename}.json', mode='w', encoding='utf-8') as file:
+        with open(pathlib.Path('output', f'{filename}.json'), mode='w', encoding='utf-8') as file:
             jstr = json.dumps(docs, indent=4,
                               ensure_ascii=False)
             file.write(jstr)
-        with open(f'{filename}.json', mode='a', encoding='utf-8') as file:
+        with open(pathlib.Path('output', f'{filename}.json'), mode='a', encoding='utf-8') as file:
             jstr = json.dumps(self.checksum, indent=4,
                               ensure_ascii=False)
             file.write(jstr)
@@ -66,15 +67,15 @@ class Report:
                             value[ikey] = idog[ikey]
                 else:
                     value['found'] = False
-                    if value['turn_debet']:
+                    if value['turn_debet_main']:
                         logger.warning(f'not found {key} в {item.name}')
 
 # средневзвешенная величина
-    def weighted_average(self):
+    def set_weighted_average(self):
         for item in self.docs:
             for dog in item['dogovor']:
                 period = dog.get('period')
-                summa = dog.get('turn_debet')
+                summa = dog.get('turn_debet_main')
                 tarif = dog.get('tarif')
                 proc = dog.get('proc')
                 if period and summa and tarif and proc:
@@ -108,35 +109,40 @@ class Report:
         self.result['summa_wa'] = summa / summa_free if summa_free != 0 else 1
 
     def set_kategoria(self):
-        data = {'1': {'count': 0, 'summa': 0, 'items':[]},
-                '2': {'count': 0, 'summa': 0, 'items':[]},
-                '3': {'count': 0, 'summa': 0, 'items':[]},
-                '4': {'count': 0, 'summa': 0, 'items':[]},
-                '5': {'count': 0, 'summa': 0, 'items':[]},
-                '6': {'count': 0, 'summa': 0, 'items':[]},
-                '7': {'count': 0, 'summa': 0, 'items':[]}
+        data = {'1': {'count': 0, 'summa': 0, 'items': []},
+                '2': {'count': 0, 'summa': 0, 'items': []},
+                '3': {'count': 0, 'summa': 0, 'items': []},
+                '4': {'count': 0, 'summa': 0, 'items': []},
+                '5': {'count': 0, 'summa': 0, 'items': []},
+                '6': {'count': 0, 'summa': 0, 'items': []},
+                '7': {'count': 0, 'summa': 0, 'items': []}
                 }
         for doc in self.docs:
             for item in doc['dogovor']:
-                if item.get('pdn') and item.get('turn_debet'):
-                    summa = float(item['turn_debet']) if item['turn_debet'] else 0
+                if item.get('pdn') and item.get('turn_debet_main'):
+                    summa_main = float(item['turn_debet_main']) if item.get(
+                        'turn_debet_main') else 0
+                    summa_proc = float(item['turn_debet_proc']) if item.get(
+                        'turn_debet_proc') else 0
                     pdn = float(item['pdn']) if item['pdn'] else 0
-                    if summa >= 10000:
-                        if pdn <=0.3:
-                            t='1'
-                        elif pdn <=0.4:
-                            t='2'
-                        elif pdn <=0.5:
-                            t='3'
-                        elif pdn <=0.6:
-                            t='4'
-                        elif pdn <=0.7:
-                            t='5'
-                        elif pdn <=0.8:
-                            t='6'
+                    if summa_main >= 10000:
+                        if pdn <= 0.3:
+                            t = '1'
+                        elif pdn <= 0.4:
+                            t = '2'
+                        elif pdn <= 0.5:
+                            t = '3'
+                        elif pdn <= 0.6:
+                            t = '4'
+                        elif pdn <= 0.7:
+                            t = '5'
+                        elif pdn <= 0.8:
+                            t = '6'
                         else:
-                            t='7'
+                            t = '7'
                         data[t]['count'] += 1
-                        data[t]['summa'] += summa
-                        data[t]['items'].append(f"{doc['name']}_{item['number']}_{summa}")
+                        data[t]['summa'] += (summa_main+summa_proc)
+                        # data[t]['items'].append(f"{doc['name']}_{item['number']}_{summa_main}_{summa_proc}")
+                        data[t]['items'].append(
+                            {'name': doc['name'], 'number': item['number'], 'main': summa_main, 'proc': summa_proc})
         self.kategoria = data

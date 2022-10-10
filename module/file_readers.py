@@ -1,6 +1,7 @@
 import abc
 import csv
 import os
+import pathlib
 
 from openpyxl import load_workbook
 import xlrd, xlwt
@@ -131,7 +132,7 @@ class XlsWrite:
         self.book = xlwt.Workbook(encoding="utf-8")
 
     def save(self):
-        self.book.save(f'output/{self.name}.xls')
+        self.book.save(pathlib.Path('output',f'{self.name}.xls'))
 
 
 def get_file_reader(fname):

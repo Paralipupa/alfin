@@ -31,15 +31,17 @@ class ExcelExporter:
                  {'name': 'proc', 'title': 'Ставка', 'type': 'float'},
                  {'name': 'tarif', 'title': 'Тариф', 'type': ''},
                  {'name': 'period', 'title': 'Срок', 'type': 'int'},
-                 {'name': 'beg_debet', 'title': 'Сальдо начальное', 'type': 'float'},
-                 {'name': 'turn_debet', 'title': 'Оборот', 'type': 'float'},
-                 {'name': 'turn_credit',
+                 {'name': 'beg_debet_main',
+                     'title': 'Сальдо начальное', 'type': 'float'},
+                 {'name': 'turn_debet_main', 'title': 'Оборот', 'type': 'float'},
+                 {'name': 'turn_credit_main',
                      'title': 'Сальдо конечное дебет', 'type': 'float'},
-                 {'name': 'end_debet', 'title': 'Сальдо конечное кредит', 'type': 'float'},
+                 {'name': 'end_debet_main',
+                     'title': 'Сальдо конечное кредит', 'type': 'float'},
                  {'name': 'pdn', 'title': 'ПДН', 'type': 'float'},
                  {'name': 'summa_deb_common', 'title': 'Долг общий', 'type': 'float'},
-                 {'name': 'summa_deb_main', 'title': 'Долг основной', 'type': 'float'}, {
-            'name': 'summa_deb_proc', 'title': 'Долг процент', 'type': 'float'}
+                 {'name': 'turn_debet_main', 'title': 'Долг основной', 'type': 'float'}, {
+            'name': 'turn_debet_proc', 'title': 'Долг процент', 'type': 'float'}
         ]
         row = 0
         col = 0
@@ -88,10 +90,26 @@ class ExcelExporter:
                 sh.write(row, 3, value)
 
     def write_kategoria(self, sh, kategoria):
+        names = ['1', '2', '3', '4', '5', '6']
         row = 0
+        col = 0
+        for name in names:
+            sh.write(row, col, name)
+            col += 1
+        row += 1
         col = 0
         for key, value in kategoria.items():
             sh.write(row, col, key)
             sh.write(row, col+2, value['count'])
             sh.write(row, col+3, value['summa'])
-            row +=1
+            row += 1
+
+        for key, value in kategoria.items():
+            row += 1
+            sh.write(row, col, key)
+            for val in value['items']:
+                sh.write(row, col+1, val['name'])
+                sh.write(row, col+2, val['number'])
+                sh.write(row, col+3, float(val['main']))
+                sh.write(row, col+4, float(val['proc']))
+                row += 1
