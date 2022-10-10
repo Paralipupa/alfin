@@ -5,18 +5,19 @@ from module.pdn import Pdn
 from module.irkom import Irkom
 import pathlib
 
-file_58 = pathlib.Path('input','report','оборотка 58,03 для пдн.xlsx')
-file_76= pathlib.Path('input','report','76,06 пдн.xlsx')
-file_pdn = pathlib.Path('input','report','Отчет по ПДН.xls')
-file_irk = pathlib.Path('input','report','report_loan_issuance_for_prelovskaya_o (1).xls')
+file_58 = pathlib.Path('input', 'report', '58,03 пдн.xlsx')
+file_76 = pathlib.Path('input', 'report', '76,06 пдн.xlsx')
+file_pdn = pathlib.Path('input', 'report', 'Отчет по ПДН.xls')
+file_irk = pathlib.Path(
+    'input', 'report', 'report_loan_issuance_for_prelovskaya_o (1).xls')
 if __name__ == '__main__':
-    report58 = Oborot58(file_58)
+    report58 = Oborot58(file_58, '58')
     report58.get_parser()
-    report76 = Oborot76(file_76)
+    report76 = Oborot76(file_76, '76')
     report76.get_parser()
-    reportPdn = Pdn(file_pdn)
+    reportPdn = Pdn(file_pdn, 'PDN')
     reportPdn.get_parser()
-    reportIrk = Irkom(file_irk)
+    reportIrk = Irkom(file_irk, 'IRKOM')
     reportIrk.get_parser()
     report58.union_all(report76, reportPdn, reportIrk)
     report58.write('docs', 'docs')

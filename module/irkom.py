@@ -1,8 +1,10 @@
 import re
 import csv
 import json
+import datetime
 from module.excel_importer import ExcelImporter
 from module.report import Report
+
 
 from module.settings import *
 
@@ -29,13 +31,30 @@ class Irkom(Report):
                 self.docs[-1]['dogovor'][-1]['end_debet_common'] = rec[FLDIRK_SUMMA_DEB_COMMON]
                 self.docs[-1]['dogovor'][-1]['end_debet_main'] = rec[FLDIRK_SUMMA_DEB_MAIN]
                 self.docs[-1]['dogovor'][-1]['end_debet_proc'] = rec[FLDIRK_SUMMA_DEB_PROC]
-                self.docs[-1]['dogovor'][-1]['end_debet_fine'] = rec[FLDIRK_SUMMA_DEB_FINE]
-                self.docs[-1]['dogovor'][-1]['end_debet_penal'] = rec[FLDIRK_SUMMA_DEB_PENAL]
-                
-                self.checksum['summa'] += float(rec[FLDIRK_SUMMA]) if rec[FLDIRK_SUMMA] else 0
-                self.checksum['debet'] += float(rec[FLDIRK_SUMMA_DEB_COMMON]) if rec[FLDIRK_SUMMA_DEB_COMMON] else 0
-                self.checksum['current'] += float(rec[FLDIRK_SUMMA_DEB_MAIN]) if rec[FLDIRK_SUMMA_DEB_MAIN] else 0
-                self.checksum['credit'] += float(rec[FLDIRK_SUMMA_DEB_PROC]) if rec[FLDIRK_SUMMA_DEB_PROC] else 0
+                # rec[FLDIRK_SUMMA_DEB_FINE]
+                self.docs[-1]['dogovor'][-1]['end_debet_fine'] = 0
+                # rec[FLDIRK_SUMMA_DEB_PENAL]
+                self.docs[-1]['dogovor'][-1]['end_debet_penal'] = 0
+
+                finish_date = datetime.datetime.strptime(
+                    rec[FLDIRK_DATE], '%d.%m.%Y') + datetime.timedelta(days=int(rec[FLDIRK_PERIOD_COMMON]))
+                first_day_of_current_month = datetime.datetime.today().replace(day=1)
+                last_day_of_previous_month = first_day_of_current_month - \
+                    datetime.timedelta(days=1)
+
+                self.docs[-1]['dogovor'][-1]['date_finish'] = datetime.datetime.strftime(
+                    finish_date, '%d.%m.%Y')
+                self.docs[-1]['dogovor'][-1]['count_days'] = (
+                    last_day_of_previous_month - finish_date).days
+
+                self.checksum['summa'] += float(rec[FLDIRK_SUMMA]
+                                                ) if rec[FLDIRK_SUMMA] else 0
+                self.checksum['debet'] += float(
+                    rec[FLDIRK_SUMMA_DEB_COMMON]) if rec[FLDIRK_SUMMA_DEB_COMMON] else 0
+                self.checksum['current'] += float(
+                    rec[FLDIRK_SUMMA_DEB_MAIN]) if rec[FLDIRK_SUMMA_DEB_MAIN] else 0
+                self.checksum['credit'] += float(
+                    rec[FLDIRK_SUMMA_DEB_PROC]) if rec[FLDIRK_SUMMA_DEB_PROC] else 0
 
         self.set_reference()
         self.write('rep_irk')
@@ -43,29 +62,29 @@ class Irkom(Report):
     def set_columns(self):
         rec = self.parser.records[0]
         for col, val in rec.items():
-            if re.search('^ФИО',val):
+            if re.search('^ФИО', val):
                 FLDIRK_NAME = col
-            elif  re.search('^Первоначальный срок займа$',val):
+            elif re.search('^Первоначальный срок займа$', val):
                 FLDIRK_PERIOD = col
-            elif  re.search('^Общий срок займа$',val):
+            elif re.search('^Общий срок займа$', val):
                 FLDIRK_PERIOD_COMMON = col
-            elif  re.search('^№ договора$',val):
+            elif re.search('^№ договора$', val):
                 FLDIRK_NUMBER = col
-            elif  re.search('^Дата выдачи',val):
+            elif re.search('^Дата выдачи', val):
                 FLDIRK_DATE = col
-            elif  re.search('^Сумма займа$',val):
+            elif re.search('^Сумма займа$', val):
                 FLDIRK_SUMMA = col
-            elif  re.search('^Процентная ставка',val):
+            elif re.search('^Процентная ставка', val):
                 FLDIRK_PROC = col
-            elif  re.search('^Наименование продукта$',val):
+            elif re.search('^Наименование продукта$', val):
                 FLDIRK_TARIF = col
-            elif  re.search('^Общий долг$',val):
+            elif re.search('^Общий долг$', val):
                 FLDIRK_SUMMA_DEB_COMMON = col
-            elif  re.search('^Основной долг$',val):
+            elif re.search('^Основной долг$', val):
                 FLDIRK_SUMMA_DEB_MAIN = col
-            elif  re.search('^Долг по процентам$',val):
+            elif re.search('^Долг по процентам$', val):
                 FLDIRK_SUMMA_DEB_PROC = col
-            elif  re.search('^Долг по штрафам$',val):
+            elif re.search('^Долг по штрафам$', val):
                 FLDIRK_SUMMA_DEB_FINE = col
-            elif  re.search('^Долг по единовременным штрафам$',val):
+            elif re.search('^Долг по единовременным штрафам$', val):
                 FLDIRK_SUMMA_DEB_PENAL = col

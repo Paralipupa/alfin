@@ -1,10 +1,12 @@
 import abc
+from asyncio.log import logger
 import csv
 import os
 import pathlib
 
 from openpyxl import load_workbook
-import xlrd, xlwt
+import xlrd
+import xlwt
 
 
 def rchop(s, sub):
@@ -126,13 +128,22 @@ class XlsxFile(DataFile):
         except AttributeError:
             return -1
 
+
 class XlsWrite:
-    def __init__(self, filename:str):
+    def __init__(self, filename: str):
         self.name = filename
         self.book = xlwt.Workbook(encoding="utf-8")
 
     def save(self):
-        self.book.save(pathlib.Path('output',f'{self.name}.xls'))
+        try:
+            i = 0
+            name = self.name
+            while os.path.isfile(pathlib.Path('output', f'{name}.xls')) and i < 100:
+                i += 1
+                name = f'{self.name}({i})'
+            self.book.save(pathlib.Path('output', f'{name}.xls'))
+        except Exception as ex:
+            logger.error(f'{ex}')
 
 
 def get_file_reader(fname):
@@ -148,6 +159,7 @@ def get_file_reader(fname):
     if file_extension == '.csv':
         return CsvFile
     raise Exception("Unknown file type")
+
 
 def get_file_write(fname):
     return XlsWrite

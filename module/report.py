@@ -8,8 +8,9 @@ from module.settings import *
 
 
 class Report:
-    def __init__(self, filename: str):
+    def __init__(self, filename: str, type_file: str = ''):
         self.name = filename
+        self.type_file = type_file
         self.parser = ExcelImporter(self.name)
         self.docs = []
         self.reference = {}
@@ -20,7 +21,7 @@ class Report:
     def read(self):
         self.parser.read()
 
-    def write(self, filename: str = 'output', doc_type: str = 'reference'):
+    def write(self, filename: str = 'output', doc_type: str = 'docs'):
         if doc_type == 'reference':
             docs = self.reference
         elif doc_type == 'result':
@@ -28,7 +29,7 @@ class Report:
         elif doc_type == 'kategoria':
             docs = self.kategoria
         else:
-            docs = self.reference
+            docs = self.docs
         with open(pathlib.Path('output', f'{filename}.json'), mode='w', encoding='utf-8') as file:
             jstr = json.dumps(docs, indent=4,
                               ensure_ascii=False)
@@ -46,9 +47,8 @@ class Report:
         for doc in self.docs:
             for item in doc['dogovor']:
                 name: str = re.findall(PATT_FAMALY, doc['name'])
-                # name: str = doc['name'].replace(' ', '').lower()
                 number: str = item['number']
-                self.reference[f'{name[0].lower()}_{number}'] = item
+                self.reference[f'{name[0].replace(" ","").lower()}_{number}'] = item
 
     def get_parser(self):
         pass
@@ -61,7 +61,8 @@ class Report:
             for item in args:
                 idog = item.reference.get(key)
                 if idog:
-                    value['found'] = True
+                    if not value.get('found'):
+                        value['found'] = True
                     for ikey in idog.keys():
                         if not value.get(ikey):
                             value[ikey] = idog[ikey]
@@ -119,8 +120,11 @@ class Report:
                 '7': {'count4': 0, 'summa5': 0, 'summa3': 0, 'summa6': 0, 'items': []}
                 }
         for doc in self.docs:
+            pdn = 0.3
             for item in doc['dogovor']:
-                if item.get('pdn') and item.get('turn_debet_main'):
+                pdn = item['pdn'] if item.get('pdn') else 0.3
+            for item in doc['dogovor']:
+                if item.get('turn_debet_main'):
                     summa_main = float(item['turn_debet_main']) if item.get(
                         'turn_debet_main') else 0
                     summa_proc = float(item['turn_debet_proc']) if item.get(
@@ -133,7 +137,9 @@ class Report:
                         'end_debet_fine') else 0
                     summa_penal = float(item['end_debet_penal']) if item.get(
                         'end_debet_penal') else 0
-                    pdn = float(item['pdn']) if item['pdn'] else 0
+                    pdn = float(item['pdn']) if item.get('pdn') else pdn
+                    count_days = int(item['count_days']) if item.get(
+                        'count_days') else 0
                     if summa_main >= 10000:
                         if pdn <= 0.3:
                             t = '1'
@@ -150,8 +156,13 @@ class Report:
                         else:
                             t = '7'
                         data[t]['count4'] += 1
-                        data[t]['summa5'] += (summa_main + summa_proc + summa_fine + summa_penal)
+                        data[t]['summa5'] += (summa_main)
                         data[t]['summa3'] += (summa_end_main + summa_end_proc)
+                        if count_days > 90 and (summa_end_main + summa_end_proc)>0:
+                            data[t]['summa6'] += (summa_end_main + summa_end_proc)
+
                         data[t]['items'].append(
-                            {'name': doc['name'], 'number': item['number'], 'main': summa_main, 'proc': summa_proc, 'end_main': summa_end_main, 'end_proc': summa_end_proc, 'fine': summa_fine, 'penal': summa_penal})
+                            {'name': doc['name'], 'number': item['number'], 'main': summa_main, 'proc': summa_proc,
+                             'end_main': summa_end_main, 'end_proc': summa_end_proc, 'fine': summa_fine, 'penal': summa_penal,
+                             'pdn': pdn, 'count_days': count_days})
         self.kategoria = data

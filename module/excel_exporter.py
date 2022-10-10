@@ -31,17 +31,21 @@ class ExcelExporter:
                  {'name': 'proc', 'title': 'Ставка', 'type': 'float'},
                  {'name': 'tarif', 'title': 'Тариф', 'type': ''},
                  {'name': 'period', 'title': 'Срок', 'type': 'int'},
-                 {'name': 'beg_debet_main','title': 'Начальная сумма', 'type': 'float'},
+                 {'name': 'beg_debet_main',
+                     'title': 'Начальная сумма', 'type': 'float'},
                  {'name': 'turn_debet_main', 'title': 'Дебет', 'type': 'float'},
-                 {'name': 'turn_credit_main','title': 'Кредит', 'type': 'float'},
-                 {'name': 'end_debet_main','title': 'Остаток', 'type': 'float'},
-                 {'name': 'turn_debet_proc','title': 'Процент дебет', 'type': 'float'},
-                 {'name': 'turn_credit_proc','title': 'Процент кредит', 'type': 'float'},
-                 {'name': 'end_debet_proc', 'title': 'Процент остаток', 'type': 'float'},
-                 {'name': 'end_debet_fine', 'title': 'Пени', 'type': 'float'},
-                 {'name': 'end_debet_penal', 'title': 'Штраф', 'type': 'float'},
+                 {'name': 'turn_credit_main', 'title': 'Кредит', 'type': 'float'},
+                 {'name': 'end_debet_main', 'title': 'Остаток', 'type': 'float'},
+                 {'name': 'turn_debet_proc', 'title': 'Процент дебет', 'type': 'float'},
+                 {'name': 'turn_credit_proc',
+                     'title': 'Процент кредит', 'type': 'float'},
+                 {'name': 'end_debet_proc',
+                     'title': 'Процент остаток', 'type': 'float'},
                  {'name': 'pdn', 'title': 'ПДН', 'type': 'float'},
-        ]
+                 {'name': 'period_common', 'title': 'Общий срок', 'type': 'int'},
+                 {'name': 'date_finish', 'title': 'Крайняя дата', 'type': ''},
+                 {'name': 'count_days', 'title': 'Просрочка', 'type': 'int'},
+                 ]
         row = 0
         col = 0
         sh.write(row, col, 'ФИО')
@@ -102,11 +106,12 @@ class ExcelExporter:
             sh.write(row, col+2, value['summa3'])
             sh.write(row, col+3, value['count4'])
             sh.write(row, col+4, value['summa5'])
+            sh.write(row, col+5, value['summa6'])
             row += 1
 
         row += 1
-        sh.write(row, col+3, 'Оборот')
-        sh.write(row, col+7, 'Остаток')
+        sh.write(row, col+3, '(5)')
+        sh.write(row, col+5, '(3)')
         for key, value in kategoria.items():
             row += 1
             sh.write(row, col, key)
@@ -114,9 +119,42 @@ class ExcelExporter:
                 sh.write(row, col+1, val['name'])
                 sh.write(row, col+2, val['number'])
                 sh.write(row, col+3, float(val['main']))
-                sh.write(row, col+4, float(val['proc']))
-                sh.write(row, col+5, float(val['fine']))
-                sh.write(row, col+6, float(val['penal']))
-                sh.write(row, col+7, float(val['end_main']))
-                sh.write(row, col+8, float(val['end_proc']))
+                sh.write(row, col+4, float(val['pdn']))
+                sh.write(row, col+5, float(val['end_main']))
+                sh.write(row, col+6, float(val['end_proc']))
+                if float(val['end_main']) > 0 and float(val['end_proc']) > 0:
+                    if float(val['pdn']) > 0.5:
+                        sh.write(row, col+8, float(val['end_main'])*0.1)
+                        sh.write(row, col+9, float(val['end_proc'])*0.1)
+                    if val['count_days'] > 0:
+                        summa_main, summa_proc, percent = self.__summa_rezerv(
+                            int(val['count_days']), float(val['end_main']), float(val['end_proc']))
+                        sh.write(row, col+11, int(val['count_days']))
+                        sh.write(row, col+12, percent)
+                        sh.write(row, col+13, summa_main)
+                        sh.write(row, col+14, summa_proc)
+                        sh.write(row, col+15, summa_main+summa_proc)
                 row += 1
+
+    def __summa_rezerv(self, count: int, summa_main: float, summa_proc: float) -> tuple:
+        if count <= 7:
+            percent = 0
+        elif count <= 30:
+            percent = 3
+        elif count <= 60:
+            percent = 10
+        elif count <= 90:
+            percent = 20
+        elif count <= 120:
+            percent = 40
+        elif count <= 180:
+            percent = 50
+        elif count <= 270:
+            percent = 65
+        elif count <= 360:
+            percent = 80
+        else:
+            percent = 99
+        summa_main = round((summa_main) * percent/100, 2)
+        summa_proc = round((summa_proc) * percent/100, 2)
+        return summa_main, summa_proc, percent
