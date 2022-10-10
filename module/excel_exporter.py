@@ -26,22 +26,21 @@ class ExcelExporter:
         data_excel.save()
 
     def write_docs(self, sh, docs) -> bool:
-        names = [{'name': 'number', 'title': 'Номер', 'type': ''}, {'name': 'date', 'title': '', 'type': 'Дата'},
+        names = [{'name': 'number', 'title': 'Номер', 'type': ''}, {'name': 'date', 'title': 'Дата', 'type': ''},
                  {'name': 'summa', 'title': 'Сумма', 'type': 'float'},
                  {'name': 'proc', 'title': 'Ставка', 'type': 'float'},
                  {'name': 'tarif', 'title': 'Тариф', 'type': ''},
                  {'name': 'period', 'title': 'Срок', 'type': 'int'},
-                 {'name': 'beg_debet_main',
-                     'title': 'Сальдо начальное', 'type': 'float'},
-                 {'name': 'turn_debet_main', 'title': 'Оборот', 'type': 'float'},
-                 {'name': 'turn_credit_main',
-                     'title': 'Сальдо конечное дебет', 'type': 'float'},
-                 {'name': 'end_debet_main',
-                     'title': 'Сальдо конечное кредит', 'type': 'float'},
+                 {'name': 'beg_debet_main','title': 'Начальная сумма', 'type': 'float'},
+                 {'name': 'turn_debet_main', 'title': 'Дебет', 'type': 'float'},
+                 {'name': 'turn_credit_main','title': 'Кредит', 'type': 'float'},
+                 {'name': 'end_debet_main','title': 'Остаток', 'type': 'float'},
+                 {'name': 'turn_debet_proc','title': 'Процент дебет', 'type': 'float'},
+                 {'name': 'turn_credit_proc','title': 'Процент кредит', 'type': 'float'},
+                 {'name': 'end_debet_proc', 'title': 'Процент остаток', 'type': 'float'},
+                 {'name': 'end_debet_fine', 'title': 'Пени', 'type': 'float'},
+                 {'name': 'end_debet_penal', 'title': 'Штраф', 'type': 'float'},
                  {'name': 'pdn', 'title': 'ПДН', 'type': 'float'},
-                 {'name': 'summa_deb_common', 'title': 'Долг общий', 'type': 'float'},
-                 {'name': 'turn_debet_main', 'title': 'Долг основной', 'type': 'float'}, {
-            'name': 'turn_debet_proc', 'title': 'Долг процент', 'type': 'float'}
         ]
         row = 0
         col = 0
@@ -90,9 +89,9 @@ class ExcelExporter:
                 sh.write(row, 3, value)
 
     def write_kategoria(self, sh, kategoria):
-        names = ['1', '2', '3', '4', '5', '6']
         row = 0
         col = 0
+        names = ['1', '2', '3', '4', '5', '6']
         for name in names:
             sh.write(row, col, name)
             col += 1
@@ -100,10 +99,14 @@ class ExcelExporter:
         col = 0
         for key, value in kategoria.items():
             sh.write(row, col, key)
-            sh.write(row, col+2, value['count'])
-            sh.write(row, col+3, value['summa'])
+            sh.write(row, col+2, value['summa3'])
+            sh.write(row, col+3, value['count4'])
+            sh.write(row, col+4, value['summa5'])
             row += 1
 
+        row += 1
+        sh.write(row, col+3, 'Оборот')
+        sh.write(row, col+7, 'Остаток')
         for key, value in kategoria.items():
             row += 1
             sh.write(row, col, key)
@@ -112,4 +115,8 @@ class ExcelExporter:
                 sh.write(row, col+2, val['number'])
                 sh.write(row, col+3, float(val['main']))
                 sh.write(row, col+4, float(val['proc']))
+                sh.write(row, col+5, float(val['fine']))
+                sh.write(row, col+6, float(val['penal']))
+                sh.write(row, col+7, float(val['end_main']))
+                sh.write(row, col+8, float(val['end_proc']))
                 row += 1

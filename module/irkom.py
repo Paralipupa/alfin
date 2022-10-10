@@ -11,6 +11,7 @@ class Irkom(Report):
 
     def get_parser(self):
         self.read()
+        self.set_columns()
         for rec in self.parser.records:
             if (re.search(PATT_DOG_NUMBER, rec[FLDIRK_NUMBER]) and re.search(PATT_NAME, rec[FLDIRK_NAME])
                     and re.search(PATT_DOG_DATE, rec[FLDIRK_DATE])):
@@ -25,14 +26,46 @@ class Irkom(Report):
                 self.docs[-1]['dogovor'][-1]['passport'] = rec[FLDIRK_PASSPORT]
                 self.docs[-1]['dogovor'][-1]['period_common'] = rec[FLDIRK_PERIOD_COMMON]
                 self.docs[-1]['dogovor'][-1]['period'] = rec[FLDIRK_PERIOD]
-                self.docs[-1]['dogovor'][-1]['end_debet_common'] = rec[FLDIRK_SUMMA_DEB_COMMOT]
+                self.docs[-1]['dogovor'][-1]['end_debet_common'] = rec[FLDIRK_SUMMA_DEB_COMMON]
                 self.docs[-1]['dogovor'][-1]['end_debet_main'] = rec[FLDIRK_SUMMA_DEB_MAIN]
                 self.docs[-1]['dogovor'][-1]['end_debet_proc'] = rec[FLDIRK_SUMMA_DEB_PROC]
+                self.docs[-1]['dogovor'][-1]['end_debet_fine'] = rec[FLDIRK_SUMMA_DEB_FINE]
+                self.docs[-1]['dogovor'][-1]['end_debet_penal'] = rec[FLDIRK_SUMMA_DEB_PENAL]
                 
                 self.checksum['summa'] += float(rec[FLDIRK_SUMMA]) if rec[FLDIRK_SUMMA] else 0
-                self.checksum['debet'] += float(rec[FLDIRK_SUMMA_DEB_COMMOT]) if rec[FLDIRK_SUMMA_DEB_COMMOT] else 0
+                self.checksum['debet'] += float(rec[FLDIRK_SUMMA_DEB_COMMON]) if rec[FLDIRK_SUMMA_DEB_COMMON] else 0
                 self.checksum['current'] += float(rec[FLDIRK_SUMMA_DEB_MAIN]) if rec[FLDIRK_SUMMA_DEB_MAIN] else 0
                 self.checksum['credit'] += float(rec[FLDIRK_SUMMA_DEB_PROC]) if rec[FLDIRK_SUMMA_DEB_PROC] else 0
 
         self.set_reference()
         self.write('rep_irk')
+
+    def set_columns(self):
+        rec = self.parser.records[0]
+        for col, val in rec.items():
+            if re.search('^ФИО',val):
+                FLDIRK_NAME = col
+            elif  re.search('^Первоначальный срок займа$',val):
+                FLDIRK_PERIOD = col
+            elif  re.search('^Общий срок займа$',val):
+                FLDIRK_PERIOD_COMMON = col
+            elif  re.search('^№ договора$',val):
+                FLDIRK_NUMBER = col
+            elif  re.search('^Дата выдачи',val):
+                FLDIRK_DATE = col
+            elif  re.search('^Сумма займа$',val):
+                FLDIRK_SUMMA = col
+            elif  re.search('^Процентная ставка',val):
+                FLDIRK_PROC = col
+            elif  re.search('^Наименование продукта$',val):
+                FLDIRK_TARIF = col
+            elif  re.search('^Общий долг$',val):
+                FLDIRK_SUMMA_DEB_COMMON = col
+            elif  re.search('^Основной долг$',val):
+                FLDIRK_SUMMA_DEB_MAIN = col
+            elif  re.search('^Долг по процентам$',val):
+                FLDIRK_SUMMA_DEB_PROC = col
+            elif  re.search('^Долг по штрафам$',val):
+                FLDIRK_SUMMA_DEB_FINE = col
+            elif  re.search('^Долг по единовременным штрафам$',val):
+                FLDIRK_SUMMA_DEB_PENAL = col

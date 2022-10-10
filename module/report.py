@@ -108,14 +108,15 @@ class Report:
         self.result['summa'] = summa
         self.result['summa_wa'] = summa / summa_free if summa_free != 0 else 1
 
+# категории потребительских займов
     def set_kategoria(self):
-        data = {'1': {'count': 0, 'summa': 0, 'items': []},
-                '2': {'count': 0, 'summa': 0, 'items': []},
-                '3': {'count': 0, 'summa': 0, 'items': []},
-                '4': {'count': 0, 'summa': 0, 'items': []},
-                '5': {'count': 0, 'summa': 0, 'items': []},
-                '6': {'count': 0, 'summa': 0, 'items': []},
-                '7': {'count': 0, 'summa': 0, 'items': []}
+        data = {'1': {'count4': 0, 'summa5': 0, 'summa3': 0, 'summa6': 0, 'items': []},
+                '2': {'count4': 0, 'summa5': 0, 'summa3': 0, 'summa6': 0, 'items': []},
+                '3': {'count4': 0, 'summa5': 0, 'summa3': 0, 'summa6': 0, 'items': []},
+                '4': {'count4': 0, 'summa5': 0, 'summa3': 0, 'summa6': 0, 'items': []},
+                '5': {'count4': 0, 'summa5': 0, 'summa3': 0, 'summa6': 0, 'items': []},
+                '6': {'count4': 0, 'summa5': 0, 'summa3': 0, 'summa6': 0, 'items': []},
+                '7': {'count4': 0, 'summa5': 0, 'summa3': 0, 'summa6': 0, 'items': []}
                 }
         for doc in self.docs:
             for item in doc['dogovor']:
@@ -124,6 +125,14 @@ class Report:
                         'turn_debet_main') else 0
                     summa_proc = float(item['turn_debet_proc']) if item.get(
                         'turn_debet_proc') else 0
+                    summa_end_main = float(item['end_debet_main']) if item.get(
+                        'end_debet_main') else 0
+                    summa_end_proc = float(item['end_debet_proc']) if item.get(
+                        'end_debet_proc') else 0
+                    summa_fine = float(item['end_debet_fine']) if item.get(
+                        'end_debet_fine') else 0
+                    summa_penal = float(item['end_debet_penal']) if item.get(
+                        'end_debet_penal') else 0
                     pdn = float(item['pdn']) if item['pdn'] else 0
                     if summa_main >= 10000:
                         if pdn <= 0.3:
@@ -140,9 +149,9 @@ class Report:
                             t = '6'
                         else:
                             t = '7'
-                        data[t]['count'] += 1
-                        data[t]['summa'] += (summa_main+summa_proc)
-                        # data[t]['items'].append(f"{doc['name']}_{item['number']}_{summa_main}_{summa_proc}")
+                        data[t]['count4'] += 1
+                        data[t]['summa5'] += (summa_main + summa_proc + summa_fine + summa_penal)
+                        data[t]['summa3'] += (summa_end_main + summa_end_proc)
                         data[t]['items'].append(
-                            {'name': doc['name'], 'number': item['number'], 'main': summa_main, 'proc': summa_proc})
+                            {'name': doc['name'], 'number': item['number'], 'main': summa_main, 'proc': summa_proc, 'end_main': summa_end_main, 'end_proc': summa_end_proc, 'fine': summa_fine, 'penal': summa_penal})
         self.kategoria = data
