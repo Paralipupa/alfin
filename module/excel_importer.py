@@ -1,7 +1,7 @@
 from module.file_readers import get_file_reader
 import csv
 import json
-import pathlib
+import pathlib, os
 class ExcelImporter:
 
     def __init__(self, file_name: str, page_name: str = None):
@@ -45,6 +45,7 @@ class ExcelImporter:
         return True
 
     def write(self, file_output: str = 'output') -> bool:
+        os.makedirs('output', exist_ok=True)
         with open(pathlib.Path('output',f'{file_output}.json'), mode='w', encoding='utf-8') as file:
             jstr = json.dumps(self.records, indent=4,
                               ensure_ascii=False)

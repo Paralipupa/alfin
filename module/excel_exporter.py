@@ -124,9 +124,6 @@ class ExcelExporter:
                 sh.write(row, col+5, float(val['end_main']))
                 sh.write(row, col+6, float(val['end_proc']))
                 if float(val['end_main']) > 0 and float(val['end_proc']) > 0:
-                    if float(val['pdn']) > 0.5:
-                        sh.write(row, col+8, float(val['end_main'])*0.1)
-                        sh.write(row, col+9, float(val['end_proc'])*0.1)
                     if val['count_days'] > 0:
                         summa_main, summa_proc, percent = self.__summa_rezerv(
                             int(val['count_days']), float(val['end_main']), float(val['end_proc']))
@@ -135,6 +132,9 @@ class ExcelExporter:
                         sh.write(row, col+13, summa_main)
                         sh.write(row, col+14, summa_proc)
                         sh.write(row, col+15, summa_main+summa_proc)
+                    if float(val['pdn']) > 0.5 and val['count_days'] < 7:
+                        sh.write(row, col+8, float(val['end_main'])*0.1)
+                        sh.write(row, col+9, float(val['end_proc'])*0.1)
                 row += 1
 
     def __summa_rezerv(self, count: int, summa_main: float, summa_proc: float) -> tuple:

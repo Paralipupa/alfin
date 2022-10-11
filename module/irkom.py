@@ -28,13 +28,13 @@ class Irkom(Report):
                 self.docs[-1]['dogovor'][-1]['passport'] = rec[FLDIRK_PASSPORT]
                 self.docs[-1]['dogovor'][-1]['period_common'] = rec[FLDIRK_PERIOD_COMMON]
                 self.docs[-1]['dogovor'][-1]['period'] = rec[FLDIRK_PERIOD]
-                self.docs[-1]['dogovor'][-1]['end_debet_common'] = rec[FLDIRK_SUMMA_DEB_COMMON]
-                self.docs[-1]['dogovor'][-1]['end_debet_main'] = rec[FLDIRK_SUMMA_DEB_MAIN]
-                self.docs[-1]['dogovor'][-1]['end_debet_proc'] = rec[FLDIRK_SUMMA_DEB_PROC]
+                # self.docs[-1]['dogovor'][-1]['end_debet_common'] = rec[FLDIRK_SUMMA_DEB_COMMON]
+                # self.docs[-1]['dogovor'][-1]['end_debet_main'] = rec[FLDIRK_SUMMA_DEB_MAIN]
+                # self.docs[-1]['dogovor'][-1]['end_debet_proc'] = rec[FLDIRK_SUMMA_DEB_PROC]
                 # rec[FLDIRK_SUMMA_DEB_FINE]
-                self.docs[-1]['dogovor'][-1]['end_debet_fine'] = 0
+                # self.docs[-1]['dogovor'][-1]['end_debet_fine'] = 0
                 # rec[FLDIRK_SUMMA_DEB_PENAL]
-                self.docs[-1]['dogovor'][-1]['end_debet_penal'] = 0
+                # self.docs[-1]['dogovor'][-1]['end_debet_penal'] = 0
 
                 finish_date = datetime.datetime.strptime(
                     rec[FLDIRK_DATE], '%d.%m.%Y') + datetime.timedelta(days=int(rec[FLDIRK_PERIOD_COMMON]))
@@ -49,12 +49,12 @@ class Irkom(Report):
 
                 self.checksum['summa'] += float(rec[FLDIRK_SUMMA]
                                                 ) if rec[FLDIRK_SUMMA] else 0
-                self.checksum['debet'] += float(
-                    rec[FLDIRK_SUMMA_DEB_COMMON]) if rec[FLDIRK_SUMMA_DEB_COMMON] else 0
-                self.checksum['current'] += float(
-                    rec[FLDIRK_SUMMA_DEB_MAIN]) if rec[FLDIRK_SUMMA_DEB_MAIN] else 0
-                self.checksum['credit'] += float(
-                    rec[FLDIRK_SUMMA_DEB_PROC]) if rec[FLDIRK_SUMMA_DEB_PROC] else 0
+                # self.checksum['debet'] += float(
+                #     rec[FLDIRK_SUMMA_DEB_COMMON]) if rec[FLDIRK_SUMMA_DEB_COMMON] else 0
+                # self.checksum['current'] += float(
+                #     rec[FLDIRK_SUMMA_DEB_MAIN]) if rec[FLDIRK_SUMMA_DEB_MAIN] else 0
+                # self.checksum['credit'] += float(
+                #     rec[FLDIRK_SUMMA_DEB_PROC]) if rec[FLDIRK_SUMMA_DEB_PROC] else 0
 
         self.set_reference()
         self.write('rep_irk')

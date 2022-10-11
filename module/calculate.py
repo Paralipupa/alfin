@@ -17,6 +17,8 @@ class Calc:
         self.reportIRKOM.get_parser()
         self.reportPDN.get_parser()
         self.report58.union_all(self.report76, self.reportPDN, self.reportIRKOM)
+        self.report58.set_weighted_average()
+        self.report58.set_kategoria()
 
     def write(self):
         return self.__make_archive(self.report58.write_to_excel()) 

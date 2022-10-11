@@ -1,4 +1,4 @@
-import re
+import re, os
 import csv
 import json
 import pathlib
@@ -30,6 +30,7 @@ class Report:
             docs = self.kategoria
         else:
             docs = self.docs
+        os.makedirs('output', exist_ok=True)
         with open(pathlib.Path('output', f'{filename}.json'), mode='w', encoding='utf-8') as file:
             jstr = json.dumps(docs, indent=4,
                               ensure_ascii=False)
@@ -70,6 +71,8 @@ class Report:
                     value['found'] = False
                     if value['turn_debet_main']:
                         logger.warning(f'not found {key} в {item.name}')
+        self.write('docs')
+
 
 # средневзвешенная величина
     def set_weighted_average(self):

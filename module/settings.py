@@ -34,7 +34,7 @@ FLDIRK_SUMMA_DEB_FINE = '19'
 FLDIRK_SUMMA_DEB_PENAL = '20'
 
 # PATT_NAME = '^\w+\s+\w+\s+\w+(?:вна|вич)\s*$'
-PATT_NAME = '(?:вна|вич)\s*$'
+PATT_NAME = '(?:вна|вич|чна|нич)\s*$'
 PATT_FAMALY = '^\w+'
 PATT_CURRENCY = '^-?\d{1,8}(?:[\.,]\d+)?$'
 PATT_DOG_NAME ='^договор займа'
