@@ -57,7 +57,7 @@ class Irkom(Report):
                 #     rec[FLDIRK_SUMMA_DEB_PROC]) if rec[FLDIRK_SUMMA_DEB_PROC] else 0
 
         self.set_reference()
-        self.write('rep_irk')
+        # self.write('rep_irk')
 
     def set_columns(self):
         rec = self.parser.records[0]

@@ -32,4 +32,4 @@ class Oborot76(Report):
             elif re.search(PATT_DOG_DATE, rec[FLD58_NAME], re.IGNORECASE):
                 self.docs[-1]['dogovor'][-1]['date'] = rec[FLD58_NAME]
         self.set_reference()
-        self.write('rep_76')
+        # self.write('rep_76')

@@ -17,13 +17,22 @@ class ExcelExporter:
 
     def write(self, report) -> str:
         data_excel = self._get_data_xls()
-        sh = data_excel.book.add_sheet("Лист 1")
+        sh = data_excel.book.add_sheet("Общий")
         self.write_docs(sh, report.docs)
-        sh = data_excel.book.add_sheet("Лист 2")
+        sh = data_excel.book.add_sheet("Ср.взвешенная")
         self.write_result_weighted_average(sh, report.result)
-        sh = data_excel.book.add_sheet("Лист 3")
+        sh = data_excel.book.add_sheet("Категории")
         self.write_kategoria(sh, report.kategoria)
+        sh = data_excel.book.add_sheet("error")
+        self.write_errors(sh, report.warnings)
         return data_excel.save()
+
+    def write_errors(self, sh, errors):
+        row =0
+        col=0
+        for item in errors:
+            sh.write(row, col, item)
+            row += 1
 
 
     def write_docs(self, sh, docs) -> bool:

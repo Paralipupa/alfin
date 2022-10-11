@@ -23,7 +23,7 @@ class Pdn(Report):
                 self.docs[-1]['dogovor'][-1]['pdn'] = rec[FLDPDN_PDN]
                 self.checksum['summa'] += float(rec[FLDPDN_SUMMA]) if rec[FLDPDN_SUMMA] else 0
         self.set_reference()
-        self.write('rep_pdn')
+        # self.write('rep_pdn')
 
     def set_columns(self):
         rec = self.parser.records[0]

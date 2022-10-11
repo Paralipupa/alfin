@@ -1,4 +1,5 @@
-import re, os
+import re
+import os
 import csv
 import json
 import pathlib
@@ -17,6 +18,7 @@ class Report:
         self.result = {}
         self.kategoria = {}
         self.checksum = {'summa': 0, 'debet': 0, 'current': 0, 'credit': 0}
+        self.warnings = []
 
     def read(self):
         self.parser.read()
@@ -70,11 +72,12 @@ class Report:
                 else:
                     value['found'] = False
                     if value['turn_debet_main']:
-                        logger.warning(f'not found {key} в {item.name}')
+                        self.warnings.append(f'не найден {key} в {item.name}')
         self.write('docs')
 
 
 # средневзвешенная величина
+
     def set_weighted_average(self):
         for item in self.docs:
             for dog in item['dogovor']:

@@ -21,7 +21,7 @@ class Calc:
         self.report58.set_kategoria()
 
     def write(self):
-        return self.__make_archive(self.report58.write_to_excel()) 
+        return self.report58.write_to_excel()
 
     def __make_archive(self, file_output: str) -> str:
         filename_arch = f'{file_output}.zip'
