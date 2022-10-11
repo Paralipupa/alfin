@@ -3,15 +3,61 @@ from asyncio.log import logger
 import csv
 import os
 import pathlib
-
 from openpyxl import load_workbook
 import xlrd
 import xlwt
+import math
+import pandas as pd
+import shutil
+import traceback
+from datetime import datetime
+from zipfile import ZipFile
 
+def fatal_error(func):
+    def wrapper(*args, **kwargs):
+        try:
+            return func(*args, **kwargs)
+        except Exception as ex:
+            logger.warning(traceback.format_exc())
+            exit()
+    return wrapper
+
+def warning_error(func):
+    def wrapper(*args):
+        try:
+            return func(*args)
+        except Exception as ex:
+            template = "An exception of type {0} occurred. Arguments:\n{1!r}"
+            message = template.format(type(ex).__name__, ex.args)
+            logger.error(message)
+            return None
+    return wrapper
 
 def rchop(s, sub):
     return s[:-len(sub)] if s.endswith(sub) else s
 
+@warning_error
+def import_1c(filename:str)->str:
+    name_tmp = f'tmp_{datetime.now().strftime("%Y-%m-%d_%H-%M-%S")}'
+    tmp_folder = 'tmp'
+    os.makedirs(tmp_folder, exist_ok=True)
+
+    # Распаковываем excel как zip в нашу временную папку
+    with ZipFile(filename) as excel_container:
+        excel_container.extractall(tmp_folder)
+
+    # Переименовываем файл с неверным названием
+    wrong_file_path = os.path.join(tmp_folder, 'xl', 'SharedStrings.xml')
+    correct_file_path = os.path.join(tmp_folder, 'xl', 'sharedStrings.xml')
+    os.rename(wrong_file_path, correct_file_path)
+
+    # Запаковываем excel обратно в zip и переименовываем в исходный файл
+    # shutil.make_archive(pathlib.Path(os.path.dirname(filename),f'{name_tmp}'), 'zip', os.path.dirname(filename))
+    shutil.make_archive(pathlib.Path(os.path.dirname(filename), name_tmp), 'zip', tmp_folder)
+    shutil.rmtree(tmp_folder)
+    os.remove(filename)
+    os.rename(pathlib.Path(os.path.dirname(filename),f'{name_tmp}.zip'), filename)
+    return filename
 
 class DataFile(abc.ABC):
 
@@ -26,7 +72,6 @@ class DataFile(abc.ABC):
 
     def __next__(self):
         return ""
-
 
 class CsvFile(DataFile):
     def __init__(self, fname, first_line, columns, page_index=None):
@@ -54,12 +99,44 @@ class CsvFile(DataFile):
     def __del__(self):
         self._freader.close()
 
+class PandasFile(DataFile):
+    def __init__(self, fname, sheet_name, first_line: int = 0, columns: int = 50, page_index=0):
+        super(PandasFile, self).__init__(
+            fname, sheet_name, first_line, range(columns))
+        if self._sheet_name:
+            self._sheet = pd.read_excel(fname, sheet_name=[self._sheet_name])
+        else:
+            import_1c(fname)
+            self._sheet = pd.read_excel(fname, sheet_name=None)
+        self._rows = (self._sheet.loc[index] for index in range(first_line,
+                                                                 self._sheet.shape[0]))
+
+    @staticmethod
+    def get_cell_text(cell):
+        if isinstance(cell,float):
+            return str(cell) if not math.isnan(cell) else ''
+        return str(cell)
+
+    def get_row(self, row):
+        index = 0
+        for cell in row:
+            if index in self._columns:
+                yield PandasFile.get_cell_text(cell)
+            index = index + 1
+
+    def __next__(self):
+        for row in self._rows:
+            return list(self.get_row(row))
+        raise StopIteration
+
+    def __del__(self):
+        pass
 
 class XlsFile(DataFile):
     def __init__(self, fname, sheet_name, first_line: int = 0, columns: int = 50, page_index=0):
         super(XlsFile, self).__init__(
             fname, sheet_name, first_line, range(columns))
-        self._book = xlrd.open_workbook(fname, logfile=open(os.devnull, 'w'))
+        self._book = xlrd.open_workbook(fname, logfile=open(os.devnull, 'w'), ignore_workbook_corruption=True)
         if self._sheet_name:
             sheet = self._book.sheet_by_name(self._sheet_name)
         else:
@@ -90,10 +167,13 @@ class XlsFile(DataFile):
 
 
 class XlsxFile(DataFile):
+    @fatal_error
     def __init__(self, fname, sheet_name, first_line: int = 0, columns: int = 50, page_index: int = 0):
         super(XlsxFile, self).__init__(
             fname, sheet_name, first_line, range(columns))
-        self._wb = load_workbook(filename=fname, read_only=True)
+
+        file_name = import_1c(fname)
+        self._wb = load_workbook(filename=file_name, read_only=True)
 
         if self._sheet_name:
             self._ws = self._wb.get_sheet_by_name(self._sheet_name)
@@ -151,12 +231,9 @@ class XlsWrite:
 def get_file_reader(fname):
     """Get class for reading file as iterable"""
     _, file_extension = os.path.splitext(fname)
-    # if file_extension == '.csv':
-    #     return CsvFile
     if file_extension == '.xls':
         return XlsFile
     if file_extension == '.xlsx':
-        # return XlsFile
         return XlsxFile
     if file_extension == '.csv':
         return CsvFile
@@ -165,3 +242,4 @@ def get_file_reader(fname):
 
 def get_file_write(fname):
     return XlsWrite
+

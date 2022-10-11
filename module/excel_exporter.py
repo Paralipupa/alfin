@@ -40,7 +40,7 @@ class ExcelExporter:
                  {'name': 'summa', 'title': 'Сумма', 'type': 'float'},
                  {'name': 'proc', 'title': 'Ставка', 'type': 'float'},
                  {'name': 'tarif', 'title': 'Тариф', 'type': ''},
-                 {'name': 'period', 'title': 'Срок', 'type': 'int'},
+                 {'name': 'period', 'title': 'Срок', 'type': 'float'},
                  {'name': 'beg_debet_main',
                      'title': 'Начальная сумма', 'type': 'float'},
                  {'name': 'turn_debet_main', 'title': 'Дебет', 'type': 'float'},
@@ -52,9 +52,9 @@ class ExcelExporter:
                  {'name': 'end_debet_proc',
                      'title': 'Процент остаток', 'type': 'float'},
                  {'name': 'pdn', 'title': 'ПДН', 'type': 'float'},
-                 {'name': 'period_common', 'title': 'Общий срок', 'type': 'int'},
+                 {'name': 'period_common', 'title': 'Общий срок', 'type': 'float'},
                  {'name': 'date_finish', 'title': 'Крайняя дата', 'type': ''},
-                 {'name': 'count_days', 'title': 'Просрочка', 'type': 'int'},
+                 {'name': 'count_days', 'title': 'Просрочка', 'type': 'float'},
                  ]
         row = 0
         col = 0
@@ -92,11 +92,11 @@ class ExcelExporter:
                 row += 1
                 for val in sorted_value:
                     row += 1
-                    sh.write(row, col, int(val[1]))
+                    sh.write(row, col, float(val[1]))
                     sh.write(row, col+1, float(val[0]))
-                    sh.write(row, col+2, float(val[0])*int(val[1]))
+                    sh.write(row, col+2, float(val[0])*float(val[1]))
                     sh.write(row, col+3, float(val[0])
-                             * (value['koef'])*int(val[1]))
+                             * (value['koef'])*float(val[1]))
             else:
                 row += (index-2)
                 sh.write(row, 2, key)
@@ -132,7 +132,7 @@ class ExcelExporter:
                 sh.write(row, col+4, float(val['pdn']))
                 sh.write(row, col+5, float(val['end_main']))
                 sh.write(row, col+6, float(val['end_proc']))
-                if float(val['end_main']) > 0 and float(val['end_proc']) > 0:
+                if float(val['end_main']) > 0 or float(val['end_proc']) > 0:
                     if val['count_days'] > 0:
                         summa_main, summa_proc, percent = self.__summa_rezerv(
                             int(val['count_days']), float(val['end_main']), float(val['end_proc']))
@@ -141,12 +141,12 @@ class ExcelExporter:
                         sh.write(row, col+13, summa_main)
                         sh.write(row, col+14, summa_proc)
                         sh.write(row, col+15, summa_main+summa_proc)
-                    if float(val['pdn']) > 0.5 and val['count_days'] < 7:
+                    elif float(val['pdn']) > 0.5:
                         sh.write(row, col+8, float(val['end_main'])*0.1)
                         sh.write(row, col+9, float(val['end_proc'])*0.1)
                 row += 1
 
-    def __summa_rezerv(self, count: int, summa_main: float, summa_proc: float) -> tuple:
+    def __summa_rezerv(self, count: float, summa_main: float, summa_proc: float) -> tuple:
         if count <= 7:
             percent = 0
         elif count <= 30:

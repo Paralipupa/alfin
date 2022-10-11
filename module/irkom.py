@@ -37,7 +37,7 @@ class Irkom(Report):
                 # self.docs[-1]['dogovor'][-1]['end_debet_penal'] = 0
 
                 finish_date = datetime.datetime.strptime(
-                    rec[FLDIRK_DATE], '%d.%m.%Y') + datetime.timedelta(days=int(rec[FLDIRK_PERIOD_COMMON]))
+                    rec[FLDIRK_DATE], '%d.%m.%Y') + datetime.timedelta(days=float(rec[FLDIRK_PERIOD_COMMON]))
                 first_day_of_current_month = datetime.datetime.today().replace(day=1)
                 last_day_of_previous_month = first_day_of_current_month - \
                     datetime.timedelta(days=1)

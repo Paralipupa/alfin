@@ -3,6 +3,7 @@ import os
 import csv
 import json
 import pathlib
+import traceback
 from module.excel_importer import ExcelImporter
 from module.excel_exporter import ExcelExporter
 from module.settings import *
@@ -88,7 +89,7 @@ class Report:
                 if period and summa and tarif and proc:
                     key = f'{tarif}_{proc}'
                     data = self.result.get(key)
-                    period = int(period)
+                    period = float(period)
                     if not data:
                         self.result[key] = {'stavka': float(
                             proc), 'koef': 240.194 if tarif == 'Старт' else 365*float(proc), 'period': period-7 if tarif == 'Старт' else period,
