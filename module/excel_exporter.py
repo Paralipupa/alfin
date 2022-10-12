@@ -1,41 +1,41 @@
 from module.file_readers import get_file_write
 import csv
 import json
+from xlwt import Font, XFStyle, Utils, Formula
 
 
 class ExcelExporter:
 
     def __init__(self, file_name: str, page_name: str = None):
         self.name = file_name
+        self.workbook = None
 
-    def _get_data_xls(self):
+    def _set_data_xls(self):
         WritterClass = get_file_write(self.name)
-        data_writer = WritterClass(self.name)
-        if not data_writer:
+        self.workbook = WritterClass(self.name)
+        if not self.workbook:
             raise Exception(f'file reading error: {self.name}')
-        return data_writer
 
     def write(self, report) -> str:
-        data_excel = self._get_data_xls()
-        sh = data_excel.book.add_sheet("Общий")
-        self.write_docs(sh, report.docs)
-        sh = data_excel.book.add_sheet("Ср.взвешенная")
-        self.write_result_weighted_average(sh, report.result)
-        sh = data_excel.book.add_sheet("Категории")
-        self.write_kategoria(sh, report.kategoria)
-        sh = data_excel.book.add_sheet("error")
-        self.write_errors(sh, report.warnings)
-        return data_excel.save()
+        self._set_data_xls()
+        self.workbook.addSheet("Общий")
+        self.write_docs(report.docs)
+        self.workbook.addSheet("Ср.взвешенная")
+        self.write_result_weighted_average(report.result)
+        self.workbook.addSheet("Резервы")
+        self.write_kategoria(report.kategoria)
+        self.workbook.addSheet("error")
+        self.write_errors(report.warnings)
+        return self.workbook.save()
 
-    def write_errors(self, sh, errors):
-        row =0
-        col=0
+    def write_errors(self, errors):
+        row = 0
+        col = 0
         for item in errors:
-            sh.write(row, col, item)
+            self.workbook.write(row, col, item)
             row += 1
 
-
-    def write_docs(self, sh, docs) -> bool:
+    def write_docs(self, docs) -> bool:
         names = [{'name': 'number', 'title': 'Номер', 'type': ''}, {'name': 'date', 'title': 'Дата', 'type': ''},
                  {'name': 'summa', 'title': 'Сумма', 'type': 'float'},
                  {'name': 'proc', 'title': 'Ставка', 'type': 'float'},
@@ -58,23 +58,25 @@ class ExcelExporter:
                  ]
         row = 0
         col = 0
-        sh.write(row, col, 'ФИО')
+        self.workbook.write(row, col, 'ФИО')
         for name in names:
             col += 1
-            sh.write(row, col, name['title'])
+            self.workbook.write(row, col, name['title'])
         row += 1
         for doc in docs:
             col = 0
             for dog in doc['dogovor']:
-                sh.write(row, col, doc['name'])
+                self.workbook.write(row, col, doc['name'])
                 for name in names:
                     col += 1
-                    sh.write(row, col, (float(dog[name['name']]) if name['type'] == 'float' else int(
+                    self.workbook.write(row, col, (float(dog[name['name']]) if name['type'] == 'float' else int(
                         dog[name['name']]) if name['type'] == 'int' else str(dog[name['name']])) if dog.get(name['name']) else None)
+                    dog[name['name'] +
+                        '_address'] = f'{self.workbook.sheet.name}!{Utils.rowcol_to_cell(row,col)}'
                 col = 0
                 row += 1
 
-    def write_result_weighted_average(self, sh, result):
+    def write_result_weighted_average(self, result):
         names = [{'name': 'stavka'}, {'name': 'period'}, {'name': 'koef'},
                  {'name': 'summa_free'}, {'name': 'summa'}, {'name': 'count'}]
         index = 0
@@ -83,88 +85,119 @@ class ExcelExporter:
             row = 0
             col = (index-1)*5
             if isinstance(value, dict):
-                sh.write(row, col, key)
+                self.workbook.write(row, col, key)
                 for name in names:
                     row += 1
-                    sh.write(row, col, value[name['name']])
+                    self.workbook.write(row, col, value[name['name']])
                 sorted_value = sorted(
                     value['value'].items(), key=lambda x: float(x[0]))
                 row += 1
                 for val in sorted_value:
                     row += 1
-                    sh.write(row, col, float(val[1]))
-                    sh.write(row, col+1, float(val[0]))
-                    sh.write(row, col+2, float(val[0])*float(val[1]))
-                    sh.write(row, col+3, float(val[0])
-                             * (value['koef'])*float(val[1]))
+                    self.workbook.write(row, col, float(val[1]))
+                    self.workbook.write(row, col+1, float(val[0]))
+                    self.workbook.write(
+                        row, col+2, float(val[0])*float(val[1]))
+                    self.workbook.write(row, col+3, float(val[0])
+                                        * (value['koef'])*float(val[1]))
             else:
                 row += (index-2)
-                sh.write(row, 2, key)
-                sh.write(row, 3, value)
+                self.workbook.write(row, 2, key)
+                style1 = XFStyle()
+                if key == 'summa_wa':
+                    style_string = 'font: colour red, bold True;'
+                    self.workbook.write(row, 3, value, style_string)
+                else:
+                    self.workbook.write(row, 3, value)
 
-    def write_kategoria(self, sh, kategoria):
+    def write_kategoria(self, kategoria):
         row = 0
         col = 0
         names = ['1', '2', '3', '4', '5', '6']
         for name in names:
-            sh.write(row, col, name)
+            self.workbook.write(row, col, name, 'align: horiz center')
+            # self.workbook.write(row, col, name,"pattern: pattern solid, fore_color yellow; font: color white; align: horiz center")
             col += 1
         row += 1
         col = 0
+        nrow_start = len(kategoria.items())+3
+        pattern_style_5 = 'pattern: pattern solid, fore_colour green; font: color yellow'
+        pattern_style_3 = 'pattern: pattern solid, fore_colour brown; font: color white'
         for key, value in kategoria.items():
-            sh.write(row, col, key)
-            sh.write(row, col+2, value['summa3'])
-            sh.write(row, col+3, value['count4'])
-            sh.write(row, col+4, value['summa5'])
-            sh.write(row, col+5, value['summa6'])
+            self.workbook.write(row, col, key)
+            self.workbook.write(
+                row, col+2, Formula(f"SUM({Utils.rowcol_pair_to_cellrange(nrow_start,col+5,nrow_start+value['count4']-1,col+6)})"), pattern_style_3)
+            self.workbook.write(
+                row, col+3, value['count4'], pattern_style_5)
+            self.workbook.write(
+                row, col+4, Formula(f"SUM({Utils.rowcol_pair_to_cellrange(nrow_start,col+4,nrow_start+value['count4']-1,col+4)})"), pattern_style_5)
+            s = f"SUMIF({Utils.rowcol_pair_to_cellrange(nrow_start,col+7,nrow_start+value['count4']-1,col+7)};\">90\";{Utils.rowcol_pair_to_cellrange(nrow_start,col+5,nrow_start+value['count4']-1,col+5)})"
+            s += f"+SUMIF({Utils.rowcol_pair_to_cellrange(nrow_start,col+7,nrow_start+value['count4']-1,col+7)};\">90\";{Utils.rowcol_pair_to_cellrange(nrow_start,col+6,nrow_start+value['count4']-1,col+6)})"
+            self.workbook.write(row, col+5, Formula(s), pattern_style_3)
+            nrow_start += value['count4'] + 1
             row += 1
 
         row += 1
-        sh.write(row, col+3, '(5)')
-        sh.write(row, col+5, '(3)')
+        self.workbook.write(row, col+4, '(5)основная')
+        self.workbook.write(row, col+5, '(3,6)основная')
+        self.workbook.write(row, col+6, '(3,6)процент')
+        self.workbook.write(row, col+7, 'Дней просрочки')
         for key, value in kategoria.items():
             row += 1
-            sh.write(row, col, key)
+            self.workbook.write(row, col, key)
             for val in value['items']:
-                sh.write(row, col+1, val['name'])
-                sh.write(row, col+2, val['number'])
-                sh.write(row, col+3, float(val['main']))
-                sh.write(row, col+4, float(val['pdn']))
-                sh.write(row, col+5, float(val['end_main']))
-                sh.write(row, col+6, float(val['end_proc']))
-                if float(val['end_main']) > 0 or float(val['end_proc']) > 0:
-                    if val['count_days'] > 0:
-                        summa_main, summa_proc, percent = self.__summa_rezerv(
-                            int(val['count_days']), float(val['end_main']), float(val['end_proc']))
-                        sh.write(row, col+11, int(val['count_days']))
-                        sh.write(row, col+12, percent)
-                        sh.write(row, col+13, summa_main)
-                        sh.write(row, col+14, summa_proc)
-                        sh.write(row, col+15, summa_main+summa_proc)
-                    elif float(val['pdn']) > 0.5:
-                        sh.write(row, col+8, float(val['end_main'])*0.1)
-                        sh.write(row, col+9, float(val['end_proc'])*0.1)
+                self.workbook.write(row, col+1, val['name'])
+                self.workbook.write(
+                    row, col+2, Formula(val['parent']['number_address']))
+                self.workbook.write(
+                    row, col+3, Formula(val['parent']['pdn_address']))
+                self.workbook.write(
+                    row, col+4, Formula(val['parent']['turn_debet_main_address']))
+                self.workbook.write(
+                    row, col+5, Formula(val['parent']['end_debet_main_address']))
+                self.workbook.write(
+                    row, col+6, Formula(val['parent']['end_debet_proc_address']))
+                self.workbook.write(
+                    row, col+7, Formula(val['parent']['count_days_address']))
+                if float(val['parent']['end_debet_main']) > 0 or float(val['parent']['end_debet_proc']) > 0:
+                    if val['parent']['count_days'] > 0:
+                        percent = self.__get_rezerv_percent(
+                            int(val['parent']['count_days']))
+                        self.workbook.write(row, col+10, percent)
+                        self.workbook.write(
+                            row, col+11, Formula(f"{Utils.rowcol_to_cell(row,col+5)}*{Utils.rowcol_to_cell(row,col+10)}"))
+                        self.workbook.write(
+                            row, col+12, Formula(f"{Utils.rowcol_to_cell(row,col+6)}*{Utils.rowcol_to_cell(row,col+10)}"))
+                        self.workbook.write(
+                            row, col+13, Formula(f"{Utils.rowcol_to_cell(row,col+11)}+{Utils.rowcol_to_cell(row,col+12)}"))
+                    elif float(val['parent']['pdn']) > 0.5:
+                        self.workbook.write(
+                            row, col+8,  Formula(f"{Utils.rowcol_to_cell(row,col+5)}*0.1"))
+                        self.workbook.write(
+                            row, col+9, Formula(f"{Utils.rowcol_to_cell(row,col+6)}*0.1"))
                 row += 1
 
-    def __summa_rezerv(self, count: float, summa_main: float, summa_proc: float) -> tuple:
+    def __get_rezerv_percent(self, count: int) -> int:
         if count <= 7:
-            percent = 0
+            return 0
         elif count <= 30:
-            percent = 3
+            return 3/100
         elif count <= 60:
-            percent = 10
+            return 10/100
         elif count <= 90:
-            percent = 20
+            return 20/100
         elif count <= 120:
-            percent = 40
+            return 40/100
         elif count <= 180:
-            percent = 50
+            return 50/100
         elif count <= 270:
-            percent = 65
+            return 65/100
         elif count <= 360:
-            percent = 80
+            return 80/100
         else:
-            percent = 99
-        summa_main = round((summa_main) * percent/100, 2)
-        summa_proc = round((summa_proc) * percent/100, 2)
-        return summa_main, summa_proc, percent
+            return 99/100
+
+# from xlwt import Utils
+# print Utils.rowcol_pair_to_cellrange(2,2,12,2)
+# print Utils.rowcol_to_cell(13,2)
+#  ws.write(i, 2, xlwt.Formula("$A$%d+$B$%d" % (i+1, i+1)))

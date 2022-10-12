@@ -12,6 +12,8 @@ import shutil
 import traceback
 from datetime import datetime
 from zipfile import ZipFile
+from xlwt import Font, XFStyle
+
 
 def fatal_error(func):
     def wrapper(*args, **kwargs):
@@ -21,6 +23,7 @@ def fatal_error(func):
             logger.warning(traceback.format_exc())
             exit()
     return wrapper
+
 
 def warning_error(func):
     def wrapper(*args):
@@ -33,11 +36,13 @@ def warning_error(func):
             return None
     return wrapper
 
+
 def rchop(s, sub):
     return s[:-len(sub)] if s.endswith(sub) else s
 
+
 @warning_error
-def import_1c(filename:str)->str:
+def import_1c(filename: str) -> str:
     name_tmp = f'tmp_{datetime.now().strftime("%Y-%m-%d_%H-%M-%S")}'
     tmp_folder = 'tmp'
     os.makedirs(tmp_folder, exist_ok=True)
@@ -53,11 +58,14 @@ def import_1c(filename:str)->str:
 
     # Запаковываем excel обратно в zip и переименовываем в исходный файл
     # shutil.make_archive(pathlib.Path(os.path.dirname(filename),f'{name_tmp}'), 'zip', os.path.dirname(filename))
-    shutil.make_archive(pathlib.Path(os.path.dirname(filename), name_tmp), 'zip', tmp_folder)
+    shutil.make_archive(pathlib.Path(os.path.dirname(
+        filename), name_tmp), 'zip', tmp_folder)
     shutil.rmtree(tmp_folder)
     os.remove(filename)
-    os.rename(pathlib.Path(os.path.dirname(filename),f'{name_tmp}.zip'), filename)
+    os.rename(pathlib.Path(os.path.dirname(
+        filename), f'{name_tmp}.zip'), filename)
     return filename
+
 
 class DataFile(abc.ABC):
 
@@ -72,6 +80,7 @@ class DataFile(abc.ABC):
 
     def __next__(self):
         return ""
+
 
 class CsvFile(DataFile):
     def __init__(self, fname, first_line, columns, page_index=None):
@@ -99,6 +108,7 @@ class CsvFile(DataFile):
     def __del__(self):
         self._freader.close()
 
+
 class PandasFile(DataFile):
     def __init__(self, fname, sheet_name, first_line: int = 0, columns: int = 50, page_index=0):
         super(PandasFile, self).__init__(
@@ -109,11 +119,11 @@ class PandasFile(DataFile):
             import_1c(fname)
             self._sheet = pd.read_excel(fname, sheet_name=None)
         self._rows = (self._sheet.loc[index] for index in range(first_line,
-                                                                 self._sheet.shape[0]))
+                                                                self._sheet.shape[0]))
 
     @staticmethod
     def get_cell_text(cell):
-        if isinstance(cell,float):
+        if isinstance(cell, float):
             return str(cell) if not math.isnan(cell) else ''
         return str(cell)
 
@@ -132,11 +142,13 @@ class PandasFile(DataFile):
     def __del__(self):
         pass
 
+
 class XlsFile(DataFile):
     def __init__(self, fname, sheet_name, first_line: int = 0, columns: int = 50, page_index=0):
         super(XlsFile, self).__init__(
             fname, sheet_name, first_line, range(columns))
-        self._book = xlrd.open_workbook(fname, logfile=open(os.devnull, 'w'), ignore_workbook_corruption=True)
+        self._book = xlrd.open_workbook(fname, logfile=open(
+            os.devnull, 'w'), ignore_workbook_corruption=True)
         if self._sheet_name:
             sheet = self._book.sheet_by_name(self._sheet_name)
         else:
@@ -227,6 +239,23 @@ class XlsWrite:
             logger.error(f'{ex}')
         return None
 
+    def addSheet(self, title: str = ''):
+        title = f'Лист {len(self.book._Workbook__worksheets)+1}' if not title else title
+        self.sheet = self.book.add_sheet(title)
+        return self.sheet
+
+    def write(self, row: int, col: int, value, style_string:str=''):
+        if isinstance(value, str):
+            neededWidth = int((1 + min([len(str(value)), 128])) * 256)
+        else:
+            neededWidth = 12 * 256
+        if style_string:
+            style = xlwt.easyxf(style_string)
+            self.sheet.write(row, col, value, style=style)
+        else:
+            self.sheet.write(row, col, value)
+        if self.sheet.col(col).width < neededWidth:
+            self.sheet.col(col).width = neededWidth
 
 def get_file_reader(fname):
     """Get class for reading file as iterable"""
@@ -242,4 +271,3 @@ def get_file_reader(fname):
 
 def get_file_write(fname):
     return XlsWrite
-
