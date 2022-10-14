@@ -126,14 +126,15 @@ class ExcelExporter:
         for key, value in kategoria.items():
             self.workbook.write(row, col, key)
             self.workbook.write(
-                row, col+2, Formula(f"SUM({Utils.rowcol_pair_to_cellrange(nrow_start,col+5,nrow_start+value['count4']-1,col+6)})"), pattern_style_3)
-            self.workbook.write(
                 row, col+3, value['count4'], pattern_style_5)
-            self.workbook.write(
-                row, col+4, Formula(f"SUM({Utils.rowcol_pair_to_cellrange(nrow_start,col+4,nrow_start+value['count4']-1,col+4)})"), pattern_style_5)
-            s = f"SUMIF({Utils.rowcol_pair_to_cellrange(nrow_start,col+7,nrow_start+value['count4']-1,col+7)};\">90\";{Utils.rowcol_pair_to_cellrange(nrow_start,col+5,nrow_start+value['count4']-1,col+5)})"
-            s += f"+SUMIF({Utils.rowcol_pair_to_cellrange(nrow_start,col+7,nrow_start+value['count4']-1,col+7)};\">90\";{Utils.rowcol_pair_to_cellrange(nrow_start,col+6,nrow_start+value['count4']-1,col+6)})"
-            self.workbook.write(row, col+5, Formula(s), pattern_style_3)
+            if value['count4'] > 0:
+                self.workbook.write(
+                    row, col+2, Formula(f"SUM({Utils.rowcol_pair_to_cellrange(nrow_start,col+5,nrow_start+value['count4']-1,col+6)})"), pattern_style_3)
+                self.workbook.write(
+                    row, col+4, Formula(f"SUM({Utils.rowcol_pair_to_cellrange(nrow_start,col+4,nrow_start+value['count4']-1,col+4)})"), pattern_style_5)
+                s = f"SUMIF({Utils.rowcol_pair_to_cellrange(nrow_start,col+7,nrow_start+value['count4']-1,col+7)};\">90\";{Utils.rowcol_pair_to_cellrange(nrow_start,col+5,nrow_start+value['count4']-1,col+5)})"
+                s += f"+SUMIF({Utils.rowcol_pair_to_cellrange(nrow_start,col+7,nrow_start+value['count4']-1,col+7)};\">90\";{Utils.rowcol_pair_to_cellrange(nrow_start,col+6,nrow_start+value['count4']-1,col+6)})"
+                self.workbook.write(row, col+5, Formula(s), pattern_style_3)
             nrow_start += value['count4'] + 1
             row += 1
 

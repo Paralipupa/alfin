@@ -5,39 +5,17 @@ logger = logging.getLogger('report')
 
 ENCONING = 'utf-8'
 
-FLD58_NAME = '0'
-FLD58_BEG_DEBET = '2'
-FLD58_TURN_DEBET = '4'
-FLD58_TURN_CREDIT = '5'
-FLD58_END_DEBET = '6'
-FLD58_END_CREDIT = '7'
-
-FLDPDN_NUMBER = '0'
-FLDPDN_DATE = '1'
-FLDPDN_NAME = '2'
-FLDPDN_SUMMA = '4'
-FLDPDN_PDN = '5'
-
-FLDIRK_NUMBER = '0'
-FLDIRK_PROC = '1'
-FLDIRK_TARIF = '2'
-FLDIRK_DATE = '3'
-FLDIRK_NAME = '5'
-FLDIRK_PASSPORT = '7'
-FLDIRK_SUMMA = '13'
-FLDIRK_PERIOD_COMMON = '14'
-FLDIRK_PERIOD = '15'
-FLDIRK_SUMMA_DEB_COMMON = '16'
-FLDIRK_SUMMA_DEB_MAIN = '17'
-FLDIRK_SUMMA_DEB_PROC = '18'
-FLDIRK_SUMMA_DEB_FINE = '19'
-FLDIRK_SUMMA_DEB_PENAL = '20'
-
 PATT_NAME = '(?:на|ич)\s*$'
 PATT_FAMALY = '^\w+'
 PATT_CURRENCY = '^-?\d{1,8}(?:[\.,]\d+)?$'
+PATT_PROC = '^\d{1,3}(?:[\.,]\d{1,3})$'
+PATT_PDN = '^\d{1,3}(?:[\.,]\d+)$'
+PATT_TARIF = '(?:постоянный|старт)$'
+PATT_PERIOD = '^\d{2,4}$'
+PATT_COUNT_DAYS = '^\d{2,4}$'
 PATT_DOG_NAME ='^договор займа'
 PATT_DOG_DATE='^[0-9]{1,2}\.[0-9]{2}\.20[1-9]{2}'
 PATT_DOG_NUMBER='^20[0-9]{2}[0-9]{2}[0-9]{2}[0-9]{4}$'
+
 
 
