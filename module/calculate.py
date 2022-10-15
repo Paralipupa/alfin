@@ -1,22 +1,25 @@
 from module.report import Report
 
 class Calc:
-    def __init__(self, file_58: str = '', file_76: str = '', file_pdn: str = '', file_irkom: str = ''):
-        self.report58 = Report(file_58)
-        self.report76 = Report(file_76, 'proc')
-        self.reportPDN = Report(file_pdn)
-        self.reportIRKOM = Report(file_irkom)
+    def __init__(self, file_name: str, *args):
+        self.main = Report(file_name)
+        self.items=[]
+        for name in args:
+            self.items.append(Report(name))
 
     def read(self):
-        self.report58.get_parser()
-        self.report76.get_parser()
-        self.reportPDN.get_parser()
-        self.reportIRKOM.get_parser()
-        self.report58.union_all(self.report76, self.reportPDN, self.reportIRKOM)        
-        self.report58.set_weighted_average()
-        self.report58.set_kategoria()
+        self.main.get_parser()
+        for rep in self.items:
+            rep.get_parser()
+        self.main.union_all(*self.items)
+    
+    def report_weighted_average(self):
+        self.main.set_weighted_average()
+    
+    def report_rezerves(self):
+        self.main.set_reserves()
 
     def write(self):
-        return self.report58.write_to_excel()
+        return self.main.write_to_excel()
 
 

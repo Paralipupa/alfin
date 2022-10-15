@@ -185,8 +185,9 @@ class XlsxFile(DataFile):
             fname, sheet_name, first_line, range(columns))
 
         file_name = import_1c(fname)
-        self._wb = load_workbook(filename=file_name, read_only=True)
-
+        self._wb = load_workbook(filename=file_name, read_only=True, data_only=True)
+        if 'TDSheet' in self._wb.sheetnames:
+            self._sheet_name = 'TDSheet'
         if self._sheet_name:
             self._ws = self._wb.get_sheet_by_name(self._sheet_name)
         else:

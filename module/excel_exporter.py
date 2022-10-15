@@ -1,7 +1,5 @@
 from module.file_readers import get_file_write
-import csv
-import json
-from xlwt import Font, XFStyle, Utils, Formula
+from xlwt import Utils, Formula
 
 
 class ExcelExporter:
@@ -19,7 +17,7 @@ class ExcelExporter:
     def write(self, report) -> str:
         self._set_data_xls()
         self.workbook.addSheet("Общий")
-        self.write_docs(report.docs)
+        self.write_docs(report.documents)
         self.workbook.addSheet("Ср.взвешенная")
         self.write_result_weighted_average(report.result)
         self.workbook.addSheet("Резервы")
@@ -100,10 +98,9 @@ class ExcelExporter:
                         row, col+2, float(val[0])*float(val[1]))
                     self.workbook.write(row, col+3, float(val[0])
                                         * (value['koef'])*float(val[1]))
-            else:
-                row += (index-2)
+            elif index > 2:
+                row += index-2
                 self.workbook.write(row, 2, key)
-                style1 = XFStyle()
                 if key == 'summa_wa':
                     style_string = 'font: colour red, bold True;'
                     self.workbook.write(row, 3, value, style_string)
@@ -122,7 +119,7 @@ class ExcelExporter:
         col = 0
         nrow_start = len(kategoria.items())+3
         pattern_style_5 = 'pattern: pattern solid, fore_colour green; font: color yellow'
-        pattern_style_3 = 'pattern: pattern solid, fore_colour brown; font: color white'
+        pattern_style_3 = 'pattern: pattern solid, fore_colour orange; font: color white'
         for key, value in kategoria.items():
             self.workbook.write(row, col, key)
             self.workbook.write(
