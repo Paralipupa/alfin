@@ -49,9 +49,9 @@ class Report:
                         float(rec[self.fields.get('FLD_PROC')]), 2)
                 if self.fields.get('FLD_TARIF') and not self.dogs.get('tarif') and re.search(PATT_TARIF, rec[self.fields.get('FLD_TARIF')], re.IGNORECASE):
                     self.dogs['tarif'] = rec[self.fields.get('FLD_TARIF')]
-                if self.fields.get('FLD_TURN_DEBET_proc') and not self.dogs.get('turn_debet_proc') and re.search(PATT_CURRENCY, rec[self.fields.get('FLD_TURN_DEBET_proc')], re.IGNORECASE):
-                    self.dogs['turn_debet_proc'] = float(rec[self.fields.get(
-                        'FLD_TURN_DEBET_proc')])
+                if self.fields.get('FLD_END_DEBET_proc') and not self.dogs.get('end_debet_proc') and re.search(PATT_CURRENCY, rec[self.fields.get('FLD_END_DEBET_proc')], re.IGNORECASE):
+                    self.dogs['end_debet_proc'] = float(rec[self.fields.get(
+                        'FLD_END_DEBET_proc')])
                 if self.fields.get('FLD_PERIOD') and not self.dogs.get('period') and re.search(PATT_PERIOD, rec[self.fields.get('FLD_PERIOD')], re.IGNORECASE):
                     self.dogs['period'] = rec[self.fields.get('FLD_PERIOD')]
                 if self.fields.get('FLD_PERIOD_COMMON') and not self.dogs.get('period_common') and re.search(PATT_PERIOD, rec[self.fields.get('FLD_PERIOD_COMMON')], re.IGNORECASE):
@@ -114,41 +114,48 @@ class Report:
     def set_columns(self):
         index = 0
         for rec in self.parser.records:
-            for col_name, val in rec.items():
-                if re.search('^Счет$', val) or re.search('^ФИО', val) or re.search('^Контрагент$', val):
-                    self.fields['FLD_NAME'] = col_name
-                    for col, val in rec.items():
-                        if re.search('^Сальдо на начало периода$', val):
-                            self.fields[f'FLD_BEG_DEBET_{self.suf}'] = col
-                        elif re.search('^Обороты за период$', val):
-                            self.fields[f'FLD_TURN_DEBET_{self.suf}'] = col
-                            self.fields[f'FLD_TURN_CREDIT_{self.suf}'] = str(
-                                int(col)+1)
-                            self.fields['FLD_SUMMA'] = col
-                        elif re.search('^Сальдо на конец периода$', val):
-                            self.fields[f'FLD_END_DEBET_{self.suf}'] = col
-                        elif re.search('^Первоначальный срок займа$', val) or re.search('^Срок займа$', val):
-                            self.fields['FLD_PERIOD'] = col
+            for col, val in rec.items():
+                    if (re.search('^Счет$', val) or re.search('^ФИО', val) or re.search('^Контрагент$', val)) and not self.fields.get('FLD_NAME'):
+                        self.fields['FLD_NAME'] = col
+                    if re.search('^Сальдо на начало периода$', val) and not self.fields.get(f'FLD_BEG_DEBET_{self.suf}'):
+                        self.fields[f'FLD_BEG_DEBET_{self.suf}'] = col
+                    elif re.search('^Обороты за период$', val) and not self.fields.get(f'FLD_TURN_DEBET_{self.suf}'):
+                        self.fields[f'FLD_TURN_DEBET_{self.suf}'] = col
+                        self.fields[f'FLD_TURN_CREDIT_{self.suf}'] = str(
+                            int(col)+1)
+                        self.fields['FLD_SUMMA'] = col
+                    elif re.search('^Сальдо на конец периода$', val) and not self.fields.get(f'FLD_END_DEBET_{self.suf}'):
+                        self.fields[f'FLD_END_DEBET_{self.suf}'] = col
+                    elif re.search('^Первоначальный срок займа$', val) and not self.fields.get('FLD_PERIOD'):
+                        self.fields['FLD_PERIOD'] = col
+                    elif re.search('^Общая сумма долга по процентам$', val) and not self.fields.get('FLD_PERIOD'):
+                        self.fields['FLD_PERIOD'] = col
+                        if not self.fields.get('FLD_TARIF'):
                             self.fields['FLD_TARIF'] = col
-                        elif re.search('^Общий срок займа$', val):
-                            self.fields['FLD_PERIOD_COMMON'] = col
-                        elif (re.search('^Процентная ставка', val) or re.search('^Ставка$', val)):
-                            self.fields['FLD_PROC'] = col
-                        elif (re.search('^Наименование продукта$', val) or re.search('^Тариф$', val)):
-                            self.fields['FLD_TARIF'] = col
-                        elif re.search('^Дней просрочки$', val):
-                            self.fields['FLD_COUNT_DAYS'] = col
-                        elif (re.search('^Показатель долговой', val) or re.search('^ПДН$', val)):
-                            self.fields['FLD_PDN'] = col
-                        if re.search('^Cумма процентов$', val):
-                            self.fields['FLD_TURN_DEBET_proc'] = col
-                        if re.search('^Счет$', val) or (re.search('^№ заявки$', val) or re.search('^Договор$', val) or re.search('^№ договора$', val)) and not self.fields.get('FLD_NUMBER'):
-                            self.fields['FLD_NUMBER'] = col
-                        if (re.search('^Счет$', val) or re.search('^Дата выдачи', val)) and not self.fields.get('FLD_DATE'):
-                            self.fields['FLD_DATE'] = col
-                        if (re.search('^Сумма займа$', val) or re.search('^Выданная сумма займа$', val)) and not self.fields.get('FLD_SUMMA'):
-                            self.fields['FLD_SUMMA'] = col
-                    return
+                        if not self.fields.get('FLD_PROC'):
+                            self.fields['FLD_PROC'] = str(int(col)+1)
+                    elif re.search('^Общий срок займа$', val) and not self.fields.get('FLD_PERIOD_COMMON'):
+                        self.fields['FLD_PERIOD_COMMON'] = col
+                    elif re.search('^кол-во дней для расчета проц\.$', val) and not self.fields.get('FLD_PERIOD_COMMON'):
+                        self.fields['FLD_PERIOD_COMMON'] = col
+                    elif re.search('^Процентная ставка', val) and not self.fields.get('FLD_PROC'):
+                        self.fields['FLD_PROC'] = col
+                    elif (re.search('^Наименование продукта$', val) or re.search('^Тариф$', val)):
+                        self.fields['FLD_TARIF'] = col
+                    elif re.search('^кол-во дней просрочки до отчетного периода$', val) and not self.fields.get('FLD_COUNT_DAYS'):
+                        self.fields['FLD_COUNT_DAYS'] = col
+                    elif (re.search('^Показатель долговой', val) or re.search('^ПДН$', val)) and not self.fields.get('FLD_PDN'):
+                        self.fields['FLD_PDN'] = col
+                    if re.search('^сумма начисл\. процентов$', val):
+                        self.fields['FLD_END_DEBET_proc'] = col
+                    if re.search('^Счет$', val) or (re.search('^№ заявки$', val) or re.search('^Договор$', val) or re.search('^№ договора$', val)) and not self.fields.get('FLD_NUMBER'):
+                        self.fields['FLD_NUMBER'] = col
+                    if (re.search('^Счет$', val) or re.search('^Дата выдачи', val)) and not self.fields.get('FLD_DATE'):
+                        self.fields['FLD_DATE'] = col
+                    if (re.search('^Сумма займа$', val) or re.search('^Выданная сумма займа$', val)) and not self.fields.get('FLD_SUMMA'):
+                        self.fields['FLD_SUMMA'] = col
+            if self.fields.get('FLD_NAME'):
+                return
             index += 1
             if index > 20:
                 return
@@ -201,7 +208,7 @@ class Report:
                             value[ikey] = idog[ikey]
                 else:
                     value['found'] = False
-                    if value['turn_debet_main'] and item.suf != 'proc':
+                    if value.get('turn_debet_main') and item.suf != 'proc':
                         self.warnings.append(f'не найден {key} в {item.name}')
         self.write('docs')
 
@@ -249,13 +256,13 @@ class Report:
 
 # категории потребительских займов
     def set_reserves(self):
-        data = {'1': {'title': '', 'count4': 0, 'count6': 0, 'summa5': 0, 'summa3': 0, 'summa6': 0, 'items': []},
-                '2': {'title': '', 'count4': 0, 'count6': 0, 'summa5': 0, 'summa3': 0, 'summa6': 0, 'items': []},
-                '3': {'title': '', 'count4': 0, 'count6': 0, 'summa5': 0, 'summa3': 0, 'summa6': 0, 'items': []},
-                '4': {'title': '', 'count4': 0, 'count6': 0, 'summa5': 0, 'summa3': 0, 'summa6': 0, 'items': []},
-                '5': {'title': '', 'count4': 0, 'count6': 0, 'summa5': 0, 'summa3': 0, 'summa6': 0, 'items': []},
-                '6': {'title': '', 'count4': 0, 'count6': 0, 'summa5': 0, 'summa3': 0, 'summa6': 0, 'items': []},
-                '7': {'title': '', 'count4': 0, 'count6': 0, 'summa5': 0, 'summa3': 0, 'summa6': 0, 'items': []}
+        data = {'1': {'title': '30', 'count4': 0, 'count6': 0, 'summa5': 0, 'summa3': 0, 'summa6': 0, 'items': []},
+                '2': {'title': '40', 'count4': 0, 'count6': 0, 'summa5': 0, 'summa3': 0, 'summa6': 0, 'items': []},
+                '3': {'title': '50', 'count4': 0, 'count6': 0, 'summa5': 0, 'summa3': 0, 'summa6': 0, 'items': []},
+                '4': {'title': '60', 'count4': 0, 'count6': 0, 'summa5': 0, 'summa3': 0, 'summa6': 0, 'items': []},
+                '5': {'title': '70', 'count4': 0, 'count6': 0, 'summa5': 0, 'summa3': 0, 'summa6': 0, 'items': []},
+                '6': {'title': '80', 'count4': 0, 'count6': 0, 'summa5': 0, 'summa3': 0, 'summa6': 0, 'items': []},
+                '7': {'title': '99', 'count4': 0, 'count6': 0, 'summa5': 0, 'summa3': 0, 'summa6': 0, 'items': []}
                 }
         for doc in self.documents:
             pdn = 0.3

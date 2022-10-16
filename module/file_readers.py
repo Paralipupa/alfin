@@ -53,6 +53,9 @@ def import_1c(filename: str) -> str:
 
     # Переименовываем файл с неверным названием
     wrong_file_path = os.path.join(tmp_folder, 'xl', 'SharedStrings.xml')
+    if not os.path.isfile(wrong_file_path):
+        shutil.rmtree(tmp_folder)
+        return filename
     correct_file_path = os.path.join(tmp_folder, 'xl', 'sharedStrings.xml')
     os.rename(wrong_file_path, correct_file_path)
 
@@ -245,13 +248,13 @@ class XlsWrite:
         self.sheet = self.book.add_sheet(title)
         return self.sheet
 
-    def write(self, row: int, col: int, value, style_string:str=''):
+    def write(self, row: int, col: int, value, style_string:str='', num_format_str:str=''):
         if isinstance(value, str):
             neededWidth = int((1 + min([len(str(value)), 128])) * 256)
         else:
             neededWidth = 12 * 256
         if style_string:
-            style = xlwt.easyxf(style_string)
+            style = xlwt.easyxf(style_string, num_format_str=num_format_str)
             self.sheet.write(row, col, value, style=style)
         else:
             self.sheet.write(row, col, value)

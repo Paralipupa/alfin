@@ -1,10 +1,10 @@
 from module.report import Report
 
 class Calc:
-    def __init__(self, file_name: str, *args):
-        self.main = Report(file_name)
+    def __init__(self, files: list):
+        self.main = Report(files[0])
         self.items=[]
-        for name in args:
+        for name in files[1:]:
             self.items.append(Report(name))
 
     def read(self):

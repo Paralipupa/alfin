@@ -118,24 +118,35 @@ class ExcelExporter:
         row += 1
         col = 0
         nrow_start = len(kategoria.items())+3
-        pattern_style_5 = 'pattern: pattern solid, fore_colour green; font: color yellow'
+        pattern_style_5 = 'pattern: pattern solid, fore_colour green; font: color yellow;'
+        num_format = '#,##0.00'
         pattern_style_3 = 'pattern: pattern solid, fore_colour orange; font: color white'
         for key, value in kategoria.items():
             self.workbook.write(row, col, key)
+            self.workbook.write(row, col+1, value['title'])
             self.workbook.write(
                 row, col+3, value['count4'], pattern_style_5)
             if value['count4'] > 0:
                 self.workbook.write(
-                    row, col+2, Formula(f"SUM({Utils.rowcol_pair_to_cellrange(nrow_start,col+5,nrow_start+value['count4']-1,col+6)})"), pattern_style_3)
+                    row, col+2, Formula(f"SUM({Utils.rowcol_pair_to_cellrange(nrow_start,col+5,nrow_start+value['count4']-1,col+6)})"), pattern_style_3, num_format)
                 self.workbook.write(
-                    row, col+4, Formula(f"SUM({Utils.rowcol_pair_to_cellrange(nrow_start,col+4,nrow_start+value['count4']-1,col+4)})"), pattern_style_5)
+                    row, col+4, Formula(f"SUM({Utils.rowcol_pair_to_cellrange(nrow_start,col+4,nrow_start+value['count4']-1,col+4)})"), pattern_style_5, num_format)
                 s = f"SUMIF({Utils.rowcol_pair_to_cellrange(nrow_start,col+7,nrow_start+value['count4']-1,col+7)};\">90\";{Utils.rowcol_pair_to_cellrange(nrow_start,col+5,nrow_start+value['count4']-1,col+5)})"
                 s += f"+SUMIF({Utils.rowcol_pair_to_cellrange(nrow_start,col+7,nrow_start+value['count4']-1,col+7)};\">90\";{Utils.rowcol_pair_to_cellrange(nrow_start,col+6,nrow_start+value['count4']-1,col+6)})"
-                self.workbook.write(row, col+5, Formula(s), pattern_style_3)
+                self.workbook.write(row, col+5, Formula(s), pattern_style_3, num_format)
             nrow_start += value['count4'] + 1
             row += 1
+        self.workbook.write(row, col+1, 'Всего', 'align: horiz left')
+        self.workbook.write(
+            row, col+2, Formula(f"SUM({Utils.rowcol_pair_to_cellrange(row-7,col+2,row-1,col+2)})"), pattern_style_3, num_format)
+        self.workbook.write(
+            row, col+3, Formula(f"SUM({Utils.rowcol_pair_to_cellrange(row-7,col+3,row-1,col+3)})"), pattern_style_5, num_format)
+        self.workbook.write(
+            row, col+4, Formula(f"SUM({Utils.rowcol_pair_to_cellrange(row-7,col+4,row-1,col+4)})"), pattern_style_5, num_format)
+        self.workbook.write(
+            row, col+5, Formula(f"SUM({Utils.rowcol_pair_to_cellrange(row-7,col+4,row-1,col+5)})"), pattern_style_3, num_format)
 
-        row += 1
+        row += 2
         self.workbook.write(row, col+4, '(5)основная')
         self.workbook.write(row, col+5, '(3,6)основная')
         self.workbook.write(row, col+6, '(3,6)процент')
