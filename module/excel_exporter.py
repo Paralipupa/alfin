@@ -191,7 +191,7 @@ class ExcelExporter:
                             row, col+12, Formula(f"{Utils.rowcol_to_cell(row,col+6)}*{Utils.rowcol_to_cell(row,col+10)}"))
                         self.workbook.write(
                             row, col+13, Formula(f"{Utils.rowcol_to_cell(row,col+11)}+{Utils.rowcol_to_cell(row,col+12)}"))
-                    elif float(val['parent']['pdn']) > 0.5:
+                    elif float(val['parent']['pdn']) > 0.5 and key != '0':
                         self.workbook.write(
                             row, col+8,  Formula(f"{Utils.rowcol_to_cell(row,col+5)}*0.1"))
                         self.workbook.write(
