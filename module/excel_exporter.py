@@ -164,40 +164,42 @@ class ExcelExporter:
         self.workbook.write(row, col+6, '(3,6)процент')
         self.workbook.write(row, col+7, 'Дней просрочки')
         for key, value in kategoria.items():
-            if key != '0':
+            row += 1
+            self.workbook.write(row, col, key)
+            for val in value['items']:
+                self.workbook.write(row, col+1, val['name'])
+                self.workbook.write(
+                    row, col+2, Formula(val['parent']['number_address']) if val['parent'].get('number_address') else val['parent'].get('number'))
+                self.workbook.write(
+                    row, col+3, Formula(val['parent']['pdn_address']) if val['parent'].get('pdn_address') else val['parent'].get('pdn'))
+                self.workbook.write(
+                    row, col+4, Formula(val['parent']['turn_debet_main_address']) if val['parent'].get('turn_debet_main_address') else val['parent'].get('turn_debet_main'))
+                self.workbook.write(
+                    row, col+5, Formula(val['parent']['end_debet_main_address']) if val['parent'].get('end_debet_main_address') else val['parent'].get('end_debet_main'))
+                self.workbook.write(
+                    row, col+6, Formula(val['parent']['end_debet_proc_address']) if val['parent'].get('end_debet_proc_address') else val['parent'].get('end_debet_proc'))
+                self.workbook.write(
+                    row, col+7, Formula(val['parent']['count_days_address']) if val['parent'].get('count_days_address') else val['parent'].get('count_days'))
+                if float(val['parent']['end_debet_main']) > 0 or float(val['parent']['end_debet_proc']) > 0:
+                    if val['parent']['count_days'] > 0:
+                        percent = self.__get_rezerv_percent(
+                            int(val['parent']['count_days']))
+                        self.workbook.write(row, col+10, percent)
+                        self.workbook.write(
+                            row, col+11, Formula(f"{Utils.rowcol_to_cell(row,col+5)}*{Utils.rowcol_to_cell(row,col+10)}"))
+                        self.workbook.write(
+                            row, col+12, Formula(f"{Utils.rowcol_to_cell(row,col+6)}*{Utils.rowcol_to_cell(row,col+10)}"))
+                        self.workbook.write(
+                            row, col+13, Formula(f"{Utils.rowcol_to_cell(row,col+11)}+{Utils.rowcol_to_cell(row,col+12)}"))
+                    elif float(val['parent']['pdn']) > 0.5:
+                        self.workbook.write(
+                            row, col+8,  Formula(f"{Utils.rowcol_to_cell(row,col+5)}*0.1"))
+                        self.workbook.write(
+                            row, col+9, Formula(f"{Utils.rowcol_to_cell(row,col+6)}*0.1"))
                 row += 1
-                self.workbook.write(row, col, key)
-                for val in value['items']:
-                    self.workbook.write(row, col+1, val['name'])
-                    self.workbook.write(
-                        row, col+2, Formula(val['parent']['number_address']) if val['parent'].get('number_address') else val['parent'].get('number'))
-                    self.workbook.write(
-                        row, col+3, Formula(val['parent']['pdn_address']) if val['parent'].get('pdn_address') else val['parent'].get('pdn'))
-                    self.workbook.write(
-                        row, col+4, Formula(val['parent']['turn_debet_main_address']) if val['parent'].get('turn_debet_main_address') else val['parent'].get('turn_debet_main'))
-                    self.workbook.write(
-                        row, col+5, Formula(val['parent']['end_debet_main_address']) if val['parent'].get('end_debet_main_address') else val['parent'].get('end_debet_main'))
-                    self.workbook.write(
-                        row, col+6, Formula(val['parent']['end_debet_proc_address']) if val['parent'].get('end_debet_proc_address') else val['parent'].get('end_debet_proc'))
-                    self.workbook.write(
-                        row, col+7, Formula(val['parent']['count_days_address']) if val['parent'].get('count_days_address') else val['parent'].get('count_days'))
-                    if float(val['parent']['end_debet_main']) > 0 or float(val['parent']['end_debet_proc']) > 0:
-                        if val['parent']['count_days'] > 0:
-                            percent = self.__get_rezerv_percent(
-                                int(val['parent']['count_days']))
-                            self.workbook.write(row, col+10, percent)
-                            self.workbook.write(
-                                row, col+11, Formula(f"{Utils.rowcol_to_cell(row,col+5)}*{Utils.rowcol_to_cell(row,col+10)}"))
-                            self.workbook.write(
-                                row, col+12, Formula(f"{Utils.rowcol_to_cell(row,col+6)}*{Utils.rowcol_to_cell(row,col+10)}"))
-                            self.workbook.write(
-                                row, col+13, Formula(f"{Utils.rowcol_to_cell(row,col+11)}+{Utils.rowcol_to_cell(row,col+12)}"))
-                        elif float(val['parent']['pdn']) > 0.5:
-                            self.workbook.write(
-                                row, col+8,  Formula(f"{Utils.rowcol_to_cell(row,col+5)}*0.1"))
-                            self.workbook.write(
-                                row, col+9, Formula(f"{Utils.rowcol_to_cell(row,col+6)}*0.1"))
-                    row += 1
+
+        if kategoria.get('0'):
+            pass
 
     def __get_rezerv_percent(self, count: int) -> int:
         if count <= 7:
