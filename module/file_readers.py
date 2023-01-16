@@ -88,7 +88,7 @@ class DataFile(abc.ABC):
 class CsvFile(DataFile):
     def __init__(self, fname, first_line, columns, page_index=None):
         super(CsvFile, self).__init__(fname, "", first_line, range(columns))
-        self._freader = open(fname, 'r', encoding='cp1251')
+        self._freader = open(fname, 'r', encoding='windows-1251')
         self._first_line = first_line
         self._reader = csv.reader(self._freader, delimiter=';', quotechar='|')
         self._line_num = 0

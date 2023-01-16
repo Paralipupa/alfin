@@ -46,12 +46,12 @@ class ExcelImporter:
 
     def write(self, file_output: str = 'output') -> bool:
         os.makedirs('output', exist_ok=True)
-        with open(pathlib.Path('output',f'{file_output}.json'), mode='w', encoding='utf-8') as file:
+        with open(pathlib.Path('output',f'{file_output}.json'), mode='w', encoding='windows-1251') as file:
             jstr = json.dumps(self.records, indent=4,
                               ensure_ascii=False)
             file.write(jstr)
 
-        with open(pathlib.Path('output',f'{file_output}.csv'), mode='w', encoding='utf-8') as file:
+        with open(pathlib.Path('output',f'{file_output}.csv'), mode='w', encoding='windows-1251') as file:
             names = [x for x in self.records[0]]
             file_writer = csv.DictWriter(file, delimiter=";",
                                          lineterminator="\r", fieldnames=names)

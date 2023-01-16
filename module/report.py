@@ -88,7 +88,7 @@ class Report:
                         self.documents[-1]['dogovor'][-1][f'end_debet_{self.suf}'] = rec[self.fields.get(
                             f'FLD_END_DEBET_{self.suf}')]
                     if self.dogs.get('pdn'):
-                        self.documents[-1]['dogovor'][-1]['pdn'] = self.dogs['pdn']
+                        self.documents[-1]['dogovor'][-1]['pdn'] = str(float(self.dogs['pdn']) / 100) if self.dogs['pdn'].isdigit() else '0.3'
                     if self.dogs.get('proc'):
                         self.documents[-1]['dogovor'][-1]['proc'] = self.dogs['proc']
                     if self.dogs.get('tarif'):
@@ -144,7 +144,7 @@ class Report:
                         self.fields['FLD_TARIF'] = col
                     elif re.search('^кол-во дней просрочки до отчетного периода$', val) and not self.fields.get('FLD_COUNT_DAYS'):
                         self.fields['FLD_COUNT_DAYS'] = col
-                    elif (re.search('^Показатель долговой', val) or re.search('^ПДН$', val)) and not self.fields.get('FLD_PDN'):
+                    elif (re.search('^Показатель долговой', val) or re.search('ПДН', val)) and not self.fields.get('FLD_PDN'):
                         self.fields['FLD_PDN'] = col
                     if re.search('^сумма начисл\. процентов$', val):
                         self.fields['FLD_END_DEBET_proc'] = col
@@ -152,7 +152,7 @@ class Report:
                         self.fields['FLD_NUMBER'] = col
                     if (re.search('^Счет$', val) or re.search('^Дата выдачи', val)) and not self.fields.get('FLD_DATE'):
                         self.fields['FLD_DATE'] = col
-                    if (re.search('^Сумма займа$', val) or re.search('^Выданная сумма займа$', val)) and not self.fields.get('FLD_SUMMA'):
+                    if (re.search('Сумма займа', val, re.IGNORECASE) or re.search('^Выданная сумма займа$', val)) and not self.fields.get('FLD_SUMMA'):
                         self.fields['FLD_SUMMA'] = col
             if self.fields.get('FLD_NAME'):
                 return
@@ -173,11 +173,11 @@ class Report:
         else:
             docs = self.documents
         os.makedirs('output', exist_ok=True)
-        with open(pathlib.Path('output', f'{filename}.json'), mode='w', encoding='utf-8') as file:
+        with open(pathlib.Path('output', f'{filename}.json'), mode='w', encoding='windows-1251') as file:
             jstr = json.dumps(docs, indent=4,
                               ensure_ascii=False)
             file.write(jstr)
-        with open(pathlib.Path('output', f'{filename}.json'), mode='a', encoding='utf-8') as file:
+        with open(pathlib.Path('output', f'{filename}.json'), mode='a', encoding='windows-1251') as file:
             jstr = json.dumps(self.checksum, indent=4,
                               ensure_ascii=False)
             file.write(jstr)
@@ -262,7 +262,8 @@ class Report:
                 '4': {'title': '60', 'count4': 0, 'count6': 0, 'summa5': 0, 'summa3': 0, 'summa6': 0, 'items': []},
                 '5': {'title': '70', 'count4': 0, 'count6': 0, 'summa5': 0, 'summa3': 0, 'summa6': 0, 'items': []},
                 '6': {'title': '80', 'count4': 0, 'count6': 0, 'summa5': 0, 'summa3': 0, 'summa6': 0, 'items': []},
-                '7': {'title': '99', 'count4': 0, 'count6': 0, 'summa5': 0, 'summa3': 0, 'summa6': 0, 'items': []}
+                '7': {'title': '99', 'count4': 0, 'count6': 0, 'summa5': 0, 'summa3': 0, 'summa6': 0, 'items': []},
+                '0': {'title': '', 'count4': 0, 'count6': 0, 'summa5': 0, 'summa3': 0, 'summa6': 0, 'items': []},
                 }
         for doc in self.documents:
             pdn = 0.3
@@ -301,15 +302,18 @@ class Report:
                             t = '6'
                         else:
                             t = '7'
-                        data[t]['count4'] += 1
-                        data[t]['summa5'] += item['turn_debet_main']
-                        data[t]['summa3'] += (item['end_debet_main'] +
-                                              item['end_debet_proc'])
-                        if item['count_days'] > 90 and (item['end_debet_main'] + item['end_debet_proc']) > 0:
-                            data[t]['count6'] += 1
-                            data[t]['summa6'] += (item['end_debet_main'] +
-                                                  item['end_debet_proc'])
+                    else:
+                        t = '0'
+                    data[t]['count4'] += 1
+                    data[t]['summa5'] += item['turn_debet_main']
+                    data[t]['summa3'] += (item['end_debet_main'] +
+                                            item['end_debet_proc'])
+                    if item['count_days'] > 90 and (item['end_debet_main'] + item['end_debet_proc']) > 0:
+                        data[t]['count6'] += 1
+                        data[t]['summa6'] += (item['end_debet_main'] +
+                                                item['end_debet_proc'])
 
-                        data[t]['items'].append(
-                            {'name': doc['name'], 'parent': item})
+                    data[t]['items'].append(
+                        {'name': doc['name'], 'parent': item})
+                        
         self.kategoria = data
