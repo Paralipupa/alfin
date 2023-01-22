@@ -275,23 +275,23 @@ class Report:
 
 
 # средневзвешенная величина
-
     def set_weighted_average(self):
         for client in self.clients.values():
             for dogovor in client['dogovor'].values():
                 period = dogovor.get('period')
                 summa = dogovor.get('turn_debet_main')
-                tarif = dogovor.get('tarif')
+                tarif = dogovor.get('tarif_name')
                 proc = dogovor.get('proc')
                 if period and summa and tarif and proc:
                     key = f'{tarif}_{proc}'
                     data = self.wa.get(key)
                     period = float(period)
                     if not data:
-                            # 46 -Старт
-                        self.wa[key] = {'parent': dogovor, 'stavka': float(
-                            proc), 'koef': 240.194 if tarif == '46' else 365*float(proc), 'period': period-7 if tarif == '46' else period,
+                            # 46 -Друг
+                        self.wa[key] = {'parent': [], 'stavka': float(
+                            proc), 'koef': 240.194 if tarif == '46' or tarif == '48' else 365*float(proc), 'period': period-7 if tarif == '46' or tarif == '48' else period,
                             'summa_free': 0, 'summa': 0, 'count': 0, 'value': {}}
+                    self.wa[key]['parent'].append(dogovor)
                     s = self.wa[key]['value'].get(summa)
                     if not s:
                         self.wa[key]['value'][summa] = 1

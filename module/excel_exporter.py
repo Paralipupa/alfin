@@ -104,6 +104,8 @@ class ExcelExporter:
             for dog in client['dogovor'].values():
                 col = 0
                 self.workbook.write(row, col, client['name'])
+                dog['name' +
+                    '_address'] = f'{self.workbook.sheet.name}!{Utils.rowcol_to_cell(row,col)}'
                 for name in names:
                     col += 1
                     try:
@@ -126,23 +128,32 @@ class ExcelExporter:
                 row += 1
 
     def write_result_weighted_average(self, result):
-        names = [{'name': 'stavka'}, {'name': 'period'}, {'name': 'koef'},
-                 {'name': 'summa_free'}, {'name': 'summa'}, {'name': 'count'}]
-        index = 0
+        if len(result) == 0:
+            return
+        names = [{'name': 'stavka', 'title':'Ставка'}, {'name': 'period', 'title':'Срок'}, {'name': 'koef', 'title':'Коэфф.'},]
         pattern_style = 'pattern: pattern solid, fore_colour green; font: color yellow;'
         pattern_style_sum = 'pattern: pattern solid, fore_colour white; font: color black;'
         num_format = '#,##0.00'
+        index = 0
         for key, value in result.items():
             index += 1
             row = 0
-            col = (index-1)*5
+            col = (index-1)*5+1
             if isinstance(value, dict):
-                self.workbook.write(row, col, key)
+                self.workbook.write(row, col-1, key.split("_")[0])
                 for name in names:
                     row += 1
-                    self.workbook.write(row, col, value[name['name']])
+                    self.workbook.write(row, col-1, name['title'])
+                    self.workbook.write(row, col, value[name['name']])                    
+                self.workbook.write(row+1, col-1, 'Сумма')
+                self.workbook.write(row+1, col, Formula(f"SUM({Utils.rowcol_pair_to_cellrange(row+5,col+2,row+5+len(value['value'])-1,col+2)})"))
+                self.workbook.write(row+2, col-1, 'Сумма(ср.вз.)')
+                self.workbook.write(row+2, col, Formula(f"SUM({Utils.rowcol_pair_to_cellrange(row+5,col+3,row+5+len(value['value'])-1,col+3)})"))
+                self.workbook.write(row+3, col-1, 'Кол-во')
+                self.workbook.write(row+3, col, Formula(f"SUM({Utils.rowcol_pair_to_cellrange(row+5,col,row+5+len(value['value'])-1,col)})"))
                 sorted_value = sorted(
                     value['value'].items(), key=lambda x: float(x[0]))
+                row += 3
                 row_start = row
                 row += 1
                 for val in sorted_value:
@@ -150,22 +161,28 @@ class ExcelExporter:
                     self.workbook.write(row, col, float(val[1]))
                     self.workbook.write(row, col+1, float(val[0]))
                     self.workbook.write(
-                        row, col+2, float(val[0])*float(val[1]))
-                    self.workbook.write(row, col+3, float(val[0])
-                                        * (value['koef'])*float(val[1]), style_string=pattern_style_sum, num_format_str=num_format)
+                        row, col+2, Formula(f"{Utils.rowcol_to_cell(row,col)}*{Utils.rowcol_to_cell(row,col+1)}"))
+                    self.workbook.write(
+                        row, col+3, Formula(f"{Utils.rowcol_to_cell(row,col+2)}*{Utils.rowcol_to_cell(3,col)}"))
                 self.workbook.write(
                     row+1, col+2, Formula(f"SUM({Utils.rowcol_pair_to_cellrange(row_start+2,col+2,row,col+2)})"), pattern_style, num_format)
                 self.workbook.write(
                     row+1, col+3, Formula(f"SUM({Utils.rowcol_pair_to_cellrange(row_start+2,col+3,row,col+3)})"), pattern_style_sum, num_format)
-            elif index > 2:
-                row += index-2
-                self.workbook.write(row, 2, key)
-                style_string = pattern_style_sum
-                if key == 'summa_free':
-                    style_string = 'pattern: pattern solid, fore_colour green; font: color yellow;'
-                elif key == 'summa_wa':
-                    style_string = 'pattern: pattern solid, fore_colour yellow; font: color red;'
-                self.workbook.write(row, 3, value, style_string, num_format)
+                row += 2
+                for dog in value['parent']:
+                    self.workbook.write(row, col, Formula(dog['name_address']) if dog.get(
+                        'name_address') else dog.get('name',''))
+                    self.workbook.write(row, col+1, Formula(dog['number_address']) if dog.get(
+                        'number_address') else dog.get('number',''))
+                    self.workbook.write(row, col+2, Formula(dog['summa_address']) if dog.get(
+                        'summa_address') else dog.get('summa',''))
+                    row += 1
+        self.workbook.write(0, 2, 'Общая сумма')
+        self.workbook.write(0, 3, Formula(f"SUM({Utils.rowcol_pair_to_cellrange(4,0,4,len(result)*5)})"))
+        self.workbook.write(1, 2, 'Общая сумма(ср.вз.)')
+        self.workbook.write(1, 3, Formula(f"SUM({Utils.rowcol_pair_to_cellrange(5,0,5,len(result)*5)})"))
+        self.workbook.write(2, 2, 'Сред.взвеш.')
+        self.workbook.write(2, 3, Formula(f"SUM({Utils.rowcol_pair_to_cellrange(3,0,3,len(result)*5)})/COUNT({Utils.rowcol_pair_to_cellrange(3,0,3,len(result)*5)})"), style_string='font: color red;')
 
     def write_kategoria(self, kategoria):
         row = 0
@@ -237,7 +254,7 @@ class ExcelExporter:
                             int(val['parent']['count_days']))
                         self.workbook.write(row, col+10, percent)
                         self.workbook.write(
-                            row, col+11, Formula(f"{Utils.rowcol_to_cell(row,col+5)}*{Utils.rowcol_to_cell(row,col+10)}"))
+                            row, col+11, Formula(f"{Utils.rowcol_to_cell(row,col+5,row_abs=True)}*{Utils.rowcol_to_cell(row,col+10)}") )                            
                         self.workbook.write(
                             row, col+12, Formula(f"{Utils.rowcol_to_cell(row,col+6)}*{Utils.rowcol_to_cell(row,col+10)}"))
                         self.workbook.write(

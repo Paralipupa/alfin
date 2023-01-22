@@ -224,11 +224,10 @@ class XlsxFile(DataFile):
         except AttributeError:
             return -1
 
-
 class XlsWrite:
     def __init__(self, filename: str):
         self.name = filename
-        self.book = xlwt.Workbook(encoding="utf-8")
+        self.book = xlwt.Workbook(encoding="utf-8", style_compression=2)
 
     def save(self) -> str:
         try:
@@ -248,14 +247,19 @@ class XlsWrite:
         self.sheet = self.book.add_sheet(title)
         return self.sheet
 
-    def write(self, row: int, col: int, value, style_string:str='', num_format_str:str=''):
+    def write(self, row: int, col: int, value, style_string:str=None, num_format_str:str=None):
         try:
             if isinstance(value, str):
                 neededWidth = int((1 + min([len(str(value)), 128])) * 256)
             else:
                 neededWidth = 12 * 256
-            if style_string or num_format_str:            
-                style = xlwt.easyxf(style_string, num_format_str=num_format_str)
+            if style_string or num_format_str:
+                if style_string and not num_format_str:
+                    style = xlwt.easyxf(style_string)
+                elif not style_string and num_format_str:
+                    style = xlwt.easyxf(num_format_str=num_format_str)
+                else:
+                    style = xlwt.easyxf(style_string, num_format_str=num_format_str)
                 self.sheet.write(row, col, value, style=style)
             else:
                 self.sheet.write(row, col, value)
