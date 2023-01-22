@@ -1,8 +1,22 @@
 from module.file_readers import get_file_write
-from xlwt import Utils, Formula
+from xlwt import Utils, Formula, XFStyle
+import datetime
 
 
 class ExcelExporter:
+
+    @staticmethod
+    def to_date(x: str):
+        patts = ['%d-%m-%Y', '%d.%m.%Y', '%d/%m/%Y', '%Y-%m-%d',
+                 '%d-%m-%y', '%d.%m.%y', '%d/%m/%y', '%B %Y']
+        d = None
+        for p in patts:
+            try:
+                d = datetime.datetime.strptime(x.split(' ')[0], p)
+                return d.date()
+            except:
+                pass
+        return x
 
     def __init__(self, file_name: str, page_name: str = None):
         self.name = file_name
@@ -17,11 +31,11 @@ class ExcelExporter:
     def write(self, report) -> str:
         self._set_data_xls()
         self.workbook.addSheet("Общий")
-        self.write_docs(report.documents)
+        self.write_docs(report.clients)
         self.workbook.addSheet("Ср.взвешенная")
-        self.write_result_weighted_average(report.result)
+        self.write_result_weighted_average(report.wa)
         self.workbook.addSheet("Резервы")
-        self.write_kategoria(report.kategoria)
+        self.write_kategoria(report.rezerv)
         self.workbook.addSheet("error")
         self.write_errors(report.warnings)
         return self.workbook.save()
@@ -33,27 +47,52 @@ class ExcelExporter:
             self.workbook.write(row, col, item)
             row += 1
 
-    def write_docs(self, docs) -> bool:
-        names = [{'name': 'number', 'title': 'Номер', 'type': ''}, {'name': 'date', 'title': 'Дата', 'type': ''},
-                 {'name': 'summa', 'title': 'Сумма', 'type': 'float'},
-                 {'name': 'proc', 'title': 'Ставка', 'type': 'float'},
-                 {'name': 'tarif', 'title': 'Тариф', 'type': ''},
-                 {'name': 'period', 'title': 'Срок', 'type': 'float'},
-                 {'name': 'beg_debet_main',
-                     'title': 'Начальная сумма', 'type': 'float'},
-                 {'name': 'turn_debet_main', 'title': 'Дебет', 'type': 'float'},
-                 {'name': 'turn_credit_main', 'title': 'Кредит', 'type': 'float'},
-                 {'name': 'end_debet_main', 'title': 'Остаток', 'type': 'float'},
-                 {'name': 'turn_debet_proc', 'title': 'Процент дебет', 'type': 'float'},
-                 {'name': 'turn_credit_proc',
-                     'title': 'Процент кредит', 'type': 'float'},
-                 {'name': 'end_debet_proc',
-                     'title': 'Процент остаток', 'type': 'float'},
-                 {'name': 'pdn', 'title': 'ПДН', 'type': 'float'},
-                 {'name': 'period_common', 'title': 'Общий срок', 'type': 'float'},
-                 {'name': 'date_finish', 'title': 'Крайняя дата', 'type': ''},
-                 {'name': 'count_days', 'title': 'Просрочка', 'type': 'float'},
+    def write_docs(self, clients) -> bool:
+        names = [{'name': 'number', 'title': 'Номер', 'type': '', 'col': 0},
+                 {'name': 'date', 'title': 'Дата', 'type': 'date', 'col': 1},
+                 {'name': 'summa', 'title': 'Сумма', 'type': 'float', 'col': 2},
+                 {'name': 'proc', 'title': 'Ставка', 'type': 'float', 'col': 3},
+                 {'name': 'tarif', 'title': 'Тариф', 'type': '', 'col': 4},
+                 {'name': 'period', 'title': 'Срок', 'type': 'float', 'col': 5},
+                 #  {'name': 'beg_debet_main',
+                 #      'title': 'Начальная сумма', 'type': 'float', 'col': 6},
+                 {'name': 'turn_debet_main', 'title': 'Сальдо нач.',
+                     'type': 'float', 'col': 7},
+                 {'name': 'turn_credit_main', 'title': 'Кредит',
+                     'type': 'float', 'col': 8},
+                 {'name': 'end_debet_main', 'title': 'Сальдо кон.',
+                     'type': 'float', 'col': 9},
+                 #  {'name': 'turn_debet_proc', 'title': 'Процент дебет', 'type': 'float', 'col': 10},
+                 #  {'name': 'turn_credit_proc',
+                 #      'title': 'Процент кредит', 'type': 'float', 'col': 11},
+                 #  {'name': 'end_debet_proc',
+                 #      'title': 'Процент остаток', 'type': 'float', 'col': 12},
+                 {'name': 'pdn', 'title': 'ПДН', 'type': 'float', 'col': 13},
+                 #  {'name': 'period_common', 'title': 'Общий срок',
+                 #      'type': 'float', 'col': 14},
+                 #  {'name': 'date_finish', 'title': 'Крайняя дата',
+                 #      'type': 'date', 'col': 15},
+                 #  {'name': 'beg_debet_proc', 'title': 'Долг', 'type': 'float', 'col': 17},
+                 {'name': 'turn_debet_proc', 'title': 'Начисление',
+                     'type': 'float', 'col': 18},
+                 {'name': 'turn_credit_proc', 'title': 'Оплата',
+                     'type': 'float', 'col': 19},
+                 {'name': 'end_debet_proc', 'title': 'Остаток платежа',
+                     'type': 'float', 'col': 20},
+                 {'name': 'date_proc', 'title': 'Дата платежа',
+                     'type': 'date', 'col': 21},
+                 {'name': 'count_days', 'title': 'Просрочка',
+                     'type': 'int', 'col': 16},
                  ]
+        plat = [{'name': 'date', 'title': 'Дата', 'type': 'string', 'col': 1},
+                {'name': 'beg_debet', 'title': 'Остаток', 'type': 'float', 'col': 6},
+                {'name': 'turn_debet', 'title': 'Процент дебет',
+                    'type': 'float', 'col': 7},
+                {'name': 'turn_credit',
+                 'title': 'Процент кредит', 'type': 'float', 'col': 8},
+                {'name': 'end_debet',
+                 'title': 'Процент остаток', 'type': 'float', 'col': 9},
+                ]
         row = 0
         col = 0
         self.workbook.write(row, col, 'ФИО')
@@ -61,17 +100,29 @@ class ExcelExporter:
             col += 1
             self.workbook.write(row, col, name['title'])
         row += 1
-        for doc in docs:
-            col = 0
-            for dog in doc['dogovor']:
-                self.workbook.write(row, col, doc['name'])
+        for client in clients.values():
+            for dog in client['dogovor'].values():
+                col = 0
+                self.workbook.write(row, col, client['name'])
                 for name in names:
                     col += 1
-                    self.workbook.write(row, col, (float(dog[name['name']]) if name['type'] == 'float' else int(
-                        dog[name['name']]) if name['type'] == 'int' else str(dog[name['name']])) if dog.get(name['name']) else None)
+                    try:
+                        if dog.get(name['name']):
+                            value = float(dog[name['name']]) if name['type'] == 'float' else (
+                                int(dog[name['name']]) if name['type'] == 'int' else (
+                                    self.to_date(dog[name['name']]) if name['type'] == 'date' else (
+                                        str(dog[name['name']]) if dog.get(name['name']) else None)))
+                            self.workbook.write(
+                                row, col, value, num_format_str=r'dd/mm/yyyy' if name['type'] == 'date' else None)
+                    except Exception as ex:
+                        print(
+                            f"{self.workbook.sheet.name} ({name['name']}): {row}, {name['col']}, {value}")
                     dog[name['name'] +
                         '_address'] = f'{self.workbook.sheet.name}!{Utils.rowcol_to_cell(row,col)}'
-                col = 0
+                if dog.get('plat'):
+                    self.workbook.write(row, col, self.to_date(
+                        dog['plat'][-1]['date_proc']), num_format_str=r'dd/mm/yyyy')
+                    dog['plat'][-1]['date_proc']
                 row += 1
 
     def write_result_weighted_average(self, result):

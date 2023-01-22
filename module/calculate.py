@@ -1,30 +1,65 @@
+from typing import NoReturn
 from module.report import Report
+from module.connect import SQLServer
+
 
 class Calc:
-    def __init__(self, files: list):
-        self.main_s = Report(files[0])
-        self.main_p = Report(files[1])
-        self.items=[]
-        for name in files[2:]:
-            self.items.append(Report(name))
+    def __init__(self, files: list, is_archi : bool = False):
+        self.main_wa : Report = None
+        self.main_res : Report = None
+        self.items: list[Report] = []
+        self.is_archi = is_archi
+        for file in files:
+            if file.find('58RES') != -1:
+                self.main_res = Report(files)
+            elif file.find('58WA') != -1:
+                self.main_wa = Report(file)
+            else:
+                self.items.append(Report(file))
 
-    def read(self):
-        self.main_s.get_parser()
-        self.main_p.get_parser()
+    def read(self) -> NoReturn:
+        numbers = []
         for rep in self.items:
             rep.get_parser()
-        self.main_s.union_all(*self.items)
-        self.main_p.union_all(*self.items)
-    
-    def report_weighted_average(self):
-        self.main_s.set_weighted_average()
-        self.main_p.result = self.main_s.result
-    
-    def report_rezerves(self):
-        self.main_p.set_reserves()
-        self.main_s.kategoria = self.main_p.kategoria
+        if self.main_wa:
+            self.main_wa.get_parser()
+            self.main_wa.union_all(self.items)
+            if self.is_archi:
+                numbers = self.main_wa.get_numbers()
+                q = SQLServer()
+                self.main_wa.data = q.get_data_from_archi(numbers)
+                self.main_wa.fill_from_archi()
+        if self.main_res:
+            self.main_res.get_parser()
+            self.main_res.union_all(self.items)
+            if self.is_archi:
+                numbers = self.main_res.get_numbers()
+                q = SQLServer()
+                self.main_res.data = q.get_data_from_archi(numbers)
+                self.main_res.fill_from_archi()
 
-    def write(self):
-        return self.main_p.write_to_excel()
+    def report_weighted_average(self) -> NoReturn:
+        if self.main_wa:
+            self.main_wa.set_weighted_average()
+            if self.main_res:
+                self.main_res.wa = self.main_wa.wa
+        elif self.main_res:
+            self.main_res.set_weighted_average()
 
+    def report_rezerves(self) -> NoReturn:
+        if self.main_res:
+            self.main_res.set_reserves()
+            if self.main_wa:
+                self.main_wa.rezerv = self.main_res.rezerv
+        elif self.main_wa:
+            self.main_wa.set_reserves()
+
+    def write(self) -> str:
+        return self.main_res.write_to_excel() if self.main_res else (self.main_wa.write_to_excel() if self.main_wa else None)
+
+    def get_numbers(self):
+        if self.main_wa:
+            pass
+        elif self.main_res:
+            pass
 

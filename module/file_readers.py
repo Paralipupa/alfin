@@ -249,17 +249,20 @@ class XlsWrite:
         return self.sheet
 
     def write(self, row: int, col: int, value, style_string:str='', num_format_str:str=''):
-        if isinstance(value, str):
-            neededWidth = int((1 + min([len(str(value)), 128])) * 256)
-        else:
-            neededWidth = 12 * 256
-        if style_string:
-            style = xlwt.easyxf(style_string, num_format_str=num_format_str)
-            self.sheet.write(row, col, value, style=style)
-        else:
-            self.sheet.write(row, col, value)
-        if self.sheet.col(col).width < neededWidth:
-            self.sheet.col(col).width = neededWidth
+        try:
+            if isinstance(value, str):
+                neededWidth = int((1 + min([len(str(value)), 128])) * 256)
+            else:
+                neededWidth = 12 * 256
+            if style_string or num_format_str:            
+                style = xlwt.easyxf(style_string, num_format_str=num_format_str)
+                self.sheet.write(row, col, value, style=style)
+            else:
+                self.sheet.write(row, col, value)
+            if self.sheet.col(col).width < neededWidth:
+                self.sheet.col(col).width = neededWidth
+        except Exception as ex:
+            pass
 
 def get_file_reader(fname):
     """Get class for reading file as iterable"""

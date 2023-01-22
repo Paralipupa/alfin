@@ -9,13 +9,13 @@ class ExcelImporter:
         self.names = []
         self.page_name = page_name
         self.records = list()
+        self.data_reader = None
 
     def _get_data_xls(self):
         ReaderClass = get_file_reader(self.name)
-        data_reader = ReaderClass(self.name, self.page_name)
-        if not data_reader:
+        self.data_reader = ReaderClass(self.name, self.page_name)
+        if not self.data_reader:
             raise Exception(f'file reading error: {self.name}')
-        return data_reader
 
     def _get_names(self, record: list) -> list:
         names = []
@@ -36,13 +36,8 @@ class ExcelImporter:
         return rec
 
     def read(self) -> bool:
-        data_reader = self._get_data_xls()
-        index = 0
-        self.names = [{'name': f'{i}'} for i in data_reader._columns]
-        for record in data_reader:
-            self.records.append(self._get_record(self.names, record))
-            index += 1
-        return True
+        self._get_data_xls()
+        self.records = self.data_reader
 
     def write(self, file_output: str = 'output') -> bool:
         os.makedirs('output', exist_ok=True)
