@@ -22,7 +22,6 @@ class SQLServer():
         mSQL = mSQL + " INNER JOIN [CLIENTS] c ON c.[ID]=o.[CLIENTID]"
         mSQL = mSQL + " INNER JOIN [PERCENT_OPTIONS] p ON o.[POID]=p.[ID]"
         mSQL = mSQL + " WHERE o.[NUMBER] in ('{}')".format("','".join(numbers))
-        # mSQL = mSQL + " ORDER BY o.ID DESC"
         cursor = self.connection.cursor()
         cursor.execute(mSQL)
         results = cursor.fetchall()

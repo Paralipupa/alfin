@@ -31,7 +31,7 @@ class ExcelExporter:
     def write(self, report) -> str:
         self._set_data_xls()
         self.workbook.addSheet("Общий")
-        self.write_docs(report.clients)
+        self.write_clients(report.clients)
         self.workbook.addSheet("Ср.взвешенная")
         self.write_result_weighted_average(report.wa)
         self.workbook.addSheet("Резервы")
@@ -47,12 +47,12 @@ class ExcelExporter:
             self.workbook.write(row, col, item)
             row += 1
 
-    def write_docs(self, clients) -> bool:
+    def write_clients(self, clients) -> bool:
         names = [{'name': 'number', 'title': 'Номер', 'type': '', 'col': 0},
                  {'name': 'date', 'title': 'Дата', 'type': 'date', 'col': 1},
                  {'name': 'summa', 'title': 'Сумма', 'type': 'float', 'col': 2},
                  {'name': 'proc', 'title': 'Ставка', 'type': 'float', 'col': 3},
-                 {'name': 'tarif', 'title': 'Тариф', 'type': '', 'col': 4},
+                 {'name': 'tarif_name', 'title': 'Тариф', 'type': '', 'col': 4},
                  {'name': 'period', 'title': 'Срок', 'type': 'float', 'col': 5},
                  #  {'name': 'beg_debet_main',
                  #      'title': 'Начальная сумма', 'type': 'float', 'col': 6},
@@ -132,7 +132,7 @@ class ExcelExporter:
             return
         names = [{'name': 'stavka', 'title':'Ставка'}, {'name': 'period', 'title':'Срок'}, {'name': 'koef', 'title':'Коэфф.'},]
         pattern_style = 'pattern: pattern solid, fore_colour green; font: color yellow;'
-        pattern_style_sum = 'pattern: pattern solid, fore_colour white; font: color black;'
+        pattern_style_wa = 'pattern: pattern solid, fore_colour yellow; font: color black;'
         num_format = '#,##0.00'
         index = 0
         for key, value in result.items():
@@ -146,9 +146,9 @@ class ExcelExporter:
                     self.workbook.write(row, col-1, name['title'])
                     self.workbook.write(row, col, value[name['name']])                    
                 self.workbook.write(row+1, col-1, 'Сумма')
-                self.workbook.write(row+1, col, Formula(f"SUM({Utils.rowcol_pair_to_cellrange(row+5,col+2,row+5+len(value['value'])-1,col+2)})"))
+                self.workbook.write(row+1, col, Formula(f"SUM({Utils.rowcol_pair_to_cellrange(row+5,col+2,row+5+len(value['value'])-1,col+2)})"), num_format_str=num_format)
                 self.workbook.write(row+2, col-1, 'Сумма(ср.вз.)')
-                self.workbook.write(row+2, col, Formula(f"SUM({Utils.rowcol_pair_to_cellrange(row+5,col+3,row+5+len(value['value'])-1,col+3)})"))
+                self.workbook.write(row+2, col, Formula(f"SUM({Utils.rowcol_pair_to_cellrange(row+5,col+3,row+5+len(value['value'])-1,col+3)})"), num_format_str=num_format)
                 self.workbook.write(row+3, col-1, 'Кол-во')
                 self.workbook.write(row+3, col, Formula(f"SUM({Utils.rowcol_pair_to_cellrange(row+5,col,row+5+len(value['value'])-1,col)})"))
                 sorted_value = sorted(
@@ -165,9 +165,9 @@ class ExcelExporter:
                     self.workbook.write(
                         row, col+3, Formula(f"{Utils.rowcol_to_cell(row,col+2)}*{Utils.rowcol_to_cell(3,col)}"))
                 self.workbook.write(
-                    row+1, col+2, Formula(f"SUM({Utils.rowcol_pair_to_cellrange(row_start+2,col+2,row,col+2)})"), pattern_style, num_format)
+                    row+1, col+2, Formula(f"SUM({Utils.rowcol_pair_to_cellrange(row_start+2,col+2,row,col+2)})"), num_format_str=num_format)
                 self.workbook.write(
-                    row+1, col+3, Formula(f"SUM({Utils.rowcol_pair_to_cellrange(row_start+2,col+3,row,col+3)})"), pattern_style_sum, num_format)
+                    row+1, col+3, Formula(f"SUM({Utils.rowcol_pair_to_cellrange(row_start+2,col+3,row,col+3)})"), num_format_str=num_format)
                 row += 2
                 for dog in value['parent']:
                     self.workbook.write(row, col, Formula(dog['name_address']) if dog.get(
@@ -175,14 +175,14 @@ class ExcelExporter:
                     self.workbook.write(row, col+1, Formula(dog['number_address']) if dog.get(
                         'number_address') else dog.get('number',''))
                     self.workbook.write(row, col+2, Formula(dog['summa_address']) if dog.get(
-                        'summa_address') else dog.get('summa',''))
+                        'summa_address') else dog.get('summa',''), num_format_str=num_format)
                     row += 1
         self.workbook.write(0, 2, 'Общая сумма')
-        self.workbook.write(0, 3, Formula(f"SUM({Utils.rowcol_pair_to_cellrange(4,0,4,len(result)*5)})"))
+        self.workbook.write(0, 3, Formula(f"SUM({Utils.rowcol_pair_to_cellrange(4,0,4,len(result)*5)})"), num_format_str=num_format)
         self.workbook.write(1, 2, 'Общая сумма(ср.вз.)')
-        self.workbook.write(1, 3, Formula(f"SUM({Utils.rowcol_pair_to_cellrange(5,0,5,len(result)*5)})"))
+        self.workbook.write(1, 3, Formula(f"SUM({Utils.rowcol_pair_to_cellrange(5,0,5,len(result)*5)})"), num_format_str=num_format)
         self.workbook.write(2, 2, 'Сред.взвеш.')
-        self.workbook.write(2, 3, Formula(f"SUM({Utils.rowcol_pair_to_cellrange(3,0,3,len(result)*5)})/COUNT({Utils.rowcol_pair_to_cellrange(3,0,3,len(result)*5)})"), style_string='font: color red;')
+        self.workbook.write(2, 3, Formula(f"SUM({Utils.rowcol_pair_to_cellrange(3,0,3,len(result)*5)})/COUNT({Utils.rowcol_pair_to_cellrange(3,0,3,len(result)*5)})"), style_string=pattern_style_wa)
 
     def write_kategoria(self, kategoria):
         row = 0
@@ -190,7 +190,6 @@ class ExcelExporter:
         names = ['1', '2', '3', '4', '5', '6']
         for name in names:
             self.workbook.write(row, col, name, 'align: horiz center')
-            # self.workbook.write(row, col, name,"pattern: pattern solid, fore_color yellow; font: color white; align: horiz center")
             col += 1
         row += 1
         col = 0
@@ -215,6 +214,8 @@ class ExcelExporter:
                                         pattern_style_3, num_format)
                 nrow_start += value['count4'] + 1
                 row += 1
+        self.workbook.write(
+            row, 13, Formula(f"SUM({Utils.rowcol_pair_to_cellrange(11,13,nrow_start+value['count4']-1,13)})"), pattern_style_5, num_format)
         self.workbook.write(row, col+1, 'Всего', 'align: horiz left')
         if row > 7:
             self.workbook.write(
@@ -231,6 +232,11 @@ class ExcelExporter:
         self.workbook.write(row, col+5, '(3,6)основная')
         self.workbook.write(row, col+6, '(3,6)процент')
         self.workbook.write(row, col+7, 'Дней просрочки')
+        self.workbook.write(row-1, col+13, 'Резервы')
+        self.workbook.write(row, col+10, 'Процент (просрочки)')
+        self.workbook.write(row, col+11, 'Сумма (основной)')
+        self.workbook.write(row, col+12, 'Сумма (процент)')
+        self.workbook.write(row, col+13, 'Итого')
         for key, value in kategoria.items():
             row += 1
             self.workbook.write(row, col, key)

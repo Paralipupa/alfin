@@ -27,16 +27,18 @@ class Calc:
             if self.is_archi:
                 numbers = self.main_wa.get_numbers()
                 q = SQLServer()
-                self.main_wa.data = q.get_data_from_archi(numbers)
-                self.main_wa.fill_from_archi()
+                if q.connection:
+                    self.main_wa.data = q.get_data_from_archi(numbers)
+                    self.main_wa.fill_from_archi()
         if self.main_res:
             self.main_res.get_parser()
             self.main_res.union_all(self.items)
             if self.is_archi:
                 numbers = self.main_res.get_numbers()
                 q = SQLServer()
-                self.main_res.data = q.get_data_from_archi(numbers)
-                self.main_res.fill_from_archi()
+                if q.connection:
+                    self.main_res.data = q.get_data_from_archi(numbers)
+                    self.main_res.fill_from_archi()
 
     def report_weighted_average(self) -> NoReturn:
         if self.main_wa:

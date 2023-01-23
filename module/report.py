@@ -151,7 +151,7 @@ class Report:
 
     def __record_dog_number(self, record: list, index: int):
         if re.search(PATT_DOG_NUMBER, record[self.fields.get('FLD_NUMBER')], re.IGNORECASE):
-            self.current_dogovor_number = record[self.fields.get('FLD_NUMBER')].strip()
+            self.current_dogovor_number = f"0{record[self.fields.get('FLD_NUMBER')].strip()}" if len(record[self.fields.get('FLD_NUMBER')].strip()) == 11 else record[self.fields.get('FLD_NUMBER')].strip()
             self.clients[self.current_client_name]['dogovor'].setdefault(self.current_dogovor_number,{})
             self.clients[self.current_client_name]['dogovor'][self.current_dogovor_number].setdefault('plat', [])
             self.clients[self.current_client_name]['dogovor'][self.current_dogovor_number]['row'] = index
@@ -380,7 +380,7 @@ class Report:
         self.rezerv = data
     
     def get_numbers(self):
-        return [x for x in self.reference.keys()]
+        return [f'0{x.split()}' if len(x.split())==11 else x for x in self.reference.keys()]
 
     def fill_from_archi(self):
         for client in self.clients.values():
