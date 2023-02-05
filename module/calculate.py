@@ -48,13 +48,13 @@ class Calc:
         elif self.main_res:
             self.main_res.set_weighted_average()
 
-    def report_rezerves(self) -> NoReturn:
+    def report_kategoria(self) -> NoReturn:
         if self.main_res:
-            self.main_res.set_reserves()
+            self.main_res.set_kategoria()
             if self.main_wa:
-                self.main_wa.rezerv = self.main_res.rezerv
+                self.main_wa.kategoria = self.main_res.kategoria
         elif self.main_wa:
-            self.main_wa.set_reserves()
+            self.main_wa.set_kategoria()
 
     def write(self) -> str:
         return self.main_res.write_to_excel() if self.main_res else (self.main_wa.write_to_excel() if self.main_wa else None)

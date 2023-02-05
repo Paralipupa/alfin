@@ -15,7 +15,7 @@ if __name__ == '__main__':
     #     'input', 'report', 'report_loan_issuance_for_prelovskaya_o (1).xls')) 
     calc = Calc(files)
     calc.read()
-    calc.report_rezerves()
+    calc.report_kategoria()
     calc.report_weighted_average()
     calc.write()
 

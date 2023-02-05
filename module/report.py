@@ -6,6 +6,7 @@ import datetime
 import traceback
 from module.excel_importer import ExcelImporter
 from module.excel_exporter import ExcelExporter
+from module.excel_exporter import to_date
 from module.settings import *
 
 
@@ -17,9 +18,11 @@ class Report:
         self.clients = {}  # клиенты
         self.current_client_name = ''
         self.current_dogovor_number = ''
+        self.current_dogovor_type = 'Основной договор'
+        self.report_date = datetime.datetime.now().date()
         self.reference = {}  # ссылки на документы в рамках одного документа
         self.wa = {}
-        self.rezerv = {}
+        self.kategoria = {}
         self.warnings = []
         self.fields = {}
         self.__clear_dog_data()
@@ -36,17 +39,22 @@ class Report:
                                     'name': record[self.fields.get('FLD_NAME')], 'dogovor': {}})
             self.__clear_dog_data()
 
+    def __record_dog_type(self, record: list):
+        if self.fields.get('FLD_NUMBER', -1) != -1 and re.search(PATT_DOG_TYPE, record[self.fields.get('FLD_NUMBER')], re.IGNORECASE):
+            self.current_dogovor_type = record[self.fields.get('FLD_NUMBER')]
+
     def __record_dog_pay(self, record: list):
         if self.fields.get('FLD_NUMBER', -1) != -1 and re.search(PATT_DOG_PLAT, record[self.fields.get('FLD_NUMBER')], re.IGNORECASE):
-            self.clients[self.current_client_name]['dogovor'][self.current_dogovor_number]['plat'].append({})
+            self.clients[self.current_client_name]['dogovor'][self.current_dogovor_number]['plat'].append({
+            })
             self.clients[self.current_client_name]['dogovor'][self.current_dogovor_number]['plat'][-1]['date_proc'] = record[self.fields.get(
                 'FLD_NUMBER')].replace(PATT_DOG_PLAT, '').strip()
             self.clients[self.current_client_name]['dogovor'][self.current_dogovor_number]['plat'][-1][f'beg_debet_{self.suf}'] = record[self.fields.get(
-                f'FLD_BEG_DEBET_{self.suf}')] if self.fields.get(f'FLD_BEG_DEBET_{self.suf}', -1) != -1 else ''        
+                f'FLD_BEG_DEBET_{self.suf}')] if self.fields.get(f'FLD_BEG_DEBET_{self.suf}', -1) != -1 else ''
             self.clients[self.current_client_name]['dogovor'][self.current_dogovor_number]['plat'][-1][f'turn_debet_{self.suf}'] = record[self.fields.get(
-                f'FLD_TURN_DEBET_{self.suf}')] if self.fields.get(f'FLD_TURN_DEBET_{self.suf}', -1) != -1 else ''        
+                f'FLD_TURN_DEBET_{self.suf}')] if self.fields.get(f'FLD_TURN_DEBET_{self.suf}', -1) != -1 else ''
             self.clients[self.current_client_name]['dogovor'][self.current_dogovor_number]['plat'][-1][f'turn_credit_{self.suf}'] = record[self.fields.get(
-                f'FLD_TURN_CREDIT_{self.suf}')] if self.fields.get(f'FLD_TURN_CREDIT_{self.suf}', -1) != -1 else ''            
+                f'FLD_TURN_CREDIT_{self.suf}')] if self.fields.get(f'FLD_TURN_CREDIT_{self.suf}', -1) != -1 else ''
             self.clients[self.current_client_name]['dogovor'][self.current_dogovor_number]['plat'][-1][f'end_debet_{self.suf}'] = record[self.fields.get(
                 f'FLD_END_DEBET_{self.suf}')] if self.fields.get(f'FLD_END_DEBET_{self.suf}', -1) != -1 else ''
 
@@ -105,7 +113,7 @@ class Report:
     def __record_dog_tarif(self, rec):
         if self.fields.get('FLD_TARIF', -1) != -1 and not self.dogs.get('tarif') and re.search(PATT_TARIF, rec[self.fields.get('FLD_TARIF')], re.IGNORECASE):
             self.dogs['tarif'] = rec[self.fields.get('FLD_TARIF')]
-            self.dogs['tarif_name'] =  rec[self.fields.get('FLD_TARIF')]
+            self.dogs['tarif_name'] = rec[self.fields.get('FLD_TARIF')]
         if self.current_dogovor_number:
             if self.dogs.get('tarif'):
                 self.clients[self.current_client_name]['dogovor'][self.current_dogovor_number]['tarif'] = self.dogs['tarif']
@@ -127,15 +135,16 @@ class Report:
             self.dogs[f'end_debet_{self.suf}'] = record[self.fields.get(
                 f'FLD_END_DEBET_{self.suf}')]
         if self.current_dogovor_number:
-            self.clients[self.current_client_name]['dogovor'][self.current_dogovor_number]['summa'] = self.dogs.get('summa','')
+            self.clients[self.current_client_name]['dogovor'][self.current_dogovor_number]['summa'] = self.dogs.get(
+                'summa', '')
             self.clients[self.current_client_name][
-                'dogovor'][self.current_dogovor_number][f'beg_debet_{self.suf}'] = self.dogs.get(f'beg_debet_{self.suf}','')
+                'dogovor'][self.current_dogovor_number][f'beg_debet_{self.suf}'] = self.dogs.get(f'beg_debet_{self.suf}', '')
             self.clients[self.current_client_name][
-                'dogovor'][self.current_dogovor_number][f'turn_debet_{self.suf}'] = self.dogs.get(f'turn_debet_{self.suf}','')
+                'dogovor'][self.current_dogovor_number][f'turn_debet_{self.suf}'] = self.dogs.get(f'turn_debet_{self.suf}', '')
             self.clients[self.current_client_name][
-                'dogovor'][self.current_dogovor_number][f'turn_credit_{self.suf}'] = self.dogs.get(f'turn_credit_{self.suf}','')
+                'dogovor'][self.current_dogovor_number][f'turn_credit_{self.suf}'] = self.dogs.get(f'turn_credit_{self.suf}', '')
             self.clients[self.current_client_name][
-                'dogovor'][self.current_dogovor_number][f'end_debet_{self.suf}'] = self.dogs.get(f'end_debet_{self.suf}','')
+                'dogovor'][self.current_dogovor_number][f'end_debet_{self.suf}'] = self.dogs.get(f'end_debet_{self.suf}', '')
 
     def __record_dog_period(self, rec):
         if self.fields.get('FLD_PERIOD', -1) != -1 and not self.dogs.get('period') and re.search(PATT_PERIOD, rec[self.fields.get('FLD_PERIOD')], re.IGNORECASE):
@@ -151,12 +160,17 @@ class Report:
 
     def __record_dog_number(self, record: list, index: int):
         if re.search(PATT_DOG_NUMBER, record[self.fields.get('FLD_NUMBER')], re.IGNORECASE):
-            self.current_dogovor_number = f"0{record[self.fields.get('FLD_NUMBER')].strip()}" if len(record[self.fields.get('FLD_NUMBER')].strip()) == 11 else record[self.fields.get('FLD_NUMBER')].strip()
-            self.clients[self.current_client_name]['dogovor'].setdefault(self.current_dogovor_number,{})
-            self.clients[self.current_client_name]['dogovor'][self.current_dogovor_number].setdefault('plat', [])
+            self.current_dogovor_number = f"0{record[self.fields.get('FLD_NUMBER')].strip()}" if len(
+                record[self.fields.get('FLD_NUMBER')].strip()) == 11 else record[self.fields.get('FLD_NUMBER')].strip()
+            self.clients[self.current_client_name]['dogovor'].setdefault(
+                self.current_dogovor_number, {})
+            self.clients[self.current_client_name]['dogovor'][self.current_dogovor_number].setdefault(
+                'plat', [])
+            self.clients[self.current_client_name]['dogovor'][self.current_dogovor_number]['type'] = self.current_dogovor_type
             self.clients[self.current_client_name]['dogovor'][self.current_dogovor_number]['row'] = index
             self.clients[self.current_client_name]['dogovor'][self.current_dogovor_number]['number'] = self.current_dogovor_number
-            self.reference.setdefault(self.current_dogovor_number, self.clients[self.current_client_name]['dogovor'][self.current_dogovor_number])
+            self.reference.setdefault(
+                self.current_dogovor_number, self.clients[self.current_client_name]['dogovor'][self.current_dogovor_number])
             self.__record_dog_summa(record, True)
 
     def get_parser(self):
@@ -167,6 +181,7 @@ class Report:
         index = -1
         for record in self.parser.records:
             index += 1
+            self.__record_dog_type(record)
             self.__record_client(record)
             if self.current_client_name:
                 self.__record_dog_number(record, index)
@@ -217,6 +232,11 @@ class Report:
         for record in self.parser.records:
             col = 0
             for cell in record:
+                if re.search('Оборотно-сальдовая ведомость по счету', cell):
+                    x = re.findall('(?<=г\. - ).+(?= г[\.])', cell)
+                    if x:
+                        self.report_date = to_date(x[0])
+
                 for item in items:
                     for name in item['name']:
                         if not self.fields.get(name) and re.search(item['pattern'], cell):
@@ -237,7 +257,7 @@ class Report:
         elif doc_type == 'wa':
             docs = self.wa
         elif doc_type == 'rezerv':
-            docs = self.rezerv
+            docs = self.kategoria
         else:
             docs = self.clients
         os.makedirs('output', exist_ok=True)
@@ -266,15 +286,23 @@ class Report:
                         if not dogovor.get(item_dog_attrib):
                             dogovor[item_dog_attrib] = item_dogovor[item_dog_attrib]
             if not dogovor.get('count_days'):
-                if dogovor.get('plat'):                    
-                    d1 = ExcelExporter.to_date(dogovor.get('date','')) 
-                    d2 = ExcelExporter.to_date(dogovor['plat'][-1]['date_proc'])
-                    if not isinstance(d1,str) and not isinstance(d2,str):
-                        dogovor['count_days'] = (d2 - d1).days
+                d1 = to_date(dogovor.get('date', ''))
+                if dogovor.get('plat'):
+                    d2 = to_date(
+                        dogovor['plat'][-1]['date_proc'])
+                else:
+                    d2 = self.report_date                
+                dogovor['report_date'] = d2.strftime('%d.%m.%Y')
+                if not isinstance(d1, str) and not isinstance(d2, str):
+                    dogovor['count_days'] = (d2 - d1).days
+            else:
+                dogovor['report_date'] = (self.report_date - datetime.timedelta(days=dogovor['count_days']) ).strftime('dd.mm.yyyy')
         self.write('clients')
 
 
 # средневзвешенная величина
+
+
     def set_weighted_average(self):
         for client in self.clients.values():
             for dogovor in client['dogovor'].values():
@@ -287,7 +315,7 @@ class Report:
                     data = self.wa.get(key)
                     period = float(period)
                     if not data:
-                            # 46 -Друг
+                        # 46 -Друг
                         self.wa[key] = {'parent': [], 'stavka': float(
                             proc), 'koef': 240.194 if tarif == '46' or tarif == '48' else 365*float(proc), 'period': period-7 if tarif == '46' or tarif == '48' else period,
                             'summa_free': 0, 'summa': 0, 'count': 0, 'value': {}}
@@ -316,20 +344,21 @@ class Report:
         self.wa['summa_wa'] = summa / summa_free if summa_free != 0 else 1
 
 # категории потребительских займов
-    def set_reserves(self):
-        data = {'1': {'title': '30', 'count4': 0, 'count6': 0, 'summa5': 0, 'summa3': 0, 'summa6': 0, 'items': []},
-                '2': {'title': '40', 'count4': 0, 'count6': 0, 'summa5': 0, 'summa3': 0, 'summa6': 0, 'items': []},
-                '3': {'title': '50', 'count4': 0, 'count6': 0, 'summa5': 0, 'summa3': 0, 'summa6': 0, 'items': []},
-                '4': {'title': '60', 'count4': 0, 'count6': 0, 'summa5': 0, 'summa3': 0, 'summa6': 0, 'items': []},
-                '5': {'title': '70', 'count4': 0, 'count6': 0, 'summa5': 0, 'summa3': 0, 'summa6': 0, 'items': []},
-                '6': {'title': '80', 'count4': 0, 'count6': 0, 'summa5': 0, 'summa3': 0, 'summa6': 0, 'items': []},
-                '7': {'title': '99', 'count4': 0, 'count6': 0, 'summa5': 0, 'summa3': 0, 'summa6': 0, 'items': []},
-                '0': {'title': '', 'count4': 0, 'count6': 0, 'summa5': 0, 'summa3': 0, 'summa6': 0, 'items': []},
-                }
+    def set_kategoria(self):
+        kategoria = {'1': {'title': '30', 'count4': 0, 'count6': 0, 'summa5': 0, 'summa3': 0, 'summa6': 0, 'items': []},
+                     '2': {'title': '40', 'count4': 0, 'count6': 0, 'summa5': 0, 'summa3': 0, 'summa6': 0, 'items': []},
+                     '3': {'title': '50', 'count4': 0, 'count6': 0, 'summa5': 0, 'summa3': 0, 'summa6': 0, 'items': []},
+                     '4': {'title': '60', 'count4': 0, 'count6': 0, 'summa5': 0, 'summa3': 0, 'summa6': 0, 'items': []},
+                     '5': {'title': '70', 'count4': 0, 'count6': 0, 'summa5': 0, 'summa3': 0, 'summa6': 0, 'items': []},
+                     '6': {'title': '80', 'count4': 0, 'count6': 0, 'summa5': 0, 'summa3': 0, 'summa6': 0, 'items': []},
+                     '7': {'title': '99', 'count4': 0, 'count6': 0, 'summa5': 0, 'summa3': 0, 'summa6': 0, 'items': []},
+                     '0': {'title': '', 'count4': 0, 'count6': 0, 'summa5': 0, 'summa3': 0, 'summa6': 0, 'items': []},
+                     }
+        reserve = {}
         for client in self.clients.values():
             pdn = 0.3
             for dogovor in client['dogovor'].values():
-                pdn = float(dogovor['pdn']) if dogovor.get('pdn') else 0.3
+                pdn = float(dogovor['pdn']) if dogovor.get('pdn') else pdn
             for dogovor in client['dogovor'].values():
                 if dogovor.get('turn_debet_main'):
                     dogovor['turn_debet_main'] = float(dogovor['turn_debet_main']) if dogovor.get(
@@ -348,6 +377,9 @@ class Report:
                         dogovor['pdn']) if dogovor.get('pdn') else pdn
                     dogovor['count_days'] = int(dogovor['count_days']) if dogovor.get(
                         'count_days') else 0
+                    dogovor['rezerv_percent'] = self.__get_rezerv_percent(
+                        dogovor['count_days'])
+
                     if dogovor['turn_debet_main'] >= 10000:
                         if dogovor['pdn'] <= 0.3:
                             t = '1'
@@ -365,22 +397,40 @@ class Report:
                             t = '7'
                     else:
                         t = '0'
-                    data[t]['count4'] += 1
-                    data[t]['summa5'] += dogovor['turn_debet_main']
-                    data[t]['summa3'] += (dogovor['end_debet_main'] +
-                                          dogovor['end_debet_proc'])
+                    kategoria[t]['count4'] += 1
+                    kategoria[t]['summa5'] += dogovor['turn_debet_main']
+                    kategoria[t]['summa3'] += (dogovor['end_debet_main'] +
+                                               dogovor['end_debet_proc'])
                     if dogovor['count_days'] > 90 and (dogovor['end_debet_main'] + dogovor['end_debet_proc']) > 0:
-                        data[t]['count6'] += 1
-                        data[t]['summa6'] += (dogovor['end_debet_main'] +
-                                              dogovor['end_debet_proc'])
+                        kategoria[t]['count6'] += 1
+                        kategoria[t]['summa6'] += (dogovor['end_debet_main'] +
+                                                   dogovor['end_debet_proc'])
+                    item = {'name': client['name'], 'parent': dogovor}
+                    kategoria[t]['items'].append(item)
 
-                    data[t]['items'].append(
-                        {'name': client['name'], 'parent': dogovor})
+                    reserve.setdefault(str(dogovor['rezerv_percent']), {
+                                       'percent': dogovor['rezerv_percent'], 
+                                       'summa_main': 0, 
+                                       'summa_proc': 0, 
+                                       'count': 0, 
+                                       'items': []})
+                    reserve[str(dogovor['rezerv_percent'])
+                            ]['summa_main'] += dogovor['turn_debet_main']
+                    reserve[str(dogovor['rezerv_percent'])
+                            ]['summa_proc'] += dogovor['end_debet_proc']
+                    reserve[str(dogovor['rezerv_percent'])]['count'] += 1
+                    reserve[str(dogovor['rezerv_percent'])
+                            ]['items'].append(item)
 
-        self.rezerv = data
-    
+        reserve = sorted(reserve.items())
+        for item in reserve:
+            item[1]['items'] = sorted(item[1]['items'], key = lambda x : x['name'])
+
+        self.reserve = reserve
+        self.kategoria = kategoria
+
     def get_numbers(self):
-        return [f'0{x.split()}' if len(x.split())==11 else x for x in self.reference.keys()]
+        return [f'0{x.split()}' if len(x.split()) == 11 else x for x in self.reference.keys()]
 
     def fill_from_archi(self):
         for client in self.clients.values():
@@ -391,4 +441,22 @@ class Report:
                     dogovor['tarif_name'] = self.data[dogovor['number']][7]
                     dogovor['period'] = self.data[dogovor['number']][2]
 
-
+    def __get_rezerv_percent(self, count: int) -> float:
+        if count <= 7:
+            return 0
+        elif count <= 30:
+            return 3/100
+        elif count <= 60:
+            return 10/100
+        elif count <= 90:
+            return 20/100
+        elif count <= 120:
+            return 40/100
+        elif count <= 180:
+            return 50/100
+        elif count <= 270:
+            return 65/100
+        elif count <= 360:
+            return 80/100
+        else:
+            return 99/100
