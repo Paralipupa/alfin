@@ -39,6 +39,10 @@ class Report:
                                     'name': record[self.fields.get('FLD_NAME')], 'dogovor': {}})
             self.__clear_dog_data()
 
+    def __record_dog_name(self, record: list):
+        if re.search('Договор', record[self.fields.get('FLD_NUMBER')], re.IGNORECASE):
+            self.__clear_dog_data()
+
     def __record_dog_type(self, record: list):
         if self.fields.get('FLD_NUMBER', -1) != -1 and re.search(PATT_DOG_TYPE, record[self.fields.get('FLD_NUMBER')], re.IGNORECASE):
             self.current_dogovor_type = record[self.fields.get('FLD_NUMBER')]
@@ -184,6 +188,7 @@ class Report:
             self.__record_dog_type(record)
             self.__record_client(record)
             if self.current_client_name:
+                self.__record_dog_name(record)
                 self.__record_dog_number(record, index)
                 self.__record_dog_date(record)
                 self.__record_dog_period(record)
@@ -285,24 +290,23 @@ class Report:
                     for item_dog_attrib in item_dogovor.keys():
                         if not dogovor.get(item_dog_attrib):
                             dogovor[item_dog_attrib] = item_dogovor[item_dog_attrib]
-            if not dogovor.get('count_days'):
-                d1 = to_date(dogovor.get('date', ''))
-                if dogovor.get('plat'):
-                    d2 = to_date(
-                        dogovor['plat'][-1]['date_proc'])
-                else:
-                    d2 = self.report_date                
-                dogovor['report_date'] = d2.strftime('%d.%m.%Y')
-                if not isinstance(d1, str) and not isinstance(d2, str):
-                    dogovor['count_days'] = (d2 - d1).days
-            else:
-                dogovor['report_date'] = (self.report_date - datetime.timedelta(days=dogovor['count_days']) ).strftime('dd.mm.yyyy')
+            d1 = to_date(dogovor.get('date', ''))
+            d2 = self.report_date
+            d3 = self.report_date
+            if dogovor.get('plat'):
+                for plat in dogovor['plat']:
+                    if plat.get('date_proc') and plat.get('turn_credit_proc'):
+                        d2 = to_date(plat['date_proc'])
+                if dogovor['plat'][-1].get('turn_credit_proc'):
+                    d3 = to_date(plat['date_proc'])
+            dogovor['report_date'] = d2.strftime('%d.%m.%Y')
+            dogovor['report_froze'] = d3.strftime('%d.%m.%Y')
+            if not dogovor.get('count_days') and  not isinstance(d1, str) and not isinstance(d2, str):
+                dogovor['count_days'] = (d2 - d1).days
         self.write('clients')
 
 
 # средневзвешенная величина
-
-
     def set_weighted_average(self):
         for client in self.clients.values():
             for dogovor in client['dogovor'].values():
@@ -409,10 +413,10 @@ class Report:
                     kategoria[t]['items'].append(item)
 
                     reserve.setdefault(str(dogovor['rezerv_percent']), {
-                                       'percent': dogovor['rezerv_percent'], 
-                                       'summa_main': 0, 
-                                       'summa_proc': 0, 
-                                       'count': 0, 
+                                       'percent': dogovor['rezerv_percent'],
+                                       'summa_main': 0,
+                                       'summa_proc': 0,
+                                       'count': 0,
                                        'items': []})
                     reserve[str(dogovor['rezerv_percent'])
                             ]['summa_main'] += dogovor['turn_debet_main']
