@@ -300,7 +300,10 @@ class Report:
                 if dogovor['plat'][-1].get('turn_credit_proc'):
                     d3 = to_date(plat['date_proc'])
             dogovor['report_date'] = d2.strftime('%d.%m.%Y')
-            dogovor['report_froze'] = d3.strftime('%d.%m.%Y')
+            if not dogovor.get('report_frost'):
+                dogovor['report_frost'] = d3.strftime('%d.%m.%Y')
+            else:
+                dogovor['report_frost'] = d3.strftime('%d.%m.%Y')
             if not dogovor.get('count_days') and  not isinstance(d1, str) and not isinstance(d2, str):
                 dogovor['count_days'] = (d2 - d1).days
         self.write('clients')
@@ -337,7 +340,6 @@ class Report:
                     if summa:
                         self.warnings.append(
                             f'ср.взвеш: {client["name"]} {dogovor["number"]}  {summa} period:{period} tarif:{tarif} proc:{proc}')
-
         summa = 0
         summa_free = 0
         for key, client in self.wa.items():
@@ -439,11 +441,15 @@ class Report:
     def fill_from_archi(self):
         for client in self.clients.values():
             for dogovor in client['dogovor'].values():
-                if self.data.get(dogovor['number']):
-                    dogovor['proc'] = self.data[dogovor['number']][1]
-                    dogovor['tarif'] = self.data[dogovor['number']][6]
-                    dogovor['tarif_name'] = self.data[dogovor['number']][7]
-                    dogovor['period'] = self.data[dogovor['number']][2]
+                if self.data['order'].get(dogovor['number']):
+                    dogovor['proc'] = self.data['order'][dogovor['number']][1]
+                    dogovor['tarif'] = self.data['order'][dogovor['number']][6]
+                    dogovor['tarif_name'] = self.data['order'][dogovor['number']][7]
+                    dogovor['period'] = self.data['order'][dogovor['number']][2]
+                # if self.data['frost'].get(dogovor['number']):
+                #     dogovor['report_frost'] = self.data['frost'][dogovor['number']][2]
+                if self.data['payment'].get(dogovor['number']):
+                    dogovor['payment'] = self.data['payment'][dogovor['number']]
 
     def __get_rezerv_percent(self, count: int) -> float:
         if count <= 7:

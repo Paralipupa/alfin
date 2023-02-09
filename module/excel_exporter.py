@@ -55,6 +55,8 @@ class ExcelExporter:
         self.write_kategoria(report.kategoria)
         self.workbook.addSheet("Резервы")
         self.write_reserve(report)
+        self.workbook.addSheet("Платежи")
+        self.write_payment(report)
         self.workbook.addSheet("error")
         self.write_errors(report.warnings)
         return self.workbook.save()
@@ -100,7 +102,7 @@ class ExcelExporter:
                      'type': 'date', 'col': 21},
                  {'name': 'end_debet_proc', 'title': 'Остаток платежа',
                      'type': 'float', 'col': 20},
-                 {'name': 'report_froze', 'title': 'Дата заморозки',
+                 {'name': 'report_frost', 'title': 'Дата заморозки',
                      'type': 'date', 'col': 21},
                  {'name': 'count_days', 'title': 'Просрочка',
                      'type': 'int', 'col': 16},
@@ -137,7 +139,7 @@ class ExcelExporter:
                                 int(dog[name['name']]) if name['type'] == 'int' else (
                                     to_date(dog[name['name']]) if name['type'] == 'date' else (
                                         str(dog[name['name']]) if dog.get(name['name']) else None)))
-                            if name['name'] == 'report_froze':
+                            if name['name'] == 'report_frost':
                                 if value != report.report_date and dog.get('end_debet_proc'):
                                     self.workbook.write(
                                         row, col, value, num_format_str=r'dd/mm/yyyy' if name['type'] == 'date' else None)
@@ -307,9 +309,6 @@ class ExcelExporter:
                     row, col+7, Formula(val['parent']['count_days_address']) if val['parent'].get('count_days_address') else val['parent'].get('count_days'))
                 row += 1
 
-        if kategoria.get('0'):
-            pass
-
     def write_reserve(self, report):
         row = 0
         col = 0
@@ -378,14 +377,58 @@ class ExcelExporter:
                     row, col+3, Formula(dog['end_debet_main_address']) if dog.get('end_debet_main_address') else dog.get('end_debet_main'), num_format_str=num_format)
                 self.workbook.write(
                     row, col+4, Formula(dog['end_debet_proc_address']) if dog.get('end_debet_proc_address') else dog.get('end_debet_proc'), num_format_str=num_format)
+
+                f = f"{Utils.rowcol_to_cell(row,col+3,col_abs=True)}*{Utils.rowcol_to_cell(row,col,col_abs=True)}"
                 self.workbook.write(
-                    row, col+5, Formula(f"{Utils.rowcol_to_cell(row,col+3,col_abs=True)}*{Utils.rowcol_to_cell(row,col,col_abs=True)}"), num_format_str=num_format)
+                    row, col+5, Formula(f), num_format_str=num_format)
                 self.workbook.write(
                     row, col+6, Formula(f"{Utils.rowcol_to_cell(row,col+4,col_abs=True)}*({Utils.rowcol_to_cell(row,col+5,col_abs=True)}/{Utils.rowcol_to_cell(row,col+3,col_abs=True)})"), num_format_str=num_format)
                 self.workbook.write(
                     row, col+7, Formula(dog['count_days_address']) if dog.get('count_days_address') else dog.get('count_days'), num_format_str=num_format)
             nrow_start += 1
             row += 1
+
+    def write_payment(self, report):
+        row = 0
+        col = 0
+        self.workbook.write(row, 0, 'Название')
+        self.workbook.write(row, 1, 'Договор')
+        self.workbook.write(row, 2, 'Сумма в 1С')
+        self.workbook.write(row, 3, 'Сумма в Archi')
+        self.workbook.write(row, 4, 'Дата')
+
+        for client in report.clients.values():
+            num_format = '#,##0.00'
+            for dog in client['dogovor'].values():
+                if dog.get('payment'):
+                    sum_on_archi_str = ''
+                    sum_on_1c_str = ''
+                    sum_on_archi = 0
+                    sum_on_1c = 0
+                    d = None
+                    for pay in dog['payment']:
+                        if pay[3].date() < report.report_date and pay[5]==1:
+                            sum_on_archi += pay[2]
+                            sum_on_archi_str += f"+{pay[2]}"
+                            d = pay[3].date()
+                    if sum_on_archi > 0 and dog.get('plat'):
+                        for pay in dog['plat']:
+                            if pay.get('turn_credit_proc') and \
+                                    datetime.datetime.strptime(pay['date_proc'], '%d.%m.%y').date() < report.report_date:
+                                sum_on_1c += float(pay['turn_credit_proc'])
+                                sum_on_1c_str += f"+{float(pay['turn_credit_proc'])}"
+                        if float(sum_on_archi) != sum_on_1c:
+                            self.workbook.write(
+                                row, 0, Formula(client['name_address']) if client.get('name_address') else client.get('name'))
+                            self.workbook.write(
+                                row, 1, Formula(dog['number_address']) if dog.get('number_address') else dog.get('number_address'))
+                            try:
+                                self.workbook.write(row, 2, Formula(sum_on_1c_str.strip('+')) if sum_on_1c_str else 0, num_format_str=num_format)
+                                self.workbook.write(row, 3, Formula(sum_on_archi_str.strip('+')) if sum_on_archi_str else 0, num_format_str=num_format)
+                            except Exception as ex:
+                                pass
+                            self.workbook.write(row, 4, d, num_format_str='dd/mm/yyyy')
+                            row += 1
 
 
 # from xlwt import Utils

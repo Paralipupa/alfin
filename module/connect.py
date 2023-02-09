@@ -17,7 +17,7 @@ class SQLServer():
             pass
 
     def get_orders(self, numbers: list = ['0']):
-        mSQL = "SELECT o.ID, o.MAINPERCENT, o.DAYSQUANT, o.NUMBER, o.CREATIONDATETIME, c.FULLNAME, o.POID, p.NAME"
+        mSQL = "SELECT o.ID, o.MAINPERCENT, o.DAYSQUANT, o.NUMBER, cast(c.[CREATIONDATETIME] as DateTime) as CREATEDATE, c.FULLNAME, o.POID, p.NAME"
         mSQL = mSQL + " FROM [Orders] o "
         mSQL = mSQL + " INNER JOIN [CLIENTS] c ON c.[ID]=o.[CLIENTID]"
         mSQL = mSQL + " INNER JOIN [PERCENT_OPTIONS] p ON o.[POID]=p.[ID]"
@@ -29,34 +29,39 @@ class SQLServer():
         data = dict(zip(keys, results))
         return data
 
-    def get_orders_frost(self, orders: str='-1'):
-        mSQL = "SELECT TOP 10 o.[ORDERID], o.[CREATIONDATETIME] "
-        mSQL = mSQL + " FROM [Order_Frost] o "
-        # mSQL = mSQL + " WHERE o.[ORDERID] in ({})".format(orders)
+    def get_orders_frost(self, numbers: str='-1'):
+        mSQL = "SELECT o.[ID], o.NUMBER, cast(c.[CREATIONDATETIME] as DateTime) as CREATEDATE "
+        mSQL = mSQL + " FROM [Orders] o "
+        mSQL = mSQL + " INNER JOIN [Order_Frost] c ON c.[ORDERID]=o.[ID]"
+        mSQL = mSQL + " WHERE o.[NUMBER] in ('{}')".format("','".join(numbers))
         mSQL = mSQL + " ORDER BY o.ID DESC"
-        cursor = q.connection.cursor()
+        cursor = self.connection.cursor()
         cursor.execute(mSQL)
         results = cursor.fetchall()
-        keys = [f"{x[0]}" for x in results]
+        keys = [f"{x[1]}" for x in results]
         data = dict(zip(keys, results))
         return data
 
-    def get_orders_payments(self, orders: str='-1'):
-        mSQL = "SELECT TOP 10 o.[ORDERID], o.[CREATIONDATETIME],o.[ENABLED], o.[KIND], o.[COSTALL] "
-        mSQL = mSQL + " FROM [Order_Payment] o "
-        # mSQL = mSQL + " WHERE o.[ORDERID] in ({})".format(orders)
+    def get_orders_payments(self, numbers: str='-1'):
+        mSQL = "SELECT o.[ID], o.[NUMBER], c.[COSTALL], cast(c.[CREATIONDATETIME] as DateTime) as CREATEDATE,c.[ENABLED], c.[KIND] "
+        mSQL = mSQL + " FROM [Orders] o "
+        mSQL = mSQL + " INNER JOIN [Order_Payment] c ON c.[ORDERID]=o.[ID]"
+        mSQL = mSQL + " WHERE o.[NUMBER] in ('{}')".format("','".join(numbers))
         mSQL = mSQL + " ORDER BY o.ID DESC"
-        cursor = q.connection.cursor()
+        cursor = self.connection.cursor()
         cursor.execute(mSQL)
         results = cursor.fetchall()
-        keys = [f"{x[0]}" for x in results]
-        data = dict(zip(keys, results))
+        data = {}
+        for item in results:
+            data.setdefault(item[1], [])
+            data[item[1]].append(item)
         return data
     
     def get_data_from_archi(self, numbers: list):
-        data = self.get_orders(numbers)
-        # q.get_orders_frost().values()
-        # q.get_orders_payments().values()
+        data={}
+        data['order'] = self.get_orders(numbers)
+        data['frost'] = self.get_orders_frost(numbers)
+        data['payment'] = self.get_orders_payments(numbers)
         self.connection.close()
         return data
 
