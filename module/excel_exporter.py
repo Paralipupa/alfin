@@ -109,7 +109,8 @@ class ExcelExporter:
                  {'name': 'reserve', 'title': 'Разерв(проц)',
                      'type': 'int', 'col': 16},
                  ]
-
+        
+        num_format = '#,##0.00'
         self.workbook.write(0, 0, report.report_date,
                             num_format_str=r'dd/mm/yyyy')
         row = 1
@@ -118,6 +119,10 @@ class ExcelExporter:
         for name in names:
             col += 1
             self.workbook.write(row, col, name['title'])
+        col += 1
+        self.workbook.write(row, col, 'Резерв(осн.)')
+        col += 1
+        self.workbook.write(row, col, 'Резерв(проц.)')
         row += 1
         curr_type = 'Основной договор'
         col = 0
@@ -148,16 +153,25 @@ class ExcelExporter:
                                     self.workbook.write(
                                         row, col, value, num_format_str=r'dd/mm/yyyy' if name['type'] == 'date' else None)
                             elif name['name'] == 'count_days':
+                                x = f"IF(ISBLANK({Utils.rowcol_to_cell(row,col-2,col_abs=True)})," +\
+                                    f"0," +\
+                                    f"{Utils.rowcol_to_cell(0,0,row_abs=True,col_abs=True)}-" +\
+                                    f"{Utils.rowcol_to_cell(row,2,col_abs=True)}-" +\
+                                    f"{Utils.rowcol_to_cell(row,6,col_abs=True)})"
+                                f = f"IF(" + x +\
+                                    f'<=0,"",' + x +\
+                                    f")"
                                 self.workbook.write(
                                     row, col,
-                                    Formula(
-                                        f"IF(ISBLANK({Utils.rowcol_to_cell(row,col-1,col_abs=True)}),{Utils.rowcol_to_cell(0,0,row_abs=True,col_abs=True)},{Utils.rowcol_to_cell(row,col-1,col_abs=True)})-{Utils.rowcol_to_cell(row,2,col_abs=True)}-{Utils.rowcol_to_cell(row,6,col_abs=True)})"),
+                                    Formula(f),
                                     num_format_str=r'dd/mm/yyyy' if name['type'] == 'date' else None)
                             else:
                                 self.workbook.write(
                                     row, col, value, num_format_str=r'dd/mm/yyyy' if name['type'] == 'date' else None)
                         elif name['name'] == 'reserve':
-                            f = f"IF({Utils.rowcol_to_cell(row,col-1,col_abs=True)}<=7,0," +\
+                            f = "" + \
+                                f'IF({Utils.rowcol_to_cell(row,col-1,col_abs=True)}="","",' +\
+                                f'IF(AND({Utils.rowcol_to_cell(row,col-1,col_abs=True)}<=7,{Utils.rowcol_to_cell(row,col-1,col_abs=True)}>=0),0,' +\
                                 f"IF({Utils.rowcol_to_cell(row,col-1,col_abs=True)}<=30,3/100," +\
                                 f"IF({Utils.rowcol_to_cell(row,col-1,col_abs=True)}<=60,10/100," +\
                                 f"IF({Utils.rowcol_to_cell(row,col-1,col_abs=True)}<=90,20/100," +\
@@ -165,7 +179,7 @@ class ExcelExporter:
                                 f"IF({Utils.rowcol_to_cell(row,col-1,col_abs=True)}<=180,50/100," +\
                                 f"IF({Utils.rowcol_to_cell(row,col-1,col_abs=True)}<=270,65/100," +\
                                 f"IF({Utils.rowcol_to_cell(row,col-1,col_abs=True)}<=360,80/100," +\
-                                f"99/100))))))))"
+                                f"99/100)))))))))"
                             self.workbook.write(
                                 row, col,
                                 Formula(f)
@@ -175,9 +189,18 @@ class ExcelExporter:
                             f"{self.workbook.sheet.name} ({name['name']}): {row}, {name['col']}, {value}")
                     dog[name['name'] +
                         '_address'] = f'{self.workbook.sheet.name}!{Utils.rowcol_to_cell(row,col)}'
-                if dog.get('plat'):
-                    self.workbook.write(
-                        row, col, dog['plat'][-1]['date_proc'], num_format_str=r'dd/mm/yyyy' if name['type'] == 'date' else None)
+                col += 1
+                f = f'IF({Utils.rowcol_to_cell(row,col-1,col_abs=True)}="","",{Utils.rowcol_to_cell(row,col-9,col_abs=True)}*{Utils.rowcol_to_cell(row,col-1,col_abs=True)})'
+                self.workbook.write(row, col, Formula(
+                    f), num_format_str=num_format)
+                dog['rez_osn' +
+                    '_address'] = f'{self.workbook.sheet.name}!{Utils.rowcol_to_cell(row,col)}'
+                col += 1
+                f = f'IF({Utils.rowcol_to_cell(row,col-2,col_abs=True)}="","",{Utils.rowcol_to_cell(row,col-5,col_abs=True)}*{Utils.rowcol_to_cell(row,col-1,col_abs=True)}/{Utils.rowcol_to_cell(row,col-10,col_abs=True)})'
+                self.workbook.write(row, col, Formula(
+                    f), num_format_str=num_format)
+                dog['rez_proc' +
+                    '_address'] = f'{self.workbook.sheet.name}!{Utils.rowcol_to_cell(row,col)}'
                 row += 1
 
     def write_result_weighted_average(self, result):
@@ -378,11 +401,14 @@ class ExcelExporter:
                 self.workbook.write(
                     row, col+4, Formula(dog['end_debet_proc_address']) if dog.get('end_debet_proc_address') else dog.get('end_debet_proc'), num_format_str=num_format)
 
-                f = f"{Utils.rowcol_to_cell(row,col+3,col_abs=True)}*{Utils.rowcol_to_cell(row,col,col_abs=True)}"
+                # f = f"{Utils.rowcol_to_cell(row,col+3,col_abs=True)}*{Utils.rowcol_to_cell(row,col,col_abs=True)}"
+                f = dog['rez_osn_address']
                 self.workbook.write(
                     row, col+5, Formula(f), num_format_str=num_format)
+                f = dog['rez_proc_address']
+                # f = f"{Utils.rowcol_to_cell(row,col+4,col_abs=True)}*({Utils.rowcol_to_cell(row,col+5,col_abs=True)}/{Utils.rowcol_to_cell(row,col+3,col_abs=True)})"
                 self.workbook.write(
-                    row, col+6, Formula(f"{Utils.rowcol_to_cell(row,col+4,col_abs=True)}*({Utils.rowcol_to_cell(row,col+5,col_abs=True)}/{Utils.rowcol_to_cell(row,col+3,col_abs=True)})"), num_format_str=num_format)
+                    row, col+6, Formula(f), num_format_str=num_format)
                 self.workbook.write(
                     row, col+7, Formula(dog['count_days_address']) if dog.get('count_days_address') else dog.get('count_days'), num_format_str=num_format)
             nrow_start += 1
@@ -407,7 +433,7 @@ class ExcelExporter:
                     sum_on_1c = 0
                     d = None
                     for pay in dog['payment']:
-                        if pay[3].date() < report.report_date and pay[5]==1:
+                        if pay[3].date() < report.report_date and pay[5] == 1:
                             sum_on_archi += pay[2]
                             sum_on_archi_str += f"+{pay[2]}"
                             d = pay[3].date()
@@ -423,11 +449,14 @@ class ExcelExporter:
                             self.workbook.write(
                                 row, 1, Formula(dog['number_address']) if dog.get('number_address') else dog.get('number_address'))
                             try:
-                                self.workbook.write(row, 2, Formula(sum_on_1c_str.strip('+')) if sum_on_1c_str else 0, num_format_str=num_format)
-                                self.workbook.write(row, 3, Formula(sum_on_archi_str.strip('+')) if sum_on_archi_str else 0, num_format_str=num_format)
+                                self.workbook.write(row, 2, Formula(sum_on_1c_str.strip(
+                                    '+')) if sum_on_1c_str else 0, num_format_str=num_format)
+                                self.workbook.write(row, 3, Formula(sum_on_archi_str.strip(
+                                    '+')) if sum_on_archi_str else 0, num_format_str=num_format)
                             except Exception as ex:
                                 pass
-                            self.workbook.write(row, 4, d, num_format_str='dd/mm/yyyy')
+                            self.workbook.write(
+                                row, 4, d, num_format_str='dd/mm/yyyy')
                             row += 1
 
 

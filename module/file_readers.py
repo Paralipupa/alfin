@@ -250,7 +250,7 @@ class XlsWrite:
     def write(self, row: int, col: int, value, style_string:str=None, num_format_str:str=None):
         try:
             if isinstance(value, str):
-                neededWidth = int((1 + min([len(str(value)), 128])) * 256)
+                neededWidth = int((1 + min([len(str(value)), 64])) * 256)
             else:
                 neededWidth = 12 * 256
             if style_string or num_format_str:

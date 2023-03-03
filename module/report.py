@@ -291,21 +291,25 @@ class Report:
                         if not dogovor.get(item_dog_attrib):
                             dogovor[item_dog_attrib] = item_dogovor[item_dog_attrib]
             d1 = to_date(dogovor.get('date', ''))
-            d2 = self.report_date
-            d3 = self.report_date
+            d2 = None
+            d3 = None
             if dogovor.get('plat'):
                 for plat in dogovor['plat']:
                     if plat.get('date_proc') and plat.get('turn_credit_proc'):
-                        d2 = to_date(plat['date_proc'])
-                if dogovor['plat'][-1].get('turn_credit_proc'):
-                    d3 = to_date(plat['date_proc'])
-            dogovor['report_date'] = d2.strftime('%d.%m.%Y')
+                        if d2 is None:
+                            d2 = to_date(plat['date_proc'])
+                        d3 = to_date(plat['date_proc'])
+            if d2 is None:
+                d2 = self.report_date
+            if d3 is None:
+                d3 = self.report_date
+            dogovor['report_date'] = d3.strftime('%d.%m.%Y') #дата последней оплаты
             if not dogovor.get('report_frost'):
-                dogovor['report_frost'] = d3.strftime('%d.%m.%Y')
+                dogovor['report_frost'] = d2.strftime('%d.%m.%Y') #дата первой оплаты
             else:
-                dogovor['report_frost'] = d3.strftime('%d.%m.%Y')
+                dogovor['report_frost'] = d2.strftime('%d.%m.%Y')
             if not dogovor.get('count_days') and  not isinstance(d1, str) and not isinstance(d2, str):
-                dogovor['count_days'] = (d2 - d1).days
+                dogovor['count_days'] = (self.report_date - d1).days
         self.write('clients')
 
 
