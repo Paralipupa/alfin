@@ -1,18 +1,20 @@
 import abc
-from asyncio.log import logger
 import csv
 import os
 import pathlib
-from openpyxl import load_workbook
+import logging
 import xlrd
 import xlwt
 import math
 import pandas as pd
 import shutil
-import traceback
 from datetime import datetime
 from zipfile import ZipFile
-from xlwt import Font, XFStyle
+from openpyxl import load_workbook
+from module.settings import BASE_DIR
+
+
+logger = logging.getLogger(__name__)
 
 
 def fatal_error(func):
@@ -20,7 +22,7 @@ def fatal_error(func):
         try:
             return func(*args, **kwargs)
         except Exception as ex:
-            logger.warning(traceback.format_exc())
+            logger.exception('Fatal error')
             exit()
     return wrapper
 
@@ -30,9 +32,7 @@ def warning_error(func):
         try:
             return func(*args)
         except Exception as ex:
-            template = "An exception of type {0} occurred. Arguments:\n{1!r}"
-            message = template.format(type(ex).__name__, ex.args)
-            logger.error(message)
+            logger.exception('Warning error')
             return None
     return wrapper
 
@@ -84,6 +84,8 @@ class DataFile(abc.ABC):
     def __next__(self):
         return ""
 
+# %%
+
 
 class CsvFile(DataFile):
     def __init__(self, fname, first_line, columns, page_index=None):
@@ -111,18 +113,26 @@ class CsvFile(DataFile):
     def __del__(self):
         self._freader.close()
 
+# %%
+
 
 class PandasFile(DataFile):
     def __init__(self, fname, sheet_name, first_line: int = 0, columns: int = 50, page_index=0):
         super(PandasFile, self).__init__(
             fname, sheet_name, first_line, range(columns))
         if self._sheet_name:
-            self._sheet = pd.read_excel(fname, sheet_name=[self._sheet_name])
+            self._sheet = next(
+                iter(pd.read_excel(fname, sheet_name=[self._sheet_name]).values()))
+            xlsx = pd.ExcelFile(fname)
+            self._sheet = xlsx.parse(sheet_name=[self._sheet_name])
         else:
             import_1c(fname)
-            self._sheet = pd.read_excel(fname, sheet_name=None)
-        self._rows = (self._sheet.loc[index] for index in range(first_line,
-                                                                self._sheet.shape[0]))
+            # xlsx = pd.ExcelFile(fname)
+            # self._sheet = xlsx.parse(sheet_name=None)
+            self._sheet = next(
+                iter(pd.read_excel(fname, sheet_name=None).values()))
+        self._rows = (row for index, row in self._sheet.iterrows())
+        self._cc = 0
 
     @staticmethod
     def get_cell_text(cell):
@@ -144,6 +154,8 @@ class PandasFile(DataFile):
 
     def __del__(self):
         pass
+
+# %%
 
 
 class XlsFile(DataFile):
@@ -180,6 +192,8 @@ class XlsFile(DataFile):
     def __del__(self):
         pass
 
+# %%
+
 
 class XlsxFile(DataFile):
     @fatal_error
@@ -188,7 +202,8 @@ class XlsxFile(DataFile):
             fname, sheet_name, first_line, range(columns))
 
         file_name = import_1c(fname)
-        self._wb = load_workbook(filename=file_name, read_only=True, data_only=True)
+        self._wb = load_workbook(
+            filename=file_name, read_only=True, data_only=True)
         if 'TDSheet' in self._wb.sheetnames:
             self._sheet_name = 'TDSheet'
         if self._sheet_name:
@@ -224,6 +239,9 @@ class XlsxFile(DataFile):
         except AttributeError:
             return -1
 
+# %%
+
+
 class XlsWrite:
     def __init__(self, filename: str):
         self.name = filename
@@ -231,15 +249,17 @@ class XlsWrite:
 
     def save(self) -> str:
         try:
+            path = os.path.join(BASE_DIR, 'output')
+            pathlib.Path.mkdir(pathlib.Path(path), exist_ok=True)
             i = 0
             name = self.name
-            while os.path.isfile(pathlib.Path('output', f'{name}.xls')) and i < 100:
+            while os.path.isfile(pathlib.Path(path, f'{name}.xls')) and i < 100:
                 i += 1
                 name = f'{self.name}({i})'
-            self.book.save(pathlib.Path('output', f'{name}.xls'))
-            return pathlib.Path('output', f'{name}.xls')
+            self.book.save(pathlib.Path(path, f'{name}.xls'))
+            return pathlib.Path(path, f'{name}.xls')
         except Exception as ex:
-            logger.error(f'{ex}')
+            logger.exception('Save error')
         return None
 
     def addSheet(self, title: str = ''):
@@ -247,7 +267,7 @@ class XlsWrite:
         self.sheet = self.book.add_sheet(title)
         return self.sheet
 
-    def write(self, row: int, col: int, value, style_string:str=None, num_format_str:str=None):
+    def write(self, row: int, col: int, value, style_string: str = None, num_format_str: str = None):
         try:
             if isinstance(value, str):
                 neededWidth = int((1 + min([len(str(value)), 64])) * 256)
@@ -259,7 +279,8 @@ class XlsWrite:
                 elif not style_string and num_format_str:
                     style = xlwt.easyxf(num_format_str=num_format_str)
                 else:
-                    style = xlwt.easyxf(style_string, num_format_str=num_format_str)
+                    style = xlwt.easyxf(
+                        style_string, num_format_str=num_format_str)
                 self.sheet.write(row, col, value, style=style)
             else:
                 self.sheet.write(row, col, value)
@@ -268,12 +289,15 @@ class XlsWrite:
         except Exception as ex:
             pass
 
+
 def get_file_reader(fname):
     """Get class for reading file as iterable"""
     _, file_extension = os.path.splitext(fname)
     if file_extension == '.xls':
+        # return PandasFile
         return XlsFile
     if file_extension == '.xlsx':
+        # return PandasFile
         return XlsxFile
     if file_extension == '.csv':
         return CsvFile

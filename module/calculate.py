@@ -1,7 +1,7 @@
 from typing import NoReturn
 from module.report import Report
 from module.connect import SQLServer
-
+from module.helpers import timing
 
 class Calc:
     def __init__(self, files: list, is_archi : bool = False):
@@ -64,4 +64,12 @@ class Calc:
             pass
         elif self.main_res:
             pass
+
+    @timing(start_message="Начало")
+    def run(self) -> str:
+        self.read()
+        self.report_kategoria()
+        self.report_weighted_average()
+        return self.write()
+
 
