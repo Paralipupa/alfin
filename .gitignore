@@ -4,3 +4,4 @@
 *.json
 input/*
 output/*
+logs/*

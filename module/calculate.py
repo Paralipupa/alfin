@@ -1,4 +1,3 @@
-from typing import NoReturn
 from module.report import Report
 from module.connect import SQLServer
 from module.helpers import timing
@@ -7,6 +6,7 @@ class Calc:
     def __init__(self, files: list, is_archi : bool = False):
         self.main_wa : Report = None
         self.main_res : Report = None
+        self.archi_data = None        
         self.items: list[Report] = []
         self.is_archi = is_archi
         for file in files:
@@ -17,30 +17,29 @@ class Calc:
             else:
                 self.items.append(Report(file))
 
-    def read(self) -> NoReturn:
-        numbers = []
+    def read(self) -> None:
         for rep in self.items:
             rep.get_parser()
         if self.main_wa:
             self.main_wa.get_parser()
             self.main_wa.union_all(self.items)
-            if self.is_archi:
-                numbers = self.main_wa.get_numbers()
-                q = SQLServer()
-                if q.connection:
-                    self.main_wa.data = q.get_data_from_archi(numbers)
-                    self.main_wa.fill_from_archi()
+            self.read_from_archi()
+            self.main_wa.fill_from_archi(self.archi_data)
         if self.main_res:
             self.main_res.get_parser()
             self.main_res.union_all(self.items)
-            if self.is_archi:
-                numbers = self.main_res.get_numbers()
-                q = SQLServer()
-                if q.connection:
-                    self.main_res.data = q.get_data_from_archi(numbers)
-                    self.main_res.fill_from_archi()
+            self.read_from_archi()
+            self.main_res.fill_from_archi(self.archi_data)
 
-    def report_weighted_average(self) -> NoReturn:
+    def read_from_archi(self):
+        numbers = []
+        if self.is_archi:
+            numbers = self.main_wa.get_numbers()
+            q = SQLServer()
+            if q.connection:
+                self.archi_data = q.get_data_from_archi(numbers)
+
+    def report_weighted_average(self) -> None:
         if self.main_wa:
             self.main_wa.set_weighted_average()
             if self.main_res:
@@ -48,7 +47,7 @@ class Calc:
         elif self.main_res:
             self.main_res.set_weighted_average()
 
-    def report_kategoria(self) -> NoReturn:
+    def report_kategoria(self) -> None:
         if self.main_res:
             self.main_res.set_kategoria()
             if self.main_wa:

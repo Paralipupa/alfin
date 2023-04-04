@@ -1,6 +1,30 @@
-[INFO 2023-03-14 22:20:14] werkzeug:_internal:224  [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+[INFO 2023-04-03 23:11:34] werkzeug:_internal:224  [33mPress CTRL+C to quit[0m
+[INFO 2023-04-03 23:11:38] module.helpers:helpers:11  Начало
+[INFO 2023-04-03 23:13:36] module.helpers:helpers:16  Завершено (0:01:58.207931)
+[INFO 2023-04-03 23:13:36] werkzeug:_internal:224  127.0.0.1 - - [03/Apr/2023 23:13:36] "POST / HTTP/1.1" 200 -
+[INFO 2023-04-03 23:13:41] werkzeug:_internal:224  [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
  * Running on http://127.0.0.1:5000
-[INFO 2023-03-14 22:20:14] werkzeug:_internal:224  [33mPress CTRL+C to quit[0m
-[INFO 2023-03-14 22:20:17] module.helpers:helpers:9  Начало
-[INFO 2023-03-14 22:22:13] module.helpers:helpers:13  Завершено (0:01:55.707899)
-[INFO 2023-03-14 22:22:13] werkzeug:_internal:224  127.0.0.1 - - [14/Mar/2023 22:22:13] "POST / HTTP/1.1" 200 -
+[INFO 2023-04-03 23:13:41] werkzeug:_internal:224  [33mPress CTRL+C to quit[0m
+[INFO 2023-04-03 23:13:48] module.helpers:helpers:11  Начало
+[INFO 2023-04-03 23:16:58] werkzeug:_internal:224  [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+[INFO 2023-04-03 23:16:58] werkzeug:_internal:224  [33mPress CTRL+C to quit[0m
+[INFO 2023-04-03 23:17:29] werkzeug:_internal:224  [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+[INFO 2023-04-03 23:17:29] werkzeug:_internal:224  [33mPress CTRL+C to quit[0m
+[INFO 2023-04-03 23:17:32] werkzeug:_internal:224  127.0.0.1 - - [03/Apr/2023 23:17:32] "GET / HTTP/1.1" 200 -
+[INFO 2023-04-03 23:17:42] module.helpers:helpers:11  Начало
+[INFO 2023-04-03 23:19:01] module.helpers:helpers:16  Завершено (0:01:19.333375)
+[INFO 2023-04-03 23:19:01] werkzeug:_internal:224  127.0.0.1 - - [03/Apr/2023 23:19:01] "POST / HTTP/1.1" 200 -
+[INFO 2023-04-03 23:19:41] module.helpers:helpers:11  Начало
+[INFO 2023-04-03 23:21:33] module.helpers:helpers:16  Завершено (0:01:52.089832)
+[INFO 2023-04-03 23:21:33] werkzeug:_internal:224  127.0.0.1 - - [03/Apr/2023 23:21:33] "POST / HTTP/1.1" 200 -
+[INFO 2023-04-04 10:50:09] werkzeug:_internal:224  [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+[INFO 2023-04-04 10:50:09] werkzeug:_internal:224  [33mPress CTRL+C to quit[0m
+[INFO 2023-04-04 10:50:20] werkzeug:_internal:224  127.0.0.1 - - [04/Apr/2023 10:50:20] "[31m[1mGET / HTTP/1.1[0m" 401 -
+[INFO 2023-04-04 10:50:22] werkzeug:_internal:224  127.0.0.1 - - [04/Apr/2023 10:50:22] "GET / HTTP/1.1" 200 -
+[INFO 2023-04-04 10:50:22] werkzeug:_internal:224  127.0.0.1 - - [04/Apr/2023 10:50:22] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+[INFO 2023-04-04 10:50:48] module.helpers:helpers:11  Начало
+[INFO 2023-04-04 10:58:25] module.helpers:helpers:16  Завершено (0:07:37.188655)
+[INFO 2023-04-04 10:58:25] werkzeug:_internal:224  127.0.0.1 - - [04/Apr/2023 10:58:25] "POST / HTTP/1.1" 200 -

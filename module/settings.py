@@ -6,7 +6,7 @@ from module.logger import CustomFilter, CustomFormatter
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if not os.path.exists(os.path.join(BASE_DIR, 'logs')):
     os.makedirs(os.path.join(BASE_DIR, 'logs'))
-ERROR_LOG_FILENAME = os.path.join(BASE_DIR, 'logs', 'error.log')
+ERROR_LOG_FILENAME = os.path.join(BASE_DIR, 'logs', 'error.json')
 DEBUG_LOG_FILENAME = os.path.join(BASE_DIR, 'logs', 'debug.log')
 INFO_LOG_FILENAME = os.path.join(BASE_DIR, 'logs', 'info.log')
 
@@ -25,6 +25,7 @@ PATT_DOG_NAME = '^договор займа'
 PATT_DOG_DATE = '^[0-9]{1,2}\.[0-9]{2}\.20[0-9]{2}'
 PATT_DOG_NUMBER = '^(?:ON)?20[0-9]{2}[0-9]{2}[0-9]{2}[0-9]{4}$|^(?:ON)?[a-zA-Zа-яА-Я0-9]{1,2}[0-9]{6}[0-9]{4}\s*$'
 PATT_DOG_PLAT = 'Обороты за '
+LEN_DOG_NUMBER = 11
 
 SQL_CONNECT = {
     'dsn': 'sqlserverdatasource',
