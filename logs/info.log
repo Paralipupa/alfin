@@ -1,30 +1,898 @@
-[INFO 2023-04-03 23:11:34] werkzeug:_internal:224  [33mPress CTRL+C to quit[0m
-[INFO 2023-04-03 23:11:38] module.helpers:helpers:11  Начало
-[INFO 2023-04-03 23:13:36] module.helpers:helpers:16  Завершено (0:01:58.207931)
-[INFO 2023-04-03 23:13:36] werkzeug:_internal:224  127.0.0.1 - - [03/Apr/2023 23:13:36] "POST / HTTP/1.1" 200 -
-[INFO 2023-04-03 23:13:41] werkzeug:_internal:224  [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+[ERROR 2023-04-05 20:22:21] module.report:report:316  __get_count_days_delay:
+Traceback (most recent call last):
+  File "/home/chip/work/web-alfin/alfin/module/report.py", line 311, in __get_count_days_delay
+    (last_day_on_period - order.date_begin - timedelta(order.count_days) ).days
+TypeError: unsupported operand type(s) for -: 'datetime.timedelta' and 'float'
+[ERROR 2023-04-05 20:22:21] module.report:report:316  __get_count_days_delay:
+Traceback (most recent call last):
+  File "/home/chip/work/web-alfin/alfin/module/report.py", line 311, in __get_count_days_delay
+    (last_day_on_period - order.date_begin - timedelta(order.count_days) ).days
+TypeError: unsupported operand type(s) for -: 'datetime.timedelta' and 'float'
+[ERROR 2023-04-05 20:22:21] module.report:report:316  __get_count_days_delay:
+Traceback (most recent call last):
+  File "/home/chip/work/web-alfin/alfin/module/report.py", line 311, in __get_count_days_delay
+    (last_day_on_period - order.date_begin - timedelta(order.count_days) ).days
+TypeError: unsupported operand type(s) for -: 'datetime.timedelta' and 'float'
+[ERROR 2023-04-05 20:22:21] module.report:report:316  __get_count_days_delay:
+Traceback (most recent call last):
+  File "/home/chip/work/web-alfin/alfin/module/report.py", line 311, in __get_count_days_delay
+    (last_day_on_period - order.date_begin - timedelta(order.count_days) ).days
+TypeError: unsupported operand type(s) for -: 'datetime.timedelta' and 'float'
+[ERROR 2023-04-05 20:22:21] module.report:report:316  __get_count_days_delay:
+Traceback (most recent call last):
+  File "/home/chip/work/web-alfin/alfin/module/report.py", line 311, in __get_count_days_delay
+    (last_day_on_period - order.date_begin - timedelta(order.count_days) ).days
+TypeError: unsupported operand type(s) for -: 'datetime.timedelta' and 'float'
+[ERROR 2023-04-05 20:22:21] module.report:report:316  __get_count_days_delay:
+Traceback (most recent call last):
+  File "/home/chip/work/web-alfin/alfin/module/report.py", line 311, in __get_count_days_delay
+    (last_day_on_period - order.date_begin - timedelta(order.count_days) ).days
+TypeError: unsupported operand type(s) for -: 'datetime.timedelta' and 'float'
+[ERROR 2023-04-05 20:22:21] module.report:report:316  __get_count_days_delay:
+Traceback (most recent call last):
+  File "/home/chip/work/web-alfin/alfin/module/report.py", line 311, in __get_count_days_delay
+    (last_day_on_period - order.date_begin - timedelta(order.count_days) ).days
+TypeError: unsupported operand type(s) for -: 'datetime.timedelta' and 'float'
+[ERROR 2023-04-05 20:22:21] module.report:report:316  __get_count_days_delay:
+Traceback (most recent call last):
+  File "/home/chip/work/web-alfin/alfin/module/report.py", line 311, in __get_count_days_delay
+    (last_day_on_period - order.date_begin - timedelta(order.count_days) ).days
+TypeError: unsupported operand type(s) for -: 'datetime.timedelta' and 'float'
+[ERROR 2023-04-05 20:22:21] module.report:report:316  __get_count_days_delay:
+Traceback (most recent call last):
+  File "/home/chip/work/web-alfin/alfin/module/report.py", line 311, in __get_count_days_delay
+    (last_day_on_period - order.date_begin - timedelta(order.count_days) ).days
+TypeError: unsupported operand type(s) for -: 'datetime.timedelta' and 'float'
+[ERROR 2023-04-05 20:22:21] module.report:report:316  __get_count_days_delay:
+Traceback (most recent call last):
+  File "/home/chip/work/web-alfin/alfin/module/report.py", line 311, in __get_count_days_delay
+    (last_day_on_period - order.date_begin - timedelta(order.count_days) ).days
+TypeError: unsupported operand type(s) for -: 'datetime.timedelta' and 'float'
+[ERROR 2023-04-05 20:22:21] module.report:report:316  __get_count_days_delay:
+Traceback (most recent call last):
+  File "/home/chip/work/web-alfin/alfin/module/report.py", line 311, in __get_count_days_delay
+    (last_day_on_period - order.date_begin - timedelta(order.count_days) ).days
+TypeError: unsupported operand type(s) for -: 'datetime.timedelta' and 'float'
+[ERROR 2023-04-05 20:22:21] module.report:report:316  __get_count_days_delay:
+Traceback (most recent call last):
+  File "/home/chip/work/web-alfin/alfin/module/report.py", line 311, in __get_count_days_delay
+    (last_day_on_period - order.date_begin - timedelta(order.count_days) ).days
+TypeError: unsupported operand type(s) for -: 'datetime.timedelta' and 'float'
+[ERROR 2023-04-05 20:22:21] module.report:report:316  __get_count_days_delay:
+Traceback (most recent call last):
+  File "/home/chip/work/web-alfin/alfin/module/report.py", line 311, in __get_count_days_delay
+    (last_day_on_period - order.date_begin - timedelta(order.count_days) ).days
+TypeError: unsupported operand type(s) for -: 'datetime.timedelta' and 'float'
+[ERROR 2023-04-05 20:22:21] module.report:report:316  __get_count_days_delay:
+Traceback (most recent call last):
+  File "/home/chip/work/web-alfin/alfin/module/report.py", line 311, in __get_count_days_delay
+    (last_day_on_period - order.date_begin - timedelta(order.count_days) ).days
+TypeError: unsupported operand type(s) for -: 'datetime.timedelta' and 'float'
+[ERROR 2023-04-05 20:22:21] module.report:report:316  __get_count_days_delay:
+Traceback (most recent call last):
+  File "/home/chip/work/web-alfin/alfin/module/report.py", line 311, in __get_count_days_delay
+    (last_day_on_period - order.date_begin - timedelta(order.count_days) ).days
+TypeError: unsupported operand type(s) for -: 'datetime.timedelta' and 'float'
+[ERROR 2023-04-05 20:22:21] module.report:report:316  __get_count_days_delay:
+Traceback (most recent call last):
+  File "/home/chip/work/web-alfin/alfin/module/report.py", line 311, in __get_count_days_delay
+    (last_day_on_period - order.date_begin - timedelta(order.count_days) ).days
+TypeError: unsupported operand type(s) for -: 'datetime.timedelta' and 'float'
+[ERROR 2023-04-05 20:22:21] module.report:report:316  __get_count_days_delay:
+Traceback (most recent call last):
+  File "/home/chip/work/web-alfin/alfin/module/report.py", line 311, in __get_count_days_delay
+    (last_day_on_period - order.date_begin - timedelta(order.count_days) ).days
+TypeError: unsupported operand type(s) for -: 'datetime.timedelta' and 'float'
+[ERROR 2023-04-05 20:22:21] module.report:report:316  __get_count_days_delay:
+Traceback (most recent call last):
+  File "/home/chip/work/web-alfin/alfin/module/report.py", line 311, in __get_count_days_delay
+    (last_day_on_period - order.date_begin - timedelta(order.count_days) ).days
+TypeError: unsupported operand type(s) for -: 'datetime.timedelta' and 'float'
+[ERROR 2023-04-05 20:22:21] module.report:report:316  __get_count_days_delay:
+Traceback (most recent call last):
+  File "/home/chip/work/web-alfin/alfin/module/report.py", line 311, in __get_count_days_delay
+    (last_day_on_period - order.date_begin - timedelta(order.count_days) ).days
+TypeError: unsupported operand type(s) for -: 'datetime.timedelta' and 'float'
+[ERROR 2023-04-05 20:22:21] module.report:report:316  __get_count_days_delay:
+Traceback (most recent call last):
+  File "/home/chip/work/web-alfin/alfin/module/report.py", line 311, in __get_count_days_delay
+    (last_day_on_period - order.date_begin - timedelta(order.count_days) ).days
+TypeError: unsupported operand type(s) for -: 'datetime.timedelta' and 'float'
+[ERROR 2023-04-05 20:22:21] module.report:report:316  __get_count_days_delay:
+Traceback (most recent call last):
+  File "/home/chip/work/web-alfin/alfin/module/report.py", line 311, in __get_count_days_delay
+    (last_day_on_period - order.date_begin - timedelta(order.count_days) ).days
+TypeError: unsupported operand type(s) for -: 'datetime.timedelta' and 'float'
+[ERROR 2023-04-05 20:22:21] module.report:report:316  __get_count_days_delay:
+Traceback (most recent call last):
+  File "/home/chip/work/web-alfin/alfin/module/report.py", line 311, in __get_count_days_delay
+    (last_day_on_period - order.date_begin - timedelta(order.count_days) ).days
+TypeError: unsupported operand type(s) for -: 'datetime.timedelta' and 'float'
+[ERROR 2023-04-05 20:22:21] module.report:report:316  __get_count_days_delay:
+Traceback (most recent call last):
+  File "/home/chip/work/web-alfin/alfin/module/report.py", line 311, in __get_count_days_delay
+    (last_day_on_period - order.date_begin - timedelta(order.count_days) ).days
+TypeError: unsupported operand type(s) for -: 'datetime.timedelta' and 'float'
+[ERROR 2023-04-05 20:22:21] module.report:report:316  __get_count_days_delay:
+Traceback (most recent call last):
+  File "/home/chip/work/web-alfin/alfin/module/report.py", line 311, in __get_count_days_delay
+    (last_day_on_period - order.date_begin - timedelta(order.count_days) ).days
+TypeError: unsupported operand type(s) for -: 'datetime.timedelta' and 'float'
+[ERROR 2023-04-05 20:22:21] module.report:report:316  __get_count_days_delay:
+Traceback (most recent call last):
+  File "/home/chip/work/web-alfin/alfin/module/report.py", line 311, in __get_count_days_delay
+    (last_day_on_period - order.date_begin - timedelta(order.count_days) ).days
+TypeError: unsupported operand type(s) for -: 'datetime.timedelta' and 'float'
+[ERROR 2023-04-05 20:22:21] module.report:report:316  __get_count_days_delay:
+Traceback (most recent call last):
+  File "/home/chip/work/web-alfin/alfin/module/report.py", line 311, in __get_count_days_delay
+    (last_day_on_period - order.date_begin - timedelta(order.count_days) ).days
+TypeError: unsupported operand type(s) for -: 'datetime.timedelta' and 'float'
+[ERROR 2023-04-05 20:22:21] module.report:report:316  __get_count_days_delay:
+Traceback (most recent call last):
+  File "/home/chip/work/web-alfin/alfin/module/report.py", line 311, in __get_count_days_delay
+    (last_day_on_period - order.date_begin - timedelta(order.count_days) ).days
+TypeError: unsupported operand type(s) for -: 'datetime.timedelta' and 'float'
+[ERROR 2023-04-05 20:22:21] module.report:report:316  __get_count_days_delay:
+Traceback (most recent call last):
+  File "/home/chip/work/web-alfin/alfin/module/report.py", line 311, in __get_count_days_delay
+    (last_day_on_period - order.date_begin - timedelta(order.count_days) ).days
+TypeError: unsupported operand type(s) for -: 'datetime.timedelta' and 'float'
+[ERROR 2023-04-05 20:22:21] module.report:report:316  __get_count_days_delay:
+Traceback (most recent call last):
+  File "/home/chip/work/web-alfin/alfin/module/report.py", line 311, in __get_count_days_delay
+    (last_day_on_period - order.date_begin - timedelta(order.count_days) ).days
+TypeError: unsupported operand type(s) for -: 'datetime.timedelta' and 'float'
+[ERROR 2023-04-05 20:22:21] module.report:report:316  __get_count_days_delay:
+Traceback (most recent call last):
+  File "/home/chip/work/web-alfin/alfin/module/report.py", line 311, in __get_count_days_delay
+    (last_day_on_period - order.date_begin - timedelta(order.count_days) ).days
+TypeError: unsupported operand type(s) for -: 'datetime.timedelta' and 'float'
+[ERROR 2023-04-05 20:22:21] module.report:report:316  __get_count_days_delay:
+Traceback (most recent call last):
+  File "/home/chip/work/web-alfin/alfin/module/report.py", line 311, in __get_count_days_delay
+    (last_day_on_period - order.date_begin - timedelta(order.count_days) ).days
+TypeError: unsupported operand type(s) for -: 'datetime.timedelta' and 'float'
+[ERROR 2023-04-05 20:22:21] module.report:report:316  __get_count_days_delay:
+Traceback (most recent call last):
+  File "/home/chip/work/web-alfin/alfin/module/report.py", line 311, in __get_count_days_delay
+    (last_day_on_period - order.date_begin - timedelta(order.count_days) ).days
+TypeError: unsupported operand type(s) for -: 'datetime.timedelta' and 'float'
+[ERROR 2023-04-05 20:22:21] module.report:report:316  __get_count_days_delay:
+Traceback (most recent call last):
+  File "/home/chip/work/web-alfin/alfin/module/report.py", line 311, in __get_count_days_delay
+    (last_day_on_period - order.date_begin - timedelta(order.count_days) ).days
+TypeError: unsupported operand type(s) for -: 'datetime.timedelta' and 'float'
+[ERROR 2023-04-05 20:22:21] module.report:report:316  __get_count_days_delay:
+Traceback (most recent call last):
+  File "/home/chip/work/web-alfin/alfin/module/report.py", line 311, in __get_count_days_delay
+    (last_day_on_period - order.date_begin - timedelta(order.count_days) ).days
+TypeError: unsupported operand type(s) for -: 'datetime.timedelta' and 'float'
+[ERROR 2023-04-05 20:22:21] module.report:report:316  __get_count_days_delay:
+Traceback (most recent call last):
+  File "/home/chip/work/web-alfin/alfin/module/report.py", line 311, in __get_count_days_delay
+    (last_day_on_period - order.date_begin - timedelta(order.count_days) ).days
+TypeError: unsupported operand type(s) for -: 'datetime.timedelta' and 'float'
+[ERROR 2023-04-05 20:22:21] module.report:report:316  __get_count_days_delay:
+Traceback (most recent call last):
+  File "/home/chip/work/web-alfin/alfin/module/report.py", line 311, in __get_count_days_delay
+    (last_day_on_period - order.date_begin - timedelta(order.count_days) ).days
+TypeError: unsupported operand type(s) for -: 'datetime.timedelta' and 'float'
+[ERROR 2023-04-05 20:22:21] module.report:report:316  __get_count_days_delay:
+Traceback (most recent call last):
+  File "/home/chip/work/web-alfin/alfin/module/report.py", line 311, in __get_count_days_delay
+    (last_day_on_period - order.date_begin - timedelta(order.count_days) ).days
+TypeError: unsupported operand type(s) for -: 'datetime.timedelta' and 'float'
+[ERROR 2023-04-05 20:22:21] module.report:report:316  __get_count_days_delay:
+Traceback (most recent call last):
+  File "/home/chip/work/web-alfin/alfin/module/report.py", line 311, in __get_count_days_delay
+    (last_day_on_period - order.date_begin - timedelta(order.count_days) ).days
+TypeError: unsupported operand type(s) for -: 'datetime.timedelta' and 'float'
+[ERROR 2023-04-05 20:22:21] module.report:report:316  __get_count_days_delay:
+Traceback (most recent call last):
+  File "/home/chip/work/web-alfin/alfin/module/report.py", line 311, in __get_count_days_delay
+    (last_day_on_period - order.date_begin - timedelta(order.count_days) ).days
+TypeError: unsupported operand type(s) for -: 'datetime.timedelta' and 'float'
+[ERROR 2023-04-05 20:22:21] module.report:report:316  __get_count_days_delay:
+Traceback (most recent call last):
+  File "/home/chip/work/web-alfin/alfin/module/report.py", line 311, in __get_count_days_delay
+    (last_day_on_period - order.date_begin - timedelta(order.count_days) ).days
+TypeError: unsupported operand type(s) for -: 'datetime.timedelta' and 'float'
+[ERROR 2023-04-05 20:22:21] module.report:report:316  __get_count_days_delay:
+Traceback (most recent call last):
+  File "/home/chip/work/web-alfin/alfin/module/report.py", line 311, in __get_count_days_delay
+    (last_day_on_period - order.date_begin - timedelta(order.count_days) ).days
+TypeError: unsupported operand type(s) for -: 'datetime.timedelta' and 'float'
+[ERROR 2023-04-05 20:22:21] module.report:report:316  __get_count_days_delay:
+Traceback (most recent call last):
+  File "/home/chip/work/web-alfin/alfin/module/report.py", line 311, in __get_count_days_delay
+    (last_day_on_period - order.date_begin - timedelta(order.count_days) ).days
+TypeError: unsupported operand type(s) for -: 'datetime.timedelta' and 'float'
+[ERROR 2023-04-05 20:22:21] module.report:report:316  __get_count_days_delay:
+Traceback (most recent call last):
+  File "/home/chip/work/web-alfin/alfin/module/report.py", line 311, in __get_count_days_delay
+    (last_day_on_period - order.date_begin - timedelta(order.count_days) ).days
+TypeError: unsupported operand type(s) for -: 'datetime.timedelta' and 'float'
+[ERROR 2023-04-05 20:22:21] module.report:report:316  __get_count_days_delay:
+Traceback (most recent call last):
+  File "/home/chip/work/web-alfin/alfin/module/report.py", line 311, in __get_count_days_delay
+    (last_day_on_period - order.date_begin - timedelta(order.count_days) ).days
+TypeError: unsupported operand type(s) for -: 'datetime.timedelta' and 'float'
+[ERROR 2023-04-05 20:22:21] module.report:report:316  __get_count_days_delay:
+Traceback (most recent call last):
+  File "/home/chip/work/web-alfin/alfin/module/report.py", line 311, in __get_count_days_delay
+    (last_day_on_period - order.date_begin - timedelta(order.count_days) ).days
+TypeError: unsupported operand type(s) for -: 'datetime.timedelta' and 'float'
+[ERROR 2023-04-05 20:22:21] module.report:report:316  __get_count_days_delay:
+Traceback (most recent call last):
+  File "/home/chip/work/web-alfin/alfin/module/report.py", line 311, in __get_count_days_delay
+    (last_day_on_period - order.date_begin - timedelta(order.count_days) ).days
+TypeError: unsupported operand type(s) for -: 'datetime.timedelta' and 'float'
+[ERROR 2023-04-05 20:22:21] module.report:report:316  __get_count_days_delay:
+Traceback (most recent call last):
+  File "/home/chip/work/web-alfin/alfin/module/report.py", line 311, in __get_count_days_delay
+    (last_day_on_period - order.date_begin - timedelta(order.count_days) ).days
+TypeError: unsupported operand type(s) for -: 'datetime.timedelta' and 'float'
+[ERROR 2023-04-05 20:22:21] module.report:report:316  __get_count_days_delay:
+Traceback (most recent call last):
+  File "/home/chip/work/web-alfin/alfin/module/report.py", line 311, in __get_count_days_delay
+    (last_day_on_period - order.date_begin - timedelta(order.count_days) ).days
+TypeError: unsupported operand type(s) for -: 'datetime.timedelta' and 'float'
+[ERROR 2023-04-05 20:22:21] module.report:report:316  __get_count_days_delay:
+Traceback (most recent call last):
+  File "/home/chip/work/web-alfin/alfin/module/report.py", line 311, in __get_count_days_delay
+    (last_day_on_period - order.date_begin - timedelta(order.count_days) ).days
+TypeError: unsupported operand type(s) for -: 'datetime.timedelta' and 'float'
+[ERROR 2023-04-05 20:22:21] module.report:report:316  __get_count_days_delay:
+Traceback (most recent call last):
+  File "/home/chip/work/web-alfin/alfin/module/report.py", line 311, in __get_count_days_delay
+    (last_day_on_period - order.date_begin - timedelta(order.count_days) ).days
+TypeError: unsupported operand type(s) for -: 'datetime.timedelta' and 'float'
+[ERROR 2023-04-05 20:22:21] module.report:report:316  __get_count_days_delay:
+Traceback (most recent call last):
+  File "/home/chip/work/web-alfin/alfin/module/report.py", line 311, in __get_count_days_delay
+    (last_day_on_period - order.date_begin - timedelta(order.count_days) ).days
+TypeError: unsupported operand type(s) for -: 'datetime.timedelta' and 'float'
+[ERROR 2023-04-05 20:22:21] module.report:report:316  __get_count_days_delay:
+Traceback (most recent call last):
+  File "/home/chip/work/web-alfin/alfin/module/report.py", line 311, in __get_count_days_delay
+    (last_day_on_period - order.date_begin - timedelta(order.count_days) ).days
+TypeError: unsupported operand type(s) for -: 'datetime.timedelta' and 'float'
+[ERROR 2023-04-05 20:22:21] module.report:report:316  __get_count_days_delay:
+Traceback (most recent call last):
+  File "/home/chip/work/web-alfin/alfin/module/report.py", line 311, in __get_count_days_delay
+    (last_day_on_period - order.date_begin - timedelta(order.count_days) ).days
+TypeError: unsupported operand type(s) for -: 'datetime.timedelta' and 'float'
+[ERROR 2023-04-05 20:22:21] module.report:report:316  __get_count_days_delay:
+Traceback (most recent call last):
+  File "/home/chip/work/web-alfin/alfin/module/report.py", line 311, in __get_count_days_delay
+    (last_day_on_period - order.date_begin - timedelta(order.count_days) ).days
+TypeError: unsupported operand type(s) for -: 'datetime.timedelta' and 'float'
+[ERROR 2023-04-05 20:22:21] module.report:report:316  __get_count_days_delay:
+Traceback (most recent call last):
+  File "/home/chip/work/web-alfin/alfin/module/report.py", line 311, in __get_count_days_delay
+    (last_day_on_period - order.date_begin - timedelta(order.count_days) ).days
+TypeError: unsupported operand type(s) for -: 'datetime.timedelta' and 'float'
+[ERROR 2023-04-05 20:22:21] module.report:report:316  __get_count_days_delay:
+Traceback (most recent call last):
+  File "/home/chip/work/web-alfin/alfin/module/report.py", line 311, in __get_count_days_delay
+    (last_day_on_period - order.date_begin - timedelta(order.count_days) ).days
+TypeError: unsupported operand type(s) for -: 'datetime.timedelta' and 'float'
+[ERROR 2023-04-05 20:22:21] module.report:report:316  __get_count_days_delay:
+Traceback (most recent call last):
+  File "/home/chip/work/web-alfin/alfin/module/report.py", line 311, in __get_count_days_delay
+    (last_day_on_period - order.date_begin - timedelta(order.count_days) ).days
+TypeError: unsupported operand type(s) for -: 'datetime.timedelta' and 'float'
+[ERROR 2023-04-05 20:22:21] module.report:report:316  __get_count_days_delay:
+Traceback (most recent call last):
+  File "/home/chip/work/web-alfin/alfin/module/report.py", line 311, in __get_count_days_delay
+    (last_day_on_period - order.date_begin - timedelta(order.count_days) ).days
+TypeError: unsupported operand type(s) for -: 'datetime.timedelta' and 'float'
+[ERROR 2023-04-05 20:22:21] module.report:report:316  __get_count_days_delay:
+Traceback (most recent call last):
+  File "/home/chip/work/web-alfin/alfin/module/report.py", line 311, in __get_count_days_delay
+    (last_day_on_period - order.date_begin - timedelta(order.count_days) ).days
+TypeError: unsupported operand type(s) for -: 'datetime.timedelta' and 'float'
+[ERROR 2023-04-05 20:22:21] module.report:report:316  __get_count_days_delay:
+Traceback (most recent call last):
+  File "/home/chip/work/web-alfin/alfin/module/report.py", line 311, in __get_count_days_delay
+    (last_day_on_period - order.date_begin - timedelta(order.count_days) ).days
+TypeError: unsupported operand type(s) for -: 'datetime.timedelta' and 'float'
+[ERROR 2023-04-05 20:22:21] module.report:report:316  __get_count_days_delay:
+Traceback (most recent call last):
+  File "/home/chip/work/web-alfin/alfin/module/report.py", line 311, in __get_count_days_delay
+    (last_day_on_period - order.date_begin - timedelta(order.count_days) ).days
+TypeError: unsupported operand type(s) for -: 'datetime.timedelta' and 'float'
+[ERROR 2023-04-05 20:22:21] module.report:report:316  __get_count_days_delay:
+Traceback (most recent call last):
+  File "/home/chip/work/web-alfin/alfin/module/report.py", line 311, in __get_count_days_delay
+    (last_day_on_period - order.date_begin - timedelta(order.count_days) ).days
+TypeError: unsupported operand type(s) for -: 'datetime.timedelta' and 'float'
+[ERROR 2023-04-05 20:22:21] module.report:report:316  __get_count_days_delay:
+Traceback (most recent call last):
+  File "/home/chip/work/web-alfin/alfin/module/report.py", line 311, in __get_count_days_delay
+    (last_day_on_period - order.date_begin - timedelta(order.count_days) ).days
+TypeError: unsupported operand type(s) for -: 'datetime.timedelta' and 'float'
+[ERROR 2023-04-05 20:22:21] module.report:report:316  __get_count_days_delay:
+Traceback (most recent call last):
+  File "/home/chip/work/web-alfin/alfin/module/report.py", line 311, in __get_count_days_delay
+    (last_day_on_period - order.date_begin - timedelta(order.count_days) ).days
+TypeError: unsupported operand type(s) for -: 'datetime.timedelta' and 'float'
+[ERROR 2023-04-05 20:22:21] module.report:report:316  __get_count_days_delay:
+Traceback (most recent call last):
+  File "/home/chip/work/web-alfin/alfin/module/report.py", line 311, in __get_count_days_delay
+    (last_day_on_period - order.date_begin - timedelta(order.count_days) ).days
+TypeError: unsupported operand type(s) for -: 'datetime.timedelta' and 'float'
+[ERROR 2023-04-05 20:22:21] module.report:report:316  __get_count_days_delay:
+Traceback (most recent call last):
+  File "/home/chip/work/web-alfin/alfin/module/report.py", line 311, in __get_count_days_delay
+    (last_day_on_period - order.date_begin - timedelta(order.count_days) ).days
+TypeError: unsupported operand type(s) for -: 'datetime.timedelta' and 'float'
+[ERROR 2023-04-05 20:22:21] module.report:report:316  __get_count_days_delay:
+Traceback (most recent call last):
+  File "/home/chip/work/web-alfin/alfin/module/report.py", line 311, in __get_count_days_delay
+    (last_day_on_period - order.date_begin - timedelta(order.count_days) ).days
+TypeError: unsupported operand type(s) for -: 'datetime.timedelta' and 'float'
+[ERROR 2023-04-05 20:22:21] module.report:report:316  __get_count_days_delay:
+Traceback (most recent call last):
+  File "/home/chip/work/web-alfin/alfin/module/report.py", line 311, in __get_count_days_delay
+    (last_day_on_period - order.date_begin - timedelta(order.count_days) ).days
+TypeError: unsupported operand type(s) for -: 'datetime.timedelta' and 'float'
+[ERROR 2023-04-05 20:22:21] module.report:report:316  __get_count_days_delay:
+Traceback (most recent call last):
+  File "/home/chip/work/web-alfin/alfin/module/report.py", line 311, in __get_count_days_delay
+    (last_day_on_period - order.date_begin - timedelta(order.count_days) ).days
+TypeError: unsupported operand type(s) for -: 'datetime.timedelta' and 'float'
+[ERROR 2023-04-05 20:22:21] module.report:report:316  __get_count_days_delay:
+Traceback (most recent call last):
+  File "/home/chip/work/web-alfin/alfin/module/report.py", line 311, in __get_count_days_delay
+    (last_day_on_period - order.date_begin - timedelta(order.count_days) ).days
+TypeError: unsupported operand type(s) for -: 'datetime.timedelta' and 'float'
+[ERROR 2023-04-05 20:22:21] module.report:report:316  __get_count_days_delay:
+Traceback (most recent call last):
+  File "/home/chip/work/web-alfin/alfin/module/report.py", line 311, in __get_count_days_delay
+    (last_day_on_period - order.date_begin - timedelta(order.count_days) ).days
+TypeError: unsupported operand type(s) for -: 'datetime.timedelta' and 'float'
+[ERROR 2023-04-05 20:22:21] module.report:report:316  __get_count_days_delay:
+Traceback (most recent call last):
+  File "/home/chip/work/web-alfin/alfin/module/report.py", line 311, in __get_count_days_delay
+    (last_day_on_period - order.date_begin - timedelta(order.count_days) ).days
+TypeError: unsupported operand type(s) for -: 'datetime.timedelta' and 'float'
+[ERROR 2023-04-05 20:22:21] module.report:report:316  __get_count_days_delay:
+Traceback (most recent call last):
+  File "/home/chip/work/web-alfin/alfin/module/report.py", line 311, in __get_count_days_delay
+    (last_day_on_period - order.date_begin - timedelta(order.count_days) ).days
+TypeError: unsupported operand type(s) for -: 'datetime.timedelta' and 'float'
+[ERROR 2023-04-05 20:22:21] module.report:report:316  __get_count_days_delay:
+Traceback (most recent call last):
+  File "/home/chip/work/web-alfin/alfin/module/report.py", line 311, in __get_count_days_delay
+    (last_day_on_period - order.date_begin - timedelta(order.count_days) ).days
+TypeError: unsupported operand type(s) for -: 'datetime.timedelta' and 'float'
+[ERROR 2023-04-05 20:22:21] module.report:report:316  __get_count_days_delay:
+Traceback (most recent call last):
+  File "/home/chip/work/web-alfin/alfin/module/report.py", line 311, in __get_count_days_delay
+    (last_day_on_period - order.date_begin - timedelta(order.count_days) ).days
+TypeError: unsupported operand type(s) for -: 'datetime.timedelta' and 'float'
+[ERROR 2023-04-05 20:22:21] module.report:report:316  __get_count_days_delay:
+Traceback (most recent call last):
+  File "/home/chip/work/web-alfin/alfin/module/report.py", line 311, in __get_count_days_delay
+    (last_day_on_period - order.date_begin - timedelta(order.count_days) ).days
+TypeError: unsupported operand type(s) for -: 'datetime.timedelta' and 'float'
+[ERROR 2023-04-05 20:22:21] module.report:report:316  __get_count_days_delay:
+Traceback (most recent call last):
+  File "/home/chip/work/web-alfin/alfin/module/report.py", line 311, in __get_count_days_delay
+    (last_day_on_period - order.date_begin - timedelta(order.count_days) ).days
+TypeError: unsupported operand type(s) for -: 'datetime.timedelta' and 'float'
+[INFO 2023-04-05 20:22:21] werkzeug:_internal:224  127.0.0.1 - - [05/Apr/2023 20:22:21] "[35m[1mPOST / HTTP/1.1[0m" 500 -
+[ERROR 2023-04-05 20:22:21] werkzeug:_internal:224  Error on request:
+Traceback (most recent call last):
+  File "/home/chip/.local/share/virtualenvs/web-alfin-YiXjnPBd/lib/python3.8/site-packages/werkzeug/serving.py", line 335, in run_wsgi
+    execute(self.server.app)
+  File "/home/chip/.local/share/virtualenvs/web-alfin-YiXjnPBd/lib/python3.8/site-packages/werkzeug/serving.py", line 322, in execute
+    application_iter = app(environ, start_response)
+  File "/home/chip/.local/share/virtualenvs/web-alfin-YiXjnPBd/lib/python3.8/site-packages/flask/app.py", line 2548, in __call__
+    return self.wsgi_app(environ, start_response)
+  File "/home/chip/.local/share/virtualenvs/web-alfin-YiXjnPBd/lib/python3.8/site-packages/flask/app.py", line 2528, in wsgi_app
+    response = self.handle_exception(e)
+  File "/home/chip/.local/share/virtualenvs/web-alfin-YiXjnPBd/lib/python3.8/site-packages/flask/app.py", line 2525, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/home/chip/.local/share/virtualenvs/web-alfin-YiXjnPBd/lib/python3.8/site-packages/flask/app.py", line 1822, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/home/chip/.local/share/virtualenvs/web-alfin-YiXjnPBd/lib/python3.8/site-packages/flask/app.py", line 1820, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/home/chip/.local/share/virtualenvs/web-alfin-YiXjnPBd/lib/python3.8/site-packages/flask/app.py", line 1796, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)
+  File "/home/chip/.local/share/virtualenvs/web-alfin-YiXjnPBd/lib/python3.8/site-packages/flask_httpauth.py", line 172, in decorated
+    return self.ensure_sync(f)(*args, **kwargs)
+  File "/home/chip/work/web-alfin/web/routes.py", line 25, in index
+    return __report(form.is_archi.data)
+  File "/home/chip/work/web-alfin/web/routes.py", line 32, in __report
+    return __download_file(report.run())
+  File "/home/chip/work/web-alfin/alfin/module/helpers.py", line 17, in inner
+    ret = f(*args, **kwargs)
+  File "/home/chip/work/web-alfin/alfin/module/calculate.py", line 86, in run
+    self.report_kategoria()
+  File "/home/chip/work/web-alfin/alfin/module/calculate.py", line 68, in report_kategoria
+    self.main_wa.set_kategoria()
+  File "/home/chip/work/web-alfin/alfin/module/report.py", line 572, in set_kategoria
+    if order.count_days_delay > 90 and summa > 0:
+TypeError: '>' not supported between instances of 'NoneType' and 'int'
+[INFO 2023-04-05 20:22:31] werkzeug:_internal:224  [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
  * Running on http://127.0.0.1:5000
-[INFO 2023-04-03 23:13:41] werkzeug:_internal:224  [33mPress CTRL+C to quit[0m
-[INFO 2023-04-03 23:13:48] module.helpers:helpers:11  Начало
-[INFO 2023-04-03 23:16:58] werkzeug:_internal:224  [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+[INFO 2023-04-05 20:22:31] werkzeug:_internal:224  [33mPress CTRL+C to quit[0m
+[INFO 2023-04-05 20:22:33] werkzeug:_internal:224  127.0.0.1 - - [05/Apr/2023 20:22:33] "GET / HTTP/1.1" 200 -
+[INFO 2023-04-05 20:22:35] module.helpers:helpers:15  Начало
+[INFO 2023-04-05 20:23:57] werkzeug:_internal:224  127.0.0.1 - - [05/Apr/2023 20:23:57] "[35m[1mPOST / HTTP/1.1[0m" 500 -
+[ERROR 2023-04-05 20:23:57] werkzeug:_internal:224  Error on request:
+Traceback (most recent call last):
+  File "/home/chip/.local/share/virtualenvs/web-alfin-YiXjnPBd/lib/python3.8/site-packages/xlwt/ExcelFormula.py", line 17, in __init__
+    self.__parser.formula()
+  File "/home/chip/.local/share/virtualenvs/web-alfin-YiXjnPBd/lib/python3.8/site-packages/xlwt/ExcelFormulaParser.py", line 81, in formula
+    self.expr("V")
+  File "/home/chip/.local/share/virtualenvs/web-alfin-YiXjnPBd/lib/python3.8/site-packages/xlwt/ExcelFormulaParser.py", line 88, in expr
+    self.prec0_expr(arg_type)
+  File "/home/chip/.local/share/virtualenvs/web-alfin-YiXjnPBd/lib/python3.8/site-packages/xlwt/ExcelFormulaParser.py", line 133, in prec0_expr
+    self.prec1_expr(arg_type)
+  File "/home/chip/.local/share/virtualenvs/web-alfin-YiXjnPBd/lib/python3.8/site-packages/xlwt/ExcelFormulaParser.py", line 151, in prec1_expr
+    self.prec2_expr(arg_type)
+  File "/home/chip/.local/share/virtualenvs/web-alfin-YiXjnPBd/lib/python3.8/site-packages/xlwt/ExcelFormulaParser.py", line 181, in prec2_expr
+    self.prec3_expr(arg_type)
+  File "/home/chip/.local/share/virtualenvs/web-alfin-YiXjnPBd/lib/python3.8/site-packages/xlwt/ExcelFormulaParser.py", line 210, in prec3_expr
+    self.prec4_expr(arg_type)
+  File "/home/chip/.local/share/virtualenvs/web-alfin-YiXjnPBd/lib/python3.8/site-packages/xlwt/ExcelFormulaParser.py", line 228, in prec4_expr
+    self.prec5_expr(arg_type)
+  File "/home/chip/.local/share/virtualenvs/web-alfin-YiXjnPBd/lib/python3.8/site-packages/xlwt/ExcelFormulaParser.py", line 251, in prec5_expr
+    self.primary(arg_type)
+  File "/home/chip/.local/share/virtualenvs/web-alfin-YiXjnPBd/lib/python3.8/site-packages/xlwt/ExcelFormulaParser.py", line 332, in primary
+    self.match(RP)
+  File "/home/chip/.local/share/virtualenvs/web-alfin-YiXjnPBd/lib/python3.8/site-packages/xlwt/antlr.py", line 1893, in match
+    self._match_int(set)
+  File "/home/chip/.local/share/virtualenvs/web-alfin-YiXjnPBd/lib/python3.8/site-packages/xlwt/antlr.py", line 1879, in _match_int
+    raise MismatchedTokenException(
+xlwt.antlr.MismatchedTokenException: <AST>:0:0:
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/chip/.local/share/virtualenvs/web-alfin-YiXjnPBd/lib/python3.8/site-packages/werkzeug/serving.py", line 335, in run_wsgi
+    execute(self.server.app)
+  File "/home/chip/.local/share/virtualenvs/web-alfin-YiXjnPBd/lib/python3.8/site-packages/werkzeug/serving.py", line 322, in execute
+    application_iter = app(environ, start_response)
+  File "/home/chip/.local/share/virtualenvs/web-alfin-YiXjnPBd/lib/python3.8/site-packages/flask/app.py", line 2548, in __call__
+    return self.wsgi_app(environ, start_response)
+  File "/home/chip/.local/share/virtualenvs/web-alfin-YiXjnPBd/lib/python3.8/site-packages/flask/app.py", line 2528, in wsgi_app
+    response = self.handle_exception(e)
+  File "/home/chip/.local/share/virtualenvs/web-alfin-YiXjnPBd/lib/python3.8/site-packages/flask/app.py", line 2525, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/home/chip/.local/share/virtualenvs/web-alfin-YiXjnPBd/lib/python3.8/site-packages/flask/app.py", line 1822, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/home/chip/.local/share/virtualenvs/web-alfin-YiXjnPBd/lib/python3.8/site-packages/flask/app.py", line 1820, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/home/chip/.local/share/virtualenvs/web-alfin-YiXjnPBd/lib/python3.8/site-packages/flask/app.py", line 1796, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)
+  File "/home/chip/.local/share/virtualenvs/web-alfin-YiXjnPBd/lib/python3.8/site-packages/flask_httpauth.py", line 172, in decorated
+    return self.ensure_sync(f)(*args, **kwargs)
+  File "/home/chip/work/web-alfin/web/routes.py", line 25, in index
+    return __report(form.is_archi.data)
+  File "/home/chip/work/web-alfin/web/routes.py", line 32, in __report
+    return __download_file(report.run())
+  File "/home/chip/work/web-alfin/alfin/module/helpers.py", line 17, in inner
+    ret = f(*args, **kwargs)
+  File "/home/chip/work/web-alfin/alfin/module/calculate.py", line 88, in run
+    return self.write()
+  File "/home/chip/work/web-alfin/alfin/module/calculate.py", line 74, in write
+    else (self.main_wa.write_to_excel() if self.main_wa else None)
+  File "/home/chip/work/web-alfin/alfin/module/report.py", line 463, in write_to_excel
+    return exel.write(self)
+  File "/home/chip/work/web-alfin/alfin/module/excel_exporter.py", line 22, in write
+    self.write_clients(report)
+  File "/home/chip/work/web-alfin/alfin/module/excel_exporter.py", line 219, in write_clients
+    calculate_rezerves_main()
+  File "/home/chip/work/web-alfin/alfin/module/excel_exporter.py", line 159, in calculate_rezerves_main
+    row, len(names) + 1, Formula(f), num_format_str=num_format
+  File "/home/chip/.local/share/virtualenvs/web-alfin-YiXjnPBd/lib/python3.8/site-packages/xlwt/ExcelFormula.py", line 22, in __init__
+    raise ExcelFormulaParser.FormulaParseException("can't parse formula " + s)
+xlwt.ExcelFormulaParser.FormulaParseException: can't parse formula IF($Q3="","",$D3*($Q3)
+[INFO 2023-04-05 20:25:34] werkzeug:_internal:224  [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
  * Running on http://127.0.0.1:5000
-[INFO 2023-04-03 23:16:58] werkzeug:_internal:224  [33mPress CTRL+C to quit[0m
-[INFO 2023-04-03 23:17:29] werkzeug:_internal:224  [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+[INFO 2023-04-05 20:25:34] werkzeug:_internal:224  [33mPress CTRL+C to quit[0m
+[INFO 2023-04-05 20:25:43] module.helpers:helpers:15  Начало
+[INFO 2023-04-05 20:27:30] module.helpers:helpers:20  Завершено (0:01:46.912808)
+[INFO 2023-04-05 20:27:30] werkzeug:_internal:224  127.0.0.1 - - [05/Apr/2023 20:27:30] "POST / HTTP/1.1" 200 -
+[INFO 2023-04-05 20:42:30] werkzeug:_internal:224  [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
  * Running on http://127.0.0.1:5000
-[INFO 2023-04-03 23:17:29] werkzeug:_internal:224  [33mPress CTRL+C to quit[0m
-[INFO 2023-04-03 23:17:32] werkzeug:_internal:224  127.0.0.1 - - [03/Apr/2023 23:17:32] "GET / HTTP/1.1" 200 -
-[INFO 2023-04-03 23:17:42] module.helpers:helpers:11  Начало
-[INFO 2023-04-03 23:19:01] module.helpers:helpers:16  Завершено (0:01:19.333375)
-[INFO 2023-04-03 23:19:01] werkzeug:_internal:224  127.0.0.1 - - [03/Apr/2023 23:19:01] "POST / HTTP/1.1" 200 -
-[INFO 2023-04-03 23:19:41] module.helpers:helpers:11  Начало
-[INFO 2023-04-03 23:21:33] module.helpers:helpers:16  Завершено (0:01:52.089832)
-[INFO 2023-04-03 23:21:33] werkzeug:_internal:224  127.0.0.1 - - [03/Apr/2023 23:21:33] "POST / HTTP/1.1" 200 -
-[INFO 2023-04-04 10:50:09] werkzeug:_internal:224  [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+[INFO 2023-04-05 20:42:30] werkzeug:_internal:224  [33mPress CTRL+C to quit[0m
+[INFO 2023-04-05 20:42:34] module.helpers:helpers:15  Начало
+[INFO 2023-04-05 20:44:03] module.helpers:helpers:20  Завершено (0:01:28.364252)
+[INFO 2023-04-05 20:44:03] werkzeug:_internal:224  127.0.0.1 - - [05/Apr/2023 20:44:03] "POST / HTTP/1.1" 200 -
+[INFO 2023-04-05 20:52:20] werkzeug:_internal:224  [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
  * Running on http://127.0.0.1:5000
-[INFO 2023-04-04 10:50:09] werkzeug:_internal:224  [33mPress CTRL+C to quit[0m
-[INFO 2023-04-04 10:50:20] werkzeug:_internal:224  127.0.0.1 - - [04/Apr/2023 10:50:20] "[31m[1mGET / HTTP/1.1[0m" 401 -
-[INFO 2023-04-04 10:50:22] werkzeug:_internal:224  127.0.0.1 - - [04/Apr/2023 10:50:22] "GET / HTTP/1.1" 200 -
-[INFO 2023-04-04 10:50:22] werkzeug:_internal:224  127.0.0.1 - - [04/Apr/2023 10:50:22] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
-[INFO 2023-04-04 10:50:48] module.helpers:helpers:11  Начало
-[INFO 2023-04-04 10:58:25] module.helpers:helpers:16  Завершено (0:07:37.188655)
-[INFO 2023-04-04 10:58:25] werkzeug:_internal:224  127.0.0.1 - - [04/Apr/2023 10:58:25] "POST / HTTP/1.1" 200 -
+[INFO 2023-04-05 20:52:20] werkzeug:_internal:224  [33mPress CTRL+C to quit[0m
+[INFO 2023-04-05 20:52:32] module.helpers:helpers:15  Начало
+[INFO 2023-04-05 20:54:01] module.helpers:helpers:20  Завершено (0:01:29.623968)
+[INFO 2023-04-05 20:54:01] werkzeug:_internal:224  127.0.0.1 - - [05/Apr/2023 20:54:01] "POST / HTTP/1.1" 200 -
+[INFO 2023-04-05 21:27:17] werkzeug:_internal:224  [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+[INFO 2023-04-05 21:27:17] werkzeug:_internal:224  [33mPress CTRL+C to quit[0m
+[INFO 2023-04-05 21:27:21] module.helpers:helpers:15  Начало
+[INFO 2023-04-05 21:29:53] module.helpers:helpers:20  Завершено (0:02:32.038787)
+[INFO 2023-04-05 21:29:53] werkzeug:_internal:224  127.0.0.1 - - [05/Apr/2023 21:29:53] "POST / HTTP/1.1" 200 -
+[INFO 2023-04-05 21:29:59] werkzeug:_internal:224  [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+[INFO 2023-04-05 21:29:59] werkzeug:_internal:224  [33mPress CTRL+C to quit[0m
+[INFO 2023-04-05 21:30:05] module.helpers:helpers:15  Начало
+[INFO 2023-04-05 21:31:35] module.helpers:helpers:20  Завершено (0:01:29.799667)
+[INFO 2023-04-05 21:31:35] werkzeug:_internal:224  127.0.0.1 - - [05/Apr/2023 21:31:35] "POST / HTTP/1.1" 200 -
+[INFO 2023-04-05 21:36:06] werkzeug:_internal:224  [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+[INFO 2023-04-05 21:36:06] werkzeug:_internal:224  [33mPress CTRL+C to quit[0m
+[INFO 2023-04-05 21:36:15] module.helpers:helpers:15  Начало
+[INFO 2023-04-05 21:38:05] module.helpers:helpers:20  Завершено (0:01:50.251295)
+[INFO 2023-04-05 21:38:05] werkzeug:_internal:224  127.0.0.1 - - [05/Apr/2023 21:38:05] "POST / HTTP/1.1" 200 -
+[INFO 2023-04-05 21:45:01] werkzeug:_internal:224  [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+[INFO 2023-04-05 21:45:01] werkzeug:_internal:224  [33mPress CTRL+C to quit[0m
+[INFO 2023-04-05 21:45:04] module.helpers:helpers:15  Начало
+[INFO 2023-04-05 21:46:35] module.helpers:helpers:20  Завершено (0:01:31.161690)
+[INFO 2023-04-05 21:46:35] werkzeug:_internal:224  127.0.0.1 - - [05/Apr/2023 21:46:35] "POST / HTTP/1.1" 200 -
+[INFO 2023-04-05 21:59:44] werkzeug:_internal:224  [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+[INFO 2023-04-05 21:59:44] werkzeug:_internal:224  [33mPress CTRL+C to quit[0m
+[INFO 2023-04-05 21:59:50] module.helpers:helpers:15  Начало
+[INFO 2023-04-05 22:01:21] module.helpers:helpers:20  Завершено (0:01:31.622600)
+[INFO 2023-04-05 22:01:21] werkzeug:_internal:224  127.0.0.1 - - [05/Apr/2023 22:01:21] "POST / HTTP/1.1" 200 -
+[INFO 2023-04-05 22:02:36] werkzeug:_internal:224  [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+[INFO 2023-04-05 22:02:36] werkzeug:_internal:224  [33mPress CTRL+C to quit[0m
+[INFO 2023-04-05 22:02:37] module.helpers:helpers:15  Начало
+[INFO 2023-04-05 22:04:08] werkzeug:_internal:224  127.0.0.1 - - [05/Apr/2023 22:04:08] "[35m[1mPOST / HTTP/1.1[0m" 500 -
+[ERROR 2023-04-05 22:04:08] werkzeug:_internal:224  Error on request:
+Traceback (most recent call last):
+  File "/home/chip/.local/share/virtualenvs/web-alfin-YiXjnPBd/lib/python3.8/site-packages/werkzeug/serving.py", line 335, in run_wsgi
+    execute(self.server.app)
+  File "/home/chip/.local/share/virtualenvs/web-alfin-YiXjnPBd/lib/python3.8/site-packages/werkzeug/serving.py", line 322, in execute
+    application_iter = app(environ, start_response)
+  File "/home/chip/.local/share/virtualenvs/web-alfin-YiXjnPBd/lib/python3.8/site-packages/flask/app.py", line 2548, in __call__
+    return self.wsgi_app(environ, start_response)
+  File "/home/chip/.local/share/virtualenvs/web-alfin-YiXjnPBd/lib/python3.8/site-packages/flask/app.py", line 2528, in wsgi_app
+    response = self.handle_exception(e)
+  File "/home/chip/.local/share/virtualenvs/web-alfin-YiXjnPBd/lib/python3.8/site-packages/flask/app.py", line 2525, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/home/chip/.local/share/virtualenvs/web-alfin-YiXjnPBd/lib/python3.8/site-packages/flask/app.py", line 1822, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/home/chip/.local/share/virtualenvs/web-alfin-YiXjnPBd/lib/python3.8/site-packages/flask/app.py", line 1820, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/home/chip/.local/share/virtualenvs/web-alfin-YiXjnPBd/lib/python3.8/site-packages/flask/app.py", line 1796, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)
+  File "/home/chip/.local/share/virtualenvs/web-alfin-YiXjnPBd/lib/python3.8/site-packages/flask_httpauth.py", line 172, in decorated
+    return self.ensure_sync(f)(*args, **kwargs)
+  File "/home/chip/work/web-alfin/web/routes.py", line 25, in index
+    return __report(form.is_archi.data)
+  File "/home/chip/work/web-alfin/web/routes.py", line 32, in __report
+    return __download_file(report.run())
+  File "/home/chip/work/web-alfin/alfin/module/helpers.py", line 17, in inner
+    ret = f(*args, **kwargs)
+  File "/home/chip/work/web-alfin/alfin/module/calculate.py", line 89, in run
+    return self.write()
+  File "/home/chip/work/web-alfin/alfin/module/calculate.py", line 75, in write
+    else (self.main_wa.write_to_excel() if self.main_wa else None)
+  File "/home/chip/work/web-alfin/alfin/module/report.py", line 465, in write_to_excel
+    return exel.write(self)
+  File "/home/chip/work/web-alfin/alfin/module/excel_exporter.py", line 24, in write
+    self.write_result_weighted_average(report.wa)
+  File "/home/chip/work/web-alfin/alfin/module/excel_exporter.py", line 347, in write_result_weighted_average
+    if dog.get("name_address")
+AttributeError: 'Order' object has no attribute 'get'
+[INFO 2023-04-05 22:11:45] werkzeug:_internal:224  127.0.0.1 - - [05/Apr/2023 22:11:45] "GET / HTTP/1.1" 200 -
+[INFO 2023-04-05 22:11:47] module.helpers:helpers:15  Начало
+[INFO 2023-04-05 22:13:17] werkzeug:_internal:224  127.0.0.1 - - [05/Apr/2023 22:13:17] "[35m[1mPOST / HTTP/1.1[0m" 500 -
+[ERROR 2023-04-05 22:13:17] werkzeug:_internal:224  Error on request:
+Traceback (most recent call last):
+  File "/home/chip/.local/share/virtualenvs/web-alfin-YiXjnPBd/lib/python3.8/site-packages/werkzeug/serving.py", line 335, in run_wsgi
+    execute(self.server.app)
+  File "/home/chip/.local/share/virtualenvs/web-alfin-YiXjnPBd/lib/python3.8/site-packages/werkzeug/serving.py", line 322, in execute
+    application_iter = app(environ, start_response)
+  File "/home/chip/.local/share/virtualenvs/web-alfin-YiXjnPBd/lib/python3.8/site-packages/flask/app.py", line 2548, in __call__
+    return self.wsgi_app(environ, start_response)
+  File "/home/chip/.local/share/virtualenvs/web-alfin-YiXjnPBd/lib/python3.8/site-packages/flask/app.py", line 2528, in wsgi_app
+    response = self.handle_exception(e)
+  File "/home/chip/.local/share/virtualenvs/web-alfin-YiXjnPBd/lib/python3.8/site-packages/flask/app.py", line 2525, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/home/chip/.local/share/virtualenvs/web-alfin-YiXjnPBd/lib/python3.8/site-packages/flask/app.py", line 1822, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/home/chip/.local/share/virtualenvs/web-alfin-YiXjnPBd/lib/python3.8/site-packages/flask/app.py", line 1820, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/home/chip/.local/share/virtualenvs/web-alfin-YiXjnPBd/lib/python3.8/site-packages/flask/app.py", line 1796, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)
+  File "/home/chip/.local/share/virtualenvs/web-alfin-YiXjnPBd/lib/python3.8/site-packages/flask_httpauth.py", line 172, in decorated
+    return self.ensure_sync(f)(*args, **kwargs)
+  File "/home/chip/work/web-alfin/web/routes.py", line 25, in index
+    return __report(form.is_archi.data)
+  File "/home/chip/work/web-alfin/web/routes.py", line 32, in __report
+    return __download_file(report.run())
+  File "/home/chip/work/web-alfin/alfin/module/helpers.py", line 17, in inner
+    ret = f(*args, **kwargs)
+  File "/home/chip/work/web-alfin/alfin/module/calculate.py", line 89, in run
+    return self.write()
+  File "/home/chip/work/web-alfin/alfin/module/calculate.py", line 75, in write
+    else (self.main_wa.write_to_excel() if self.main_wa else None)
+  File "/home/chip/work/web-alfin/alfin/module/report.py", line 465, in write_to_excel
+    return exel.write(self)
+  File "/home/chip/work/web-alfin/alfin/module/excel_exporter.py", line 24, in write
+    self.write_result_weighted_average(report.wa)
+  File "/home/chip/work/web-alfin/alfin/module/excel_exporter.py", line 347, in write_result_weighted_average
+    Formula(order.references["name_address"])
+AttributeError: 'Order' object has no attribute 'get'
+[INFO 2023-04-05 22:13:47] werkzeug:_internal:224  [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+[INFO 2023-04-05 22:13:47] werkzeug:_internal:224  [33mPress CTRL+C to quit[0m
+[INFO 2023-04-05 22:13:51] module.helpers:helpers:15  Начало
+[INFO 2023-04-05 22:15:22] module.helpers:helpers:20  Завершено (0:01:31.365645)
+[INFO 2023-04-05 22:15:22] werkzeug:_internal:224  127.0.0.1 - - [05/Apr/2023 22:15:22] "POST / HTTP/1.1" 200 -
+[INFO 2023-04-05 22:18:01] werkzeug:_internal:224  [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+[INFO 2023-04-05 22:18:01] werkzeug:_internal:224  [33mPress CTRL+C to quit[0m
+[INFO 2023-04-05 22:18:04] module.helpers:helpers:15  Начало
+[INFO 2023-04-05 22:19:36] werkzeug:_internal:224  127.0.0.1 - - [05/Apr/2023 22:19:36] "[35m[1mPOST / HTTP/1.1[0m" 500 -
+[ERROR 2023-04-05 22:19:36] werkzeug:_internal:224  Error on request:
+Traceback (most recent call last):
+  File "/home/chip/.local/share/virtualenvs/web-alfin-YiXjnPBd/lib/python3.8/site-packages/werkzeug/serving.py", line 335, in run_wsgi
+    execute(self.server.app)
+  File "/home/chip/.local/share/virtualenvs/web-alfin-YiXjnPBd/lib/python3.8/site-packages/werkzeug/serving.py", line 322, in execute
+    application_iter = app(environ, start_response)
+  File "/home/chip/.local/share/virtualenvs/web-alfin-YiXjnPBd/lib/python3.8/site-packages/flask/app.py", line 2548, in __call__
+    return self.wsgi_app(environ, start_response)
+  File "/home/chip/.local/share/virtualenvs/web-alfin-YiXjnPBd/lib/python3.8/site-packages/flask/app.py", line 2528, in wsgi_app
+    response = self.handle_exception(e)
+  File "/home/chip/.local/share/virtualenvs/web-alfin-YiXjnPBd/lib/python3.8/site-packages/flask/app.py", line 2525, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/home/chip/.local/share/virtualenvs/web-alfin-YiXjnPBd/lib/python3.8/site-packages/flask/app.py", line 1822, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/home/chip/.local/share/virtualenvs/web-alfin-YiXjnPBd/lib/python3.8/site-packages/flask/app.py", line 1820, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/home/chip/.local/share/virtualenvs/web-alfin-YiXjnPBd/lib/python3.8/site-packages/flask/app.py", line 1796, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)
+  File "/home/chip/.local/share/virtualenvs/web-alfin-YiXjnPBd/lib/python3.8/site-packages/flask_httpauth.py", line 172, in decorated
+    return self.ensure_sync(f)(*args, **kwargs)
+  File "/home/chip/work/web-alfin/web/routes.py", line 25, in index
+    return __report(form.is_archi.data)
+  File "/home/chip/work/web-alfin/web/routes.py", line 32, in __report
+    return __download_file(report.run())
+  File "/home/chip/work/web-alfin/alfin/module/helpers.py", line 17, in inner
+    ret = f(*args, **kwargs)
+  File "/home/chip/work/web-alfin/alfin/module/calculate.py", line 89, in run
+    return self.write()
+  File "/home/chip/work/web-alfin/alfin/module/calculate.py", line 75, in write
+    else (self.main_wa.write_to_excel() if self.main_wa else None)
+  File "/home/chip/work/web-alfin/alfin/module/report.py", line 466, in write_to_excel
+    return exel.write(self)
+  File "/home/chip/work/web-alfin/alfin/module/excel_exporter.py", line 26, in write
+    self.write_kategoria(report.kategoria)
+  File "/home/chip/work/web-alfin/alfin/module/excel_exporter.py", line 494, in write_kategoria
+    self.workbook.write(row, col + 1, val["name"])
+AttributeError: 'Order' object has no attribute 'get'
+[INFO 2023-04-05 22:22:10] werkzeug:_internal:224  [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+[INFO 2023-04-05 22:22:10] werkzeug:_internal:224  [33mPress CTRL+C to quit[0m
+[INFO 2023-04-05 22:22:11] werkzeug:_internal:224  127.0.0.1 - - [05/Apr/2023 22:22:11] "GET / HTTP/1.1" 200 -
+[INFO 2023-04-05 22:22:12] module.helpers:helpers:15  Начало
+[INFO 2023-04-05 22:24:13] werkzeug:_internal:224  127.0.0.1 - - [05/Apr/2023 22:24:13] "[35m[1mPOST / HTTP/1.1[0m" 500 -
+[ERROR 2023-04-05 22:24:13] werkzeug:_internal:224  Error on request:
+Traceback (most recent call last):
+  File "/home/chip/.local/share/virtualenvs/web-alfin-YiXjnPBd/lib/python3.8/site-packages/werkzeug/serving.py", line 335, in run_wsgi
+    execute(self.server.app)
+  File "/home/chip/.local/share/virtualenvs/web-alfin-YiXjnPBd/lib/python3.8/site-packages/werkzeug/serving.py", line 322, in execute
+    application_iter = app(environ, start_response)
+  File "/home/chip/.local/share/virtualenvs/web-alfin-YiXjnPBd/lib/python3.8/site-packages/flask/app.py", line 2548, in __call__
+    return self.wsgi_app(environ, start_response)
+  File "/home/chip/.local/share/virtualenvs/web-alfin-YiXjnPBd/lib/python3.8/site-packages/flask/app.py", line 2528, in wsgi_app
+    response = self.handle_exception(e)
+  File "/home/chip/.local/share/virtualenvs/web-alfin-YiXjnPBd/lib/python3.8/site-packages/flask/app.py", line 2525, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/home/chip/.local/share/virtualenvs/web-alfin-YiXjnPBd/lib/python3.8/site-packages/flask/app.py", line 1822, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/home/chip/.local/share/virtualenvs/web-alfin-YiXjnPBd/lib/python3.8/site-packages/flask/app.py", line 1820, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/home/chip/.local/share/virtualenvs/web-alfin-YiXjnPBd/lib/python3.8/site-packages/flask/app.py", line 1796, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)
+  File "/home/chip/.local/share/virtualenvs/web-alfin-YiXjnPBd/lib/python3.8/site-packages/flask_httpauth.py", line 172, in decorated
+    return self.ensure_sync(f)(*args, **kwargs)
+  File "/home/chip/work/web-alfin/web/routes.py", line 25, in index
+    return __report(form.is_archi.data)
+  File "/home/chip/work/web-alfin/web/routes.py", line 32, in __report
+    return __download_file(report.run())
+  File "/home/chip/work/web-alfin/alfin/module/helpers.py", line 17, in inner
+    ret = f(*args, **kwargs)
+  File "/home/chip/work/web-alfin/alfin/module/calculate.py", line 89, in run
+    return self.write()
+  File "/home/chip/work/web-alfin/alfin/module/calculate.py", line 75, in write
+    else (self.main_wa.write_to_excel() if self.main_wa else None)
+  File "/home/chip/work/web-alfin/alfin/module/report.py", line 466, in write_to_excel
+    return exel.write(self)
+  File "/home/chip/work/web-alfin/alfin/module/excel_exporter.py", line 26, in write
+    self.write_kategoria(report.kategoria)
+  File "/home/chip/work/web-alfin/alfin/module/excel_exporter.py", line 499, in write_kategoria
+    if val["parent"].get("number_address")
+AttributeError: 'Order' object has no attribute 'get'
+[INFO 2023-04-05 22:31:55] werkzeug:_internal:224  [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+[INFO 2023-04-05 22:31:55] werkzeug:_internal:224  [33mPress CTRL+C to quit[0m
+[INFO 2023-04-05 22:32:08] module.helpers:helpers:15  Начало
+[INFO 2023-04-05 22:33:56] module.helpers:helpers:20  Завершено (0:01:48.138420)
+[INFO 2023-04-05 22:33:56] werkzeug:_internal:224  127.0.0.1 - - [05/Apr/2023 22:33:56] "POST / HTTP/1.1" 200 -
+[INFO 2023-04-05 22:50:05] werkzeug:_internal:224  [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+[INFO 2023-04-05 22:50:05] werkzeug:_internal:224  [33mPress CTRL+C to quit[0m
+[INFO 2023-04-05 22:50:08] module.helpers:helpers:15  Начало
+[INFO 2023-04-05 22:51:45] werkzeug:_internal:224  127.0.0.1 - - [05/Apr/2023 22:51:45] "[35m[1mPOST / HTTP/1.1[0m" 500 -
+[ERROR 2023-04-05 22:51:45] werkzeug:_internal:224  Error on request:
+Traceback (most recent call last):
+  File "/home/chip/.local/share/virtualenvs/web-alfin-YiXjnPBd/lib/python3.8/site-packages/werkzeug/serving.py", line 335, in run_wsgi
+    execute(self.server.app)
+  File "/home/chip/.local/share/virtualenvs/web-alfin-YiXjnPBd/lib/python3.8/site-packages/werkzeug/serving.py", line 322, in execute
+    application_iter = app(environ, start_response)
+  File "/home/chip/.local/share/virtualenvs/web-alfin-YiXjnPBd/lib/python3.8/site-packages/flask/app.py", line 2548, in __call__
+    return self.wsgi_app(environ, start_response)
+  File "/home/chip/.local/share/virtualenvs/web-alfin-YiXjnPBd/lib/python3.8/site-packages/flask/app.py", line 2528, in wsgi_app
+    response = self.handle_exception(e)
+  File "/home/chip/.local/share/virtualenvs/web-alfin-YiXjnPBd/lib/python3.8/site-packages/flask/app.py", line 2525, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/home/chip/.local/share/virtualenvs/web-alfin-YiXjnPBd/lib/python3.8/site-packages/flask/app.py", line 1822, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/home/chip/.local/share/virtualenvs/web-alfin-YiXjnPBd/lib/python3.8/site-packages/flask/app.py", line 1820, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/home/chip/.local/share/virtualenvs/web-alfin-YiXjnPBd/lib/python3.8/site-packages/flask/app.py", line 1796, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)
+  File "/home/chip/.local/share/virtualenvs/web-alfin-YiXjnPBd/lib/python3.8/site-packages/flask_httpauth.py", line 172, in decorated
+    return self.ensure_sync(f)(*args, **kwargs)
+  File "/home/chip/work/web-alfin/web/routes.py", line 25, in index
+    return __report(form.is_archi.data)
+  File "/home/chip/work/web-alfin/web/routes.py", line 32, in __report
+    return __download_file(report.run())
+  File "/home/chip/work/web-alfin/alfin/module/helpers.py", line 17, in inner
+    ret = f(*args, **kwargs)
+  File "/home/chip/work/web-alfin/alfin/module/calculate.py", line 89, in run
+    return self.write()
+  File "/home/chip/work/web-alfin/alfin/module/calculate.py", line 75, in write
+    else (self.main_wa.write_to_excel() if self.main_wa else None)
+  File "/home/chip/work/web-alfin/alfin/module/report.py", line 466, in write_to_excel
+    return exel.write(self)
+  File "/home/chip/work/web-alfin/alfin/module/excel_exporter.py", line 28, in write
+    self.write_reserve(report)
+  File "/home/chip/work/web-alfin/alfin/module/excel_exporter.py", line 567, in write_reserve
+    self.workbook.write(row, col, value[1]["percent"])
+TypeError: 'Reserve' object is not subscriptable
+[INFO 2023-04-05 22:53:33] werkzeug:_internal:224  127.0.0.1 - - [05/Apr/2023 22:53:33] "GET / HTTP/1.1" 200 -
+[INFO 2023-04-05 22:53:34] module.helpers:helpers:15  Начало
+[INFO 2023-04-05 22:58:27] werkzeug:_internal:224  127.0.0.1 - - [05/Apr/2023 22:58:27] "[35m[1mPOST / HTTP/1.1[0m" 500 -
+[ERROR 2023-04-05 22:58:27] werkzeug:_internal:224  Error on request:
+Traceback (most recent call last):
+  File "/home/chip/.local/share/virtualenvs/web-alfin-YiXjnPBd/lib/python3.8/site-packages/werkzeug/serving.py", line 335, in run_wsgi
+    execute(self.server.app)
+  File "/home/chip/.local/share/virtualenvs/web-alfin-YiXjnPBd/lib/python3.8/site-packages/werkzeug/serving.py", line 322, in execute
+    application_iter = app(environ, start_response)
+  File "/home/chip/.local/share/virtualenvs/web-alfin-YiXjnPBd/lib/python3.8/site-packages/flask/app.py", line 2548, in __call__
+    return self.wsgi_app(environ, start_response)
+  File "/home/chip/.local/share/virtualenvs/web-alfin-YiXjnPBd/lib/python3.8/site-packages/flask/app.py", line 2528, in wsgi_app
+    response = self.handle_exception(e)
+  File "/home/chip/.local/share/virtualenvs/web-alfin-YiXjnPBd/lib/python3.8/site-packages/flask/app.py", line 2525, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/home/chip/.local/share/virtualenvs/web-alfin-YiXjnPBd/lib/python3.8/site-packages/flask/app.py", line 1822, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/home/chip/.local/share/virtualenvs/web-alfin-YiXjnPBd/lib/python3.8/site-packages/flask/app.py", line 1820, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/home/chip/.local/share/virtualenvs/web-alfin-YiXjnPBd/lib/python3.8/site-packages/flask/app.py", line 1796, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)
+  File "/home/chip/.local/share/virtualenvs/web-alfin-YiXjnPBd/lib/python3.8/site-packages/flask_httpauth.py", line 172, in decorated
+    return self.ensure_sync(f)(*args, **kwargs)
+  File "/home/chip/work/web-alfin/web/routes.py", line 25, in index
+    return __report(form.is_archi.data)
+  File "/home/chip/work/web-alfin/web/routes.py", line 32, in __report
+    return __download_file(report.run())
+  File "/home/chip/work/web-alfin/alfin/module/helpers.py", line 17, in inner
+    ret = f(*args, **kwargs)
+  File "/home/chip/work/web-alfin/alfin/module/calculate.py", line 89, in run
+    return self.write()
+  File "/home/chip/work/web-alfin/alfin/module/calculate.py", line 75, in write
+    else (self.main_wa.write_to_excel() if self.main_wa else None)
+  File "/home/chip/work/web-alfin/alfin/module/report.py", line 466, in write_to_excel
+    return exel.write(self)
+  File "/home/chip/work/web-alfin/alfin/module/excel_exporter.py", line 28, in write
+    self.write_reserve(report)
+  File "/home/chip/work/web-alfin/alfin/module/excel_exporter.py", line 567, in write_reserve
+    self.workbook.write(row, col, value[1]["percent"])
+TypeError: 'Reserve' object is not subscriptable
+[INFO 2023-04-05 22:58:36] werkzeug:_internal:224  [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+[INFO 2023-04-05 22:58:36] werkzeug:_internal:224  [33mPress CTRL+C to quit[0m
+[INFO 2023-04-05 22:58:40] module.helpers:helpers:15  Начало
+[ERROR 2023-04-05 23:01:37] module.file_readers:file_readers:312  Write to Excel:row=386 col=0 value=<xlwt.ExcelFormula.Formula object at 0x7f8554199040>
+Traceback (most recent call last):
+  File "/home/chip/work/web-alfin/alfin/module/file_readers.py", line 308, in write
+    self.sheet.write(row, col, value)
+  File "/home/chip/.local/share/virtualenvs/web-alfin-YiXjnPBd/lib/python3.8/site-packages/xlwt/Worksheet.py", line 1088, in write
+    self.row(r).write(c, label, style)
+  File "/home/chip/.local/share/virtualenvs/web-alfin-YiXjnPBd/lib/python3.8/site-packages/xlwt/Row.py", line 250, in write
+    self.insert_cell(col, FormulaCell(self.__idx, col, style_index, label))
+  File "/home/chip/.local/share/virtualenvs/web-alfin-YiXjnPBd/lib/python3.8/site-packages/xlwt/Row.py", line 154, in insert_cell
+    raise Exception(msg)
+Exception: Attempt to overwrite cell: sheetname='Резервы' rowx=386 colx=0
+[ERROR 2023-04-05 23:01:38] module.file_readers:file_readers:312  Write to Excel:row=386 col=1 value=<xlwt.ExcelFormula.Formula object at 0x7f8554199040>
+Traceback (most recent call last):
+  File "/home/chip/work/web-alfin/alfin/module/file_readers.py", line 308, in write
+    self.sheet.write(row, col, value)
+  File "/home/chip/.local/share/virtualenvs/web-alfin-YiXjnPBd/lib/python3.8/site-packages/xlwt/Worksheet.py", line 1088, in write
+    self.row(r).write(c, label, style)
+  File "/home/chip/.local/share/virtualenvs/web-alfin-YiXjnPBd/lib/python3.8/site-packages/xlwt/Row.py", line 250, in write
+    self.insert_cell(col, FormulaCell(self.__idx, col, style_index, label))
+  File "/home/chip/.local/share/virtualenvs/web-alfin-YiXjnPBd/lib/python3.8/site-packages/xlwt/Row.py", line 154, in insert_cell
+    raise Exception(msg)
+Exception: Attempt to overwrite cell: sheetname='Резервы' rowx=386 colx=1
+[ERROR 2023-04-05 23:01:38] module.file_readers:file_readers:312  Write to Excel:row=386 col=2 value=<xlwt.ExcelFormula.Formula object at 0x7f8554199040>
+Traceback (most recent call last):
+  File "/home/chip/work/web-alfin/alfin/module/file_readers.py", line 308, in write
+    self.sheet.write(row, col, value)
+  File "/home/chip/.local/share/virtualenvs/web-alfin-YiXjnPBd/lib/python3.8/site-packages/xlwt/Worksheet.py", line 1088, in write
+    self.row(r).write(c, label, style)
+  File "/home/chip/.local/share/virtualenvs/web-alfin-YiXjnPBd/lib/python3.8/site-packages/xlwt/Row.py", line 250, in write
+    self.insert_cell(col, FormulaCell(self.__idx, col, style_index, label))
+  File "/home/chip/.local/share/virtualenvs/web-alfin-YiXjnPBd/lib/python3.8/site-packages/xlwt/Row.py", line 154, in insert_cell
+    raise Exception(msg)
+Exception: Attempt to overwrite cell: sheetname='Резервы' rowx=386 colx=2
+[ERROR 2023-04-05 23:01:38] module.file_readers:file_readers:312  Write to Excel:row=386 col=3 value=<xlwt.ExcelFormula.Formula object at 0x7f8554199040>
+Traceback (most recent call last):
+  File "/home/chip/work/web-alfin/alfin/module/file_readers.py", line 306, in write
+    self.sheet.write(row, col, value, style=style)
+  File "/home/chip/.local/share/virtualenvs/web-alfin-YiXjnPBd/lib/python3.8/site-packages/xlwt/Worksheet.py", line 1088, in write
+    self.row(r).write(c, label, style)
+  File "/home/chip/.local/share/virtualenvs/web-alfin-YiXjnPBd/lib/python3.8/site-packages/xlwt/Row.py", line 250, in write
+    self.insert_cell(col, FormulaCell(self.__idx, col, style_index, label))
+  File "/home/chip/.local/share/virtualenvs/web-alfin-YiXjnPBd/lib/python3.8/site-packages/xlwt/Row.py", line 154, in insert_cell
+    raise Exception(msg)
+Exception: Attempt to overwrite cell: sheetname='Резервы' rowx=386 colx=3
+[ERROR 2023-04-05 23:01:38] module.file_readers:file_readers:312  Write to Excel:row=386 col=4 value=<xlwt.ExcelFormula.Formula object at 0x7f8554199040>
+Traceback (most recent call last):
+  File "/home/chip/work/web-alfin/alfin/module/file_readers.py", line 306, in write
+    self.sheet.write(row, col, value, style=style)
+  File "/home/chip/.local/share/virtualenvs/web-alfin-YiXjnPBd/lib/python3.8/site-packages/xlwt/Worksheet.py", line 1088, in write
+    self.row(r).write(c, label, style)
+  File "/home/chip/.local/share/virtualenvs/web-alfin-YiXjnPBd/lib/python3.8/site-packages/xlwt/Row.py", line 250, in write
+    self.insert_cell(col, FormulaCell(self.__idx, col, style_index, label))
+  File "/home/chip/.local/share/virtualenvs/web-alfin-YiXjnPBd/lib/python3.8/site-packages/xlwt/Row.py", line 154, in insert_cell
+    raise Exception(msg)
+Exception: Attempt to overwrite cell: sheetname='Резервы' rowx=386 colx=4
+[ERROR 2023-04-05 23:01:38] module.file_readers:file_readers:312  Write to Excel:row=386 col=5 value=<xlwt.ExcelFormula.Formula object at 0x7f8554199040>
+Traceback (most recent call last):
+  File "/home/chip/work/web-alfin/alfin/module/file_readers.py", line 306, in write
+    self.sheet.write(row, col, value, style=style)
+  File "/home/chip/.local/share/virtualenvs/web-alfin-YiXjnPBd/lib/python3.8/site-packages/xlwt/Worksheet.py", line 1088, in write
+    self.row(r).write(c, label, style)
+  File "/home/chip/.local/share/virtualenvs/web-alfin-YiXjnPBd/lib/python3.8/site-packages/xlwt/Row.py", line 250, in write
+    self.insert_cell(col, FormulaCell(self.__idx, col, style_index, label))
+  File "/home/chip/.local/share/virtualenvs/web-alfin-YiXjnPBd/lib/python3.8/site-packages/xlwt/Row.py", line 154, in insert_cell
+    raise Exception(msg)
+Exception: Attempt to overwrite cell: sheetname='Резервы' rowx=386 colx=5
+[ERROR 2023-04-05 23:01:38] module.file_readers:file_readers:312  Write to Excel:row=386 col=6 value=<xlwt.ExcelFormula.Formula object at 0x7f8554199040>
+Traceback (most recent call last):
+  File "/home/chip/work/web-alfin/alfin/module/file_readers.py", line 306, in write
+    self.sheet.write(row, col, value, style=style)
+  File "/home/chip/.local/share/virtualenvs/web-alfin-YiXjnPBd/lib/python3.8/site-packages/xlwt/Worksheet.py", line 1088, in write
+    self.row(r).write(c, label, style)
+  File "/home/chip/.local/share/virtualenvs/web-alfin-YiXjnPBd/lib/python3.8/site-packages/xlwt/Row.py", line 250, in write
+    self.insert_cell(col, FormulaCell(self.__idx, col, style_index, label))
+  File "/home/chip/.local/share/virtualenvs/web-alfin-YiXjnPBd/lib/python3.8/site-packages/xlwt/Row.py", line 154, in insert_cell
+    raise Exception(msg)
+Exception: Attempt to overwrite cell: sheetname='Резервы' rowx=386 colx=6
+[ERROR 2023-04-05 23:01:38] module.file_readers:file_readers:312  Write to Excel:row=386 col=7 value=<xlwt.ExcelFormula.Formula object at 0x7f8554199040>
+Traceback (most recent call last):
+  File "/home/chip/work/web-alfin/alfin/module/file_readers.py", line 306, in write
+    self.sheet.write(row, col, value, style=style)
+  File "/home/chip/.local/share/virtualenvs/web-alfin-YiXjnPBd/lib/python3.8/site-packages/xlwt/Worksheet.py", line 1088, in write
+    self.row(r).write(c, label, style)
+  File "/home/chip/.local/share/virtualenvs/web-alfin-YiXjnPBd/lib/python3.8/site-packages/xlwt/Row.py", line 250, in write
+    self.insert_cell(col, FormulaCell(self.__idx, col, style_index, label))
+  File "/home/chip/.local/share/virtualenvs/web-alfin-YiXjnPBd/lib/python3.8/site-packages/xlwt/Row.py", line 154, in insert_cell
+    raise Exception(msg)
+Exception: Attempt to overwrite cell: sheetname='Резервы' rowx=386 colx=7
+[INFO 2023-04-05 23:01:38] module.helpers:helpers:20  Завершено (0:02:58.057661)
+[INFO 2023-04-05 23:01:39] werkzeug:_internal:224  127.0.0.1 - - [05/Apr/2023 23:01:39] "POST / HTTP/1.1" 200 -

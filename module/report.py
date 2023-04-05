@@ -1,221 +1,251 @@
 import re
-import os
-import json
-import pathlib
-import datetime
-import traceback
-from itertools import product
+from datetime import datetime, timedelta
 from module.excel_importer import ExcelImporter
 from module.excel_exporter import ExcelExporter
-from module.helpers import to_date, get_date
+from module.helpers import (
+    to_date,
+    get_order_number,
+    get_long_date,
+    get_value_without_pattern,
+    get_type_pdn,
+    get_summa_saldo_end,
+    get_summa_turn_main,
+    get_summa_turn_percent,
+)
+from module.data import get_kategoria
+from module.serializer import serializer, deserializer
 from module.settings import *
+from module.data import *
 
 logger = logging.getLogger(__name__)
 
 
 class Report:
     def __init__(self, filename: str):
+        self.order_type = "Основной договор"
         self.name = str(filename)
-        self.suf = "proc" if self.name.find("76") != -1 else "main"
+        self.clients = list()  # клиенты
+        self.suf = "main" if self.name.find("58") != -1 else "proc"
         self.parser = ExcelImporter(self.name)
-        self.clients = {}  # клиенты
         self.current_client_name = ""
         self.current_dogovor_number = ""
         self.current_dogovor_type = "Основной договор"
-        self.report_date = datetime.datetime.now().date().replace(
-            day=1
-        ) - datetime.timedelta(days=1)
+        self.report_date = datetime.now().date().replace(day=1) - timedelta(days=1)
         self.reference = {}  # ссылки на документы в рамках одного документа
         self.wa = {}
         self.kategoria = {}
         self.warnings = []
         self.fields = {}
-        self.__clear_dog_data()
 
-    def __clear_dog_data(self):
-        self.dogs = {}
-        self.current_dogovor_number = ""
-
-    def __record_client(self, record: list):
-        if self.fields.get("FLD_NAME", -1) != -1 and re.search(
-            PATT_NAME, record[self.fields.get("FLD_NAME")], re.IGNORECASE
-        ):
-            self.current_client_name = (
-                record[self.fields.get("FLD_NAME")].replace(" ", "").upper()
-            )
-            self.clients.setdefault(
-                self.current_client_name,
-                {"name": record[self.fields.get("FLD_NAME")], "dogovor": {}},
-            )
-            self.__clear_dog_data()
-
-    def __record_dog_name(self, record: list):
-        if re.search("Договор", record[self.fields.get("FLD_NUMBER")], re.IGNORECASE):
-            self.__clear_dog_data()
-
-    def __record_dog_type(self, record: list):
-        if self.fields.get("FLD_NUMBER", -1) != -1 and re.search(
-            PATT_DOG_TYPE, record[self.fields.get("FLD_NUMBER")], re.IGNORECASE
-        ):
-            self.current_dogovor_type = record[self.fields.get("FLD_NUMBER")]
-
-    def __record_dog_pay(self, record: list):
-        if self.fields.get("FLD_NUMBER", -1) != -1 and re.search(
-            PATT_DOG_PLAT, record[self.fields.get("FLD_NUMBER")], re.IGNORECASE
-        ):
-            self.clients[self.current_client_name]["dogovor"][
-                self.current_dogovor_number
-            ]["plat"].append({})
-            plat = self.clients[self.current_client_name]["dogovor"][
-                    self.current_dogovor_number
-                ]["plat"][-1]
-            plat["date_proc"] = (
-                record[self.fields.get("FLD_NUMBER")].replace(PATT_DOG_PLAT, "").strip()
-            )
-            plat[f"beg_debet_{self.suf}"] = (
-                record[self.fields.get(f"FLD_BEG_DEBET_{self.suf}")]
-                if self.fields.get(f"FLD_BEG_DEBET_{self.suf}", -1) != -1
-                else ""
-            )
-            plat[f"turn_debet_{self.suf}"] = (
-                record[self.fields.get(f"FLD_TURN_DEBET_{self.suf}")]
-                if self.fields.get(f"FLD_TURN_DEBET_{self.suf}", -1) != -1
-                else ""
-            )
-            plat[f"turn_credit_{self.suf}"] = (
-                record[self.fields.get(f"FLD_TURN_CREDIT_{self.suf}")]
-                if self.fields.get(f"FLD_TURN_CREDIT_{self.suf}", -1) != -1
-                else ""
-            )
-            plat[f"end_debet_{self.suf}"] = (
-                record[self.fields.get(f"FLD_END_DEBET_{self.suf}")]
-                if self.fields.get(f"FLD_END_DEBET_{self.suf}", -1) != -1
-                else ""
-            )
-            # b = plat.get(f"turn_credit_{self.suf}") is not None and plat.get(f"turn_credit_{self.suf}") != ''
-            # b = b and plat.get("report_end_calculate") is None
-            # if b:
-            #     self.clients[self.current_client_name]["dogovor"][
-            #         self.current_dogovor_number
-            #     ]["report_end_calculate"] = plat.get(
-            #         "date_proc"
-            #     )
-
-    def __record_dog_date(self, record):
-        if (
-            self.fields.get("FLD_DATE", -1) != -1
-            and not self.dogs.get("date")
-            and re.search(
-                PATT_DOG_DATE, record[self.fields.get("FLD_DATE")], re.IGNORECASE
-            )
-        ):
-            self.dogs["date"] = record[self.fields.get("FLD_DATE")] + (
-                " 0:00:00"
-                if record[self.fields.get("FLD_DATE")].find(":") == -1
-                else ""
-            )
-        if (
-            self.fields.get("FLD_DATE_FINISH", -1) != -1
-            and not self.dogs.get("date_finish")
-            and re.search(
-                PATT_DOG_DATE, record[self.fields.get("FLD_DATE_FINISH")], re.IGNORECASE
-            )
-        ):
-            self.dogs["date_finish"] = record[self.fields.get("FLD_DATE_FINISH")]
-        if (
-            self.fields.get("FLD_COUNT_DAYS_DELAY", -1) != -1
-            and not self.dogs.get("count_days_delay")
-            and re.search(
-                PATT_COUNT_DAYS,
-                record[self.fields.get("FLD_COUNT_DAYS_DELAY")],
-                re.IGNORECASE,
-            )
-        ):
-            self.dogs["count_days_delay"] = record[
-                self.fields.get("FLD_COUNT_DAYS_DELAY")
-            ]
-        if self.current_dogovor_number:
-            if self.dogs.get("date"):
-                self.clients[self.current_client_name]["dogovor"][
-                    self.current_dogovor_number
-                ]["date"] = self.dogs["date"]
-            if self.dogs.get("date_finish"):
-                self.clients[self.current_client_name]["dogovor"][
-                    self.current_dogovor_number
-                ]["date_finish"] = self.dogs["date_finish"]
-            if self.dogs.get("count_days_delay"):
-                self.clients[self.current_client_name]["dogovor"][
-                    self.current_dogovor_number
-                ]["count_days_delay"] = self.dogs["count_days_delay"]
-
-    def __set_dogovor_count_days(self, dogovor: dict):
-        if dogovor.get("date") and dogovor.get("period_common"):
-            try:
-                dogovor["count_days_last_month"] = self.__get_count_days_last_month(
-                    dogovor
-                )
-                dogovor["count_days_common"] = self.__get_count_days_common(dogovor)
-                dogovor["count_days_delay"] = self.__get_count_days_delay(dogovor)
-            except Exception as ex:
-                logger.exception("Finish date:")
-
-    def __get_dogovor_date_begin(self, dogovor) -> datetime.datetime:
-        return get_date(dogovor["date"])
-
-    def __get_dogovor_date_end(self, dogovor) -> datetime.datetime:
-        date_dog_end = get_date(dogovor["date"])
-        if date_dog_end:
-            date_dog_end += datetime.timedelta(days=float(dogovor["period_common"]))
-            dogovor["date_finish"] = datetime.datetime.strftime(
-                date_dog_end, "%d.%m.%Y"
-            )
-        return date_dog_end
-
-    def __get_dogovor_date_calculate_end(self, dogovor) -> datetime.datetime:
-        if dogovor.get("report_end_calculate"):
-            return get_date(dogovor["report_end_calculate"])
-        else:
-            dogovor["report_end_calculate"] = self.report_date
-            return self.__get_dogovor_date_end(dogovor)
-
-    def __get_last_period(self) -> tuple:
-        first_day_of_current_month = datetime.datetime.today().replace(day=1).date()
-        last_day_of_previous_month = first_day_of_current_month - datetime.timedelta(
-            days=1
+    def __is_read(self) -> bool:
+        self.read()
+        self.set_columns()
+        return not (
+            self.fields.get("FLD_NAME", -1) == -1
+            or self.fields.get("FLD_NUMBER", -1) == -1
         )
-        first_day_of_previous_month = last_day_of_previous_month.replace(day=1)
-        return first_day_of_previous_month, last_day_of_previous_month
 
-    def __get_count_days_last_month(self, dogovor):
-        n_first = 0
-        npoid = dogovor.get("tarif", 0)
-        (
-            date_first_day_in_month,
-            date_last_day_in_month,
-        ) = self.__get_last_period()
-        date_dog = self.__get_dogovor_date_begin(dogovor)
-        # Дата договора в отчетном месяце
-        if (date_dog > date_first_day_in_month - datetime.timedelta(days=1)) and (
-            date_dog < date_last_day_in_month + datetime.timedelta(days=1)
-        ):
-            date_first_day_in_month = date_dog
-            n_first = 1
-        if dogovor.get("report_frost"):
-            date_dog_end = get_date(dogovor["report_frost"])
+    def get_parser(self):
+        if self.__is_read():
+            for index, self.record in enumerate(self.parser.records):
+                self.__record_order_type()
+                self.__record_client()
+                if self.__get_current_client():
+                    self.__record_order_name()
+                    self.__record_order_number(index)
+                    self.__record_order_date()
+                    self.__record_order_period()
+                    self.__record_order_payments()
+                    self.__record_order_pdn()
+                    self.__record_order_rate()
+                    self.__record_order_tarif()
+                    self.__set_order_count_days()
+
+    def __record_client(self) -> None:
+        if self.__is_find(PATT_NAME, "FLD_NAME"):
+            self.clients.append(Client(name=self.record[self.fields.get("FLD_NAME")]))
+
+    def __get_current_client(self) -> Client:
+        if len(self.clients) != 0:
+            return self.clients[-1]
         else:
-            date_dog_end = self.__get_dogovor_date_calculate_end(dogovor)
+            return None
+
+    def __get_current_order(self, is_cashed: bool = False) -> Order:
+        client: Client = self.__get_current_client()
+        if client:
+            return client.order_cache
+        else:
+            None
+
+    def __get_current_payment(self) -> Payment:
+        order = self.__get_current_order()
+        if order:
+            return order.payment_cache
+        else:
+            return None
+
+    def __push_current_order(self) -> None:
+        client = self.__get_current_client()
+        order = self.__get_current_order()
+        client.orders.append(order)
+
+    def __push_current_payment(self) -> None:
+        payment = self.__get_current_payment()
+        order = self.__get_current_order()
+        order.payments_1c.append(payment)
+        self.__clean_payment()
+
+    def __set_new_order(self) -> None:
+        client: Client = self.__get_current_client()
+        if client:
+            client.order_cache = Order()
+
+    def __clean_payment(self) -> None:
+        order: Order = self.__get_current_order()
+        if order:
+            order.payment_cache = Payment()
+
+    def __record_order_name(self):
+        if self.__is_find("Договор", "FLD_NUMBER"):
+            client: Client = self.__get_current_client()
+            if client:
+                self.__set_new_order()
+                order = self.__get_current_order()
+                order.type = self.order_type
+                order.name = client.name
+
+    def __record_order_type(self):
+        if self.__is_find(PATT_DOG_TYPE, "FLD_NUMBER"):
+            self.order_type = self.record[self.fields.get("FLD_NUMBER")]
+
+    # Платежи
+    def __record_order_payments(self):
+        if self.__is_find(PATT_DOG_PLAT, "FLD_NUMBER"):
+            value: str = get_value_without_pattern(
+                self.record[self.fields["FLD_NUMBER"]], PATT_DOG_PLAT
+            )
+            if self.__is_find(PATT_CURRENCY, f"FLD_BEG_DEBET_{self.suf}"):
+                self.__add_payment(value, "FLD_BEG_DEBET", "B", "D")
+
+            if self.__is_find(PATT_CURRENCY, f"FLD_TURN_DEBET_{self.suf}"):
+                self.__add_payment(value, "FLD_TURN_DEBET", "O", "D")
+
+            if self.__is_find(PATT_CURRENCY, f"FLD_TURN_CREDIT_{self.suf}"):
+                self.__add_payment(value, "FLD_TURN_CREDIT", "O", "C")
+
+            if self.__is_find(PATT_CURRENCY, f"FLD_END_DEBET_{self.suf}"):
+                self.__add_payment(value, "FLD_END_DEBET", "E", "D")
+
+    def __record_order_date(self):
+        order = self.__get_current_order()
+        if self.__is_find(PATT_DOG_DATE, "FLD_DATE", "date"):
+            order.date = to_date(get_long_date(self.record[self.fields["FLD_DATE"]]))
+            order.date_begin = order.date
+        self.__set_order_field(PATT_DOG_DATE, "FLD_DATE_END", "date_end")
+        self.__set_order_field(
+            PATT_COUNT_DAYS, "FLD_COUNT_DAYS_DELAY", "count_days_delay"
+        )
+
+    def __record_order_pdn(self):
+        self.__set_order_field(PATT_PDN, "FLD_PDN", "pdn")
+
+    def __record_order_rate(self):
+        self.__set_order_field(PATT_RATE, "FLD_RATE", "rate")
+
+    def __record_order_tarif(self):
+        self.__set_order_field(PATT_TARIF, "FLD_TARIF", "tarif")
+
+    # Сумма договора в одной из колонок
+    def __record_order_summa(self, is_forced: bool = False):
+        if self.suf == "main":
+            order = self.__get_current_order()
+            if self.__is_find(PATT_CURRENCY, "FLD_SUMMA", "summa", is_forced=is_forced):
+                order.summa = Decimal(self.record[self.fields["FLD_SUMMA"]])
+            if self.__is_find(PATT_CURRENCY, "FLD_BEG_DEBET", "summa"):
+                order.summa = Decimal(self.record[self.fields["FLD_BEG_DEBET"]])
+            if self.__is_find(PATT_CURRENCY, "FLD_TURN_DEBET", "summa"):
+                order.summa = Decimal(self.record[self.fields["FLD_TURN_DEBET"]])
+            if self.__is_find(PATT_CURRENCY, "FLD_END_DEBET", "summa"):
+                order.summa = Decimal(self.record[self.fields["FLD_END_DEBET"]])
+
+    def __record_order_period(self):
+        self.__set_order_field(PATT_PERIOD, "FLD_PERIOD", "period")
+        self.__set_order_field(PATT_PERIOD, "FLD_PERIOD_COMMON", "period_common")
+
+    # Номер договора
+    def __record_order_number(self, index: int):
+        if self.__is_find(PATT_DOG_NUMBER, "FLD_NUMBER"):
+            order = self.__get_current_order()
+            order.number = get_order_number(self.record[self.fields.get("FLD_NUMBER")])
+            order.row = index
+            self.reference.setdefault(order.number, order)
+            self.__record_order_summa(True)
+            self.__push_current_order()
+
+    def __set_order_count_days(self, order: Order = None):
+        if order is None:
+            order = self.__get_current_order()
+        if order and order.count_days != 0:
+            try:
+                order.date_end = order.date_begin + timedelta(order.count_days)
+                order.count_days_period = self.__get_count_days_in_period(order)
+                order.count_days_common = self.__get_count_days_common(order)
+                order.count_days_delay = self.__get_count_days_delay(order)
+            except Exception as ex:
+                logger.exception("__set_order_count_days:")
+
+    def __get_order_date_begin(self) -> datetime.date:
+        order = self.__get_current_order()
+        return order.date_begin
+
+    def __get_order_date_end(self) -> datetime.date:
+        # order = self.__get_current_order()
+        # date_begin = order.date
+        # if date_begin:
+        #     order.date_begin = datetime.strftime(date_begin, "%d.%m.%Y")
+        #     date_end = date_begin + timedelta(days=float(order.count_days))
+        #     order.date_end = datetime.strftime(date_end, "%d.%m.%Y")
+        order = self.__get_current_order()
+        return order.date_end
+
+    def __get_order_date_calculate(self, order: Order) -> datetime.date:
+        if not order.date_calculate:
+            order.date_calculate = self.report_date
+        return order.date_calculate
+
+    def __get_first_period(self) -> datetime.date:
+        return self.report_date.replace(day=1)
+
+    def __get_count_days_in_period(self, order: Order) -> int:
+        n_first = 0
+        npoid = order.tarif
+        date_first_day_in_month = self.__get_first_period()
+        date_last_day_in_month = self.report_date
+        order_date = order.date_begin
+
+        # Дата договора в отчетном месяце
+        if (order_date > date_first_day_in_month - timedelta(days=1)) and (
+            order_date < date_last_day_in_month + timedelta(days=1)
+        ):
+            date_first_day_in_month = order_date
+            n_first = 1
+        if order.date_frozen:
+            date_end = order.date_frozen
+        else:
+            date_end = self.__get_order_date_calculate(order)
         # Дата договора в отчетном месяце или ранняя заморозка
         if (
-            (date_dog_end > date_first_day_in_month - datetime.timedelta(days=1))
-            and (date_dog_end < date_last_day_in_month + datetime.timedelta(days=1))
-            or (date_dog_end < date_first_day_in_month)
+            (date_end > date_first_day_in_month - timedelta(days=1))
+            and (date_end < date_last_day_in_month + timedelta(days=1))
+            or (date_end < date_first_day_in_month)
         ):
-            date_last_day_in_month = date_dog_end
+            date_last_day_in_month = date_end
         num_days = (date_last_day_in_month - date_first_day_in_month).days + 1
-        date1 = date2 = date_dog
+        date1 = date2 = order_date
         if npoid == 10:
-            date1 += datetime.timedelta(days=1)
-            date2 += datetime.timedelta(days=9)
+            date1 += timedelta(days=1)
+            date2 += timedelta(days=9)
         elif (
             (npoid == 31)
             or (npoid == 33)
@@ -223,33 +253,29 @@ class Report:
             or (npoid == 45)
             or (npoid == 47)
         ):
-            date1 += datetime.timedelta(days=1)
-            date2 += datetime.timedelta(days=6)
+            date1 += timedelta(days=1)
+            date2 += timedelta(days=6)
         elif (npoid == 44) or (npoid == 46) or (npoid == 48):
-            date1 += datetime.timedelta(days=16)
-            date2 += datetime.timedelta(days=6)
+            date1 += timedelta(days=16)
+            date2 += timedelta(days=6)
         if not (
             (date_first_day_in_month == date1) and (date_first_day_in_month == date2)
         ):
             if (
                 date1 < date_first_day_in_month
-                and date2 > date_first_day_in_month - datetime.timedelta(days=1)
+                and date2 > date_first_day_in_month - timedelta(days=1)
             ):
-                num_days -= (
-                    date2 - date_first_day_in_month + datetime.timedelta(days=1)
-                ).days
-            elif date1 > date_first_day_in_month - datetime.timedelta(
+                num_days -= (date2 - date_first_day_in_month + timedelta(days=1)).days
+            elif date1 > date_first_day_in_month - timedelta(
                 days=1
-            ) and date2 < date_last_day_in_month + datetime.timedelta(days=1):
-                num_days -= (date2 - date1 + datetime.timedelta(days=1)).days
+            ) and date2 < date_last_day_in_month + timedelta(days=1):
+                num_days -= (date2 - date1 + timedelta(days=1)).days
             elif (
-                date1 > date_first_day_in_month - datetime.timedelta(days=1)
-                and date1 < date_last_day_in_month + datetime.timedelta(days=1)
+                date1 > date_first_day_in_month - timedelta(days=1)
+                and date1 < date_last_day_in_month + timedelta(days=1)
                 and date2 > date_last_day_in_month
             ):
-                num_days -= (
-                    date_last_day_in_month - date1 + datetime.timedelta(days=1)
-                ).days
+                num_days -= (date_last_day_in_month - date1 + timedelta(days=1)).days
             elif (
                 date1 < date_first_day_in_month
                 and date1 < date_last_day_in_month > date_last_day_in_month
@@ -258,15 +284,12 @@ class Report:
         num_days -= n_first
         return num_days if num_days > 0 else 0
 
-    def __get_count_days_common(self, dogovor: dict):
-        (
-            _,
-            last_day_of_previous_month,
-        ) = self.__get_last_period()
-        npoid = dogovor.get("tarif", 0)
-        count_days = (
-            last_day_of_previous_month - self.__get_dogovor_date_begin(dogovor)
-        ).days
+    def __get_count_days_common(self, order: Order = None) -> int:
+        if order is None:
+            order: Order = self.__get_current_order()
+        last_day_on_period: datetime.date = self.report_date
+        npoid = order.tarif
+        count_days = (last_day_on_period - order.date_begin).days
         if (
             (npoid == 10)
             or (npoid == 31)
@@ -281,228 +304,65 @@ class Report:
             count_days -= 7
         return count_days if count_days > 0 else 0
 
-    def __get_count_days_delay(self, dogovor: dict):
-        (
-            _,
-            last_day_of_previous_month,
-        ) = self.__get_last_period()
+    # Количество дней просрочки
+    def __get_count_days_delay(self, order: Order) -> int:
+        last_day_on_period: datetime.date = self.report_date
+        try:
+            return (
+                (
+                    last_day_on_period - order.date_begin - timedelta(order.count_days)
+                ).days
+                if last_day_on_period > order.date_end
+                else 0
+            )
+        except Exception as ex:
+            logger.exception("__get_count_days_delay:")
+
+    def __is_find(
+        self,
+        pattern: str,
+        column_fld_name: str = None,
+        order_fld_name: str = None,
+        is_forced: bool = False,
+    ) -> bool:
+        order = self.__get_current_order()
         return (
-            (last_day_of_previous_month - self.__get_dogovor_date_begin(dogovor)).days
-            if last_day_of_previous_month > self.__get_dogovor_date_end(dogovor)
-            else 0
+            self.fields.get(column_fld_name, -1) != -1
+            and (
+                order_fld_name is None
+                or (not getattr(order, order_fld_name) or is_forced)
+            )
+            and re.search(
+                pattern, self.record[self.fields.get(column_fld_name)], re.IGNORECASE
+            )
         )
 
-    def __record_dog_pdn(self, rec):
-        if (
-            self.fields.get("FLD_PDN", -1) != -1
-            and not self.dogs.get("pdn")
-            and re.search(PATT_PDN, rec[self.fields.get("FLD_PDN")], re.IGNORECASE)
-        ):
-            self.dogs["pdn"] = rec[self.fields.get("FLD_PDN")]
-        if self.current_dogovor_number:
-            if self.dogs.get("pdn"):
-                self.clients[self.current_client_name]["dogovor"][
-                    self.current_dogovor_number
-                ]["pdn"] = self.dogs["pdn"]
+    def __set_order_field(
+        self,
+        pattern: str,
+        column_fld_name: str = None,
+        order_fld_name: str = "",
+        is_forced: bool = False,
+    ) -> None:
+        if self.__is_find(pattern, column_fld_name, order_fld_name, is_forced):
+            order = self.__get_current_order()
+            setattr(order, order_fld_name, self.record[self.fields[column_fld_name]])
 
-    def __record_dog_proc(self, rec):
-        if (
-            self.fields.get("FLD_PROC", -1) != -1
-            and not self.dogs.get("proc")
-            and re.search(PATT_PROC, rec[self.fields.get("FLD_PROC")], re.IGNORECASE)
-        ):
-            self.dogs["proc"] = round(float(rec[self.fields.get("FLD_PROC")]), 2)
-        if self.current_dogovor_number:
-            if self.dogs.get("proc"):
-                self.clients[self.current_client_name]["dogovor"][
-                    self.current_dogovor_number
-                ]["proc"] = self.dogs["proc"]
+    def __add_payment(
+        self, date_payment: str, fld_name: str, p_type: str, p_category: str
+    ):
+        if self.__is_find(PATT_CURRENCY, f"{fld_name}_{self.suf}"):
+            payment = self.__get_current_payment()
+            payment.summa = Decimal(
+                self.record[self.fields.get(f"{fld_name}_{self.suf}")]
+            )
+            payment.date = to_date(get_long_date(date_payment))
+            payment.kind = self.suf
+            payment.type = p_type
+            payment.category = p_category
+            self.__push_current_payment()
 
-    def __record_dog_tarif(self, rec):
-        if (
-            self.fields.get("FLD_TARIF", -1) != -1
-            and not self.dogs.get("tarif")
-            and re.search(PATT_TARIF, rec[self.fields.get("FLD_TARIF")], re.IGNORECASE)
-        ):
-            self.dogs["tarif"] = rec[self.fields.get("FLD_TARIF")]
-            self.dogs["tarif_name"] = rec[self.fields.get("FLD_TARIF")]
-        if self.current_dogovor_number:
-            if self.dogs.get("tarif"):
-                self.clients[self.current_client_name]["dogovor"][
-                    self.current_dogovor_number
-                ]["tarif"] = self.dogs["tarif"]
-                self.clients[self.current_client_name]["dogovor"][
-                    self.current_dogovor_number
-                ]["tarif_name"] = self.dogs["tarif"]
-
-    def __record_dog_summa(self, record: list, is_forced: bool = False):
-        if (
-            self.fields.get("FLD_SUMMA", -1) != -1
-            and (not self.dogs.get("summa") or is_forced)
-            and re.search(
-                PATT_CURRENCY, record[self.fields.get("FLD_SUMMA")], re.IGNORECASE
-            )
-        ):
-            self.dogs["summa"] = record[self.fields.get("FLD_SUMMA")]
-        if (
-            self.fields.get(f"FLD_BEG_DEBET_{self.suf}", -1) != -1
-            and (not self.dogs.get(f"beg_debet_{self.suf}") or is_forced)
-            and re.search(
-                PATT_CURRENCY,
-                record[self.fields.get(f"FLD_BEG_DEBET_{self.suf}")],
-                re.IGNORECASE,
-            )
-        ):
-            self.dogs[f"beg_debet_{self.suf}"] = record[
-                self.fields.get(f"FLD_BEG_DEBET_{self.suf}")
-            ]
-        if (
-            self.fields.get(f"FLD_TURN_DEBET_{self.suf}", -1) != -1
-            and (not self.dogs.get(f"turn_debet_{self.suf}") or is_forced)
-            and re.search(
-                PATT_CURRENCY,
-                record[self.fields.get(f"FLD_TURN_DEBET_{self.suf}")],
-                re.IGNORECASE,
-            )
-        ):
-            self.dogs[f"turn_debet_{self.suf}"] = record[
-                self.fields.get(f"FLD_TURN_DEBET_{self.suf}")
-            ]
-        if (
-            self.fields.get(f"FLD_TURN_CREDIT_{self.suf}", -1) != -1
-            and (not self.dogs.get(f"turn_credit_{self.suf}") or is_forced)
-            and re.search(
-                PATT_CURRENCY,
-                record[self.fields.get(f"FLD_TURN_CREDIT_{self.suf}")],
-                re.IGNORECASE,
-            )
-        ):
-            self.dogs[f"turn_credit_{self.suf}"] = record[
-                self.fields.get(f"FLD_TURN_CREDIT_{self.suf}")
-            ]
-        if (
-            self.fields.get(f"FLD_END_DEBET_{self.suf}", -1) != -1
-            and (not self.dogs.get(f"end_debet_{self.suf}") or is_forced)
-            and re.search(
-                PATT_CURRENCY,
-                record[self.fields.get(f"FLD_END_DEBET_{self.suf}")],
-                re.IGNORECASE,
-            )
-        ):
-            self.dogs[f"end_debet_{self.suf}"] = record[
-                self.fields.get(f"FLD_END_DEBET_{self.suf}")
-            ]
-        if not self.dogs.get("summa") and (
-            self.dogs.get("beg_debet_main") or self.dogs.get("turn_credit_main")
-        ):
-            self.dogs["summa"] = (
-                self.dogs.get("beg_debet_main")
-                if self.dogs.get("beg_debet_main")
-                else self.dogs.get("turn_credit_main")
-            )
-        if self.current_dogovor_number:
-            self.clients[self.current_client_name]["dogovor"][
-                self.current_dogovor_number
-            ]["summa"] = self.dogs.get("summa", "")
-            self.clients[self.current_client_name]["dogovor"][
-                self.current_dogovor_number
-            ][f"beg_debet_{self.suf}"] = self.dogs.get(f"beg_debet_{self.suf}", "")
-            self.clients[self.current_client_name]["dogovor"][
-                self.current_dogovor_number
-            ][f"turn_debet_{self.suf}"] = self.dogs.get(f"turn_debet_{self.suf}", "")
-            self.clients[self.current_client_name]["dogovor"][
-                self.current_dogovor_number
-            ][f"turn_credit_{self.suf}"] = self.dogs.get(f"turn_credit_{self.suf}", "")
-            self.clients[self.current_client_name]["dogovor"][
-                self.current_dogovor_number
-            ][f"end_debet_{self.suf}"] = self.dogs.get(f"end_debet_{self.suf}", "")
-
-    def __record_dog_period(self, rec):
-        if (
-            self.fields.get("FLD_PERIOD", -1) != -1
-            and not self.dogs.get("period")
-            and re.search(
-                PATT_PERIOD, rec[self.fields.get("FLD_PERIOD")], re.IGNORECASE
-            )
-        ):
-            self.dogs["period"] = rec[self.fields.get("FLD_PERIOD")]
-        if (
-            self.fields.get("FLD_PERIOD_COMMON", -1) != -1
-            and not self.dogs.get("period_common")
-            and re.search(
-                PATT_PERIOD, rec[self.fields.get("FLD_PERIOD_COMMON")], re.IGNORECASE
-            )
-        ):
-            self.dogs["period_common"] = rec[self.fields.get("FLD_PERIOD_COMMON")]
-        if self.current_dogovor_number:
-            if self.dogs.get("period"):
-                self.clients[self.current_client_name]["dogovor"][
-                    self.current_dogovor_number
-                ]["period"] = self.dogs["period"]
-            if self.dogs.get("period_common"):
-                self.clients[self.current_client_name]["dogovor"][
-                    self.current_dogovor_number
-                ]["period_common"] = self.dogs["period_common"]
-
-    def __record_dog_number(self, record: list, index: int):
-        if re.search(
-            PATT_DOG_NUMBER, record[self.fields.get("FLD_NUMBER")], re.IGNORECASE
-        ):
-            self.current_dogovor_number = (
-                f"0{record[self.fields.get('FLD_NUMBER')].strip()}"
-                if len(record[self.fields.get("FLD_NUMBER")].strip()) == LEN_DOG_NUMBER
-                else record[self.fields.get("FLD_NUMBER")].strip()
-            )
-            self.clients[self.current_client_name]["dogovor"].setdefault(
-                self.current_dogovor_number, {}
-            )
-            self.clients[self.current_client_name]["dogovor"][
-                self.current_dogovor_number
-            ].setdefault("plat", [])
-            self.clients[self.current_client_name]["dogovor"][
-                self.current_dogovor_number
-            ]["type"] = self.current_dogovor_type
-            self.clients[self.current_client_name]["dogovor"][
-                self.current_dogovor_number
-            ]["row"] = index
-            self.clients[self.current_client_name]["dogovor"][
-                self.current_dogovor_number
-            ]["number"] = self.current_dogovor_number
-            self.reference.setdefault(
-                self.current_dogovor_number,
-                self.clients[self.current_client_name]["dogovor"][
-                    self.current_dogovor_number
-                ],
-            )
-            self.__record_dog_summa(record, True)
-
-    def get_parser(self, data: dict = None):
-        self.read()
-        self.set_columns()
-        if (
-            self.fields.get("FLD_NAME", -1) == -1
-            or self.fields.get("FLD_NUMBER", -1) == -1
-        ):
-            return
-        index = -1
-        for record in self.parser.records:
-            index += 1
-            self.__record_dog_type(record)
-            self.__record_client(record)
-            if self.current_client_name:
-                self.__record_dog_name(record)
-                self.__record_dog_number(record, index)
-                self.__record_dog_date(record)
-                self.__record_dog_period(record)
-                self.__record_dog_pay(record)
-                self.__record_dog_pdn(record)
-                self.__record_dog_proc(record)
-                self.__record_dog_tarif(record)
-                self.__set_dogovor_count_days(
-                    self.clients[self.current_client_name]["dogovor"]
-                )
-        # self.set_reference()
-
+    # Устанавливаем номера колонок
     def set_columns(self):
         items = [
             {"name": ["FLD_NAME"], "pattern": "^Счет$|^ФИО|^Контрагент$", "off_col": 0},
@@ -537,11 +397,11 @@ class Report:
                 "off_col": 0,
             },
             {
-                "name": ["FLD_PROC"],
+                "name": ["FLD_RATE"],
                 "pattern": "^Общая сумма долга по процентам$",
                 "off_col": 1,
             },
-            {"name": ["FLD_PROC"], "pattern": "^Процентная ставка", "off_col": 0},
+            {"name": ["FLD_RATE"], "pattern": "^Процентная ставка", "off_col": 0},
             {
                 "name": ["FLD_TARIF"],
                 "pattern": "^Общая сумма долга по процентам$|^Наименование продукта$",
@@ -601,113 +461,79 @@ class Report:
     def read(self):
         self.parser.read()
 
-    def write(self, filename: str = "output", doc_type: str = "clients"):
-        if doc_type == "reference":
-            docs = self.reference
-        elif doc_type == "wa":
-            docs = self.wa
-        elif doc_type == "rezerv":
-            docs = self.kategoria
-        else:
-            docs = self.clients
-        os.makedirs("output", exist_ok=True)
-        with open(
-            pathlib.Path("output", f"{filename}.json"),
-            mode="w",
-            encoding="windows-1251",
-        ) as file:
-            jstr = json.dumps(docs, indent=4, ensure_ascii=False)
-            file.write(jstr)
-
     def write_to_excel(self, filename: str = "output_full") -> str:
         exel = ExcelExporter("output_excel")
         return exel.write(self)
 
-    def set_reference(self):
-        for client in self.clients.values():
-            for number, dogovor in client["dogovor"].items():
-                self.reference[number] = dogovor
-
     def union_all(self, items):
         if not items:
             return
-        for number, dogovor in self.reference.items():
-            for item in items:
-                item_dogovor = item.reference.get(number)
-                if item_dogovor:
-                    for item_dog_attrib in item_dogovor.keys():
-                        if not dogovor.get(item_dog_attrib):
-                            dogovor[item_dog_attrib] = item_dogovor[item_dog_attrib]
-            d1 = to_date(dogovor.get("date", ""))
-            d2 = None
-            d3 = None
-            if dogovor.get("plat"):
-                for plat in dogovor["plat"]:
-                    if plat.get("date_proc") and (plat.get("turn_credit_proc") or plat.get("turn_credit_main")  ):
-                        if d2 is None:
-                            d2 = to_date(plat["date_proc"])
-                        d3 = to_date(plat["date_proc"])
-            if d2 is None:
-                d2 = self.report_date
-            if d3 is None:
-                d3 = self.report_date
-            dogovor["report_date"] = d3.strftime("%d.%m.%Y")  # дата последней оплаты
-            if not dogovor.get("report_frost"):
-                dogovor["report_frost"] = d2.strftime("%d.%m.%Y")  # дата первой оплаты
-            else:
-                dogovor["report_frost"] = d2.strftime("%d.%m.%Y")
-            if (
-                not dogovor.get("count_days_delay")
-                and not isinstance(d1, str)
-                and not isinstance(d2, str)
-            ):
-                dogovor["count_days_delay"] = (self.report_date - d1).days
-        self.write("clients")
+        payment: Payment = Payment()
+        order: Order = Order()
+        order_sub: Order = Order()
+        for number, order in self.reference.items():
+            for order_sub in [
+                x.reference[number] for x in items if x.reference.get(number)
+            ]:
+                for payment in order_sub.payments_1c:
+                    order.payments_1c.append(payment)
+                    if (
+                        order.date_frozen is None
+                        and payment.date
+                        and payment.summa
+                        and payment.type == "O"
+                        and payment.category == "C"
+                    ):
+                        order.date_frozen = payment.date
+        # write(self.clients)
 
     def fill_from_archi(self, data: dict):
         if not data:
             return
-        for client in self.clients.values():
-            for dogovor in client["dogovor"].values():
-                if data["order"].get(dogovor["number"]):
-                    dogovor["proc"] = data["order"][dogovor["number"]][1]
-                    dogovor["tarif"] = data["order"][dogovor["number"]][6]
-                    dogovor["tarif_name"] = data["order"][dogovor["number"]][7]
-                    dogovor["period"] = data["order"][dogovor["number"]][2]
-                    dogovor["period_common"] = data["order"][dogovor["number"]][2]
-                    self.__set_dogovor_count_days(dogovor)
-                if data["payment"].get(dogovor["number"]):
-                    dogovor["payment"] = data["payment"][dogovor["number"]]
+        for client in self.clients:
+            order: Order = Order()
+            for order in client.orders:
+                if data["order"].get(order.number):
+                    order.rate = data["order"][order.number][1]
+                    order.tarif.code = data["order"][order.number][6]
+                    order.tarif.name = data["order"][order.number][7]
+                    order.count_days = data["order"][order.number][2]
+                    self.__set_order_count_days(order)
+                if data["payment"].get(order.number):
+                    for payment in data["payment"][order.number]:
+                        order.payments_base.append(payment)
 
     # средневзвешенная величина
     def set_weighted_average(self):
-        for client in self.clients.values():
-            for dogovor in client["dogovor"].values():
-                period = dogovor.get("period")
-                summa = dogovor.get("turn_debet_main")
-                tarif = dogovor.get("tarif_name")
-                proc = dogovor.get("proc")
-                if period and summa and tarif and proc:
-                    key = f"{tarif}_{proc}"
+        item: Client = Client()
+        order: Order = Order()
+        for item in self.clients:
+            for order in item.orders:
+                period = order.count_days
+                summa = order.summa
+                tarif = order.tarif.code
+                rate = order.rate
+                if period and summa and tarif and rate:
+                    key = f"{tarif}_{rate}"
                     data = self.wa.get(key)
                     period = float(period)
                     if not data:
                         # 46 -Друг
                         self.wa[key] = {
                             "parent": [],
-                            "stavka": float(proc),
+                            "stavka": float(rate),
                             "koef": 240.194
-                            if tarif == "46" or tarif == "48"
-                            else 365 * float(proc),
+                            if tarif == 46 or tarif == 48
+                            else 365 * float(rate),
                             "period": period - 7
-                            if tarif == "46" or tarif == "48"
+                            if tarif == 46 or tarif == 48
                             else period,
                             "summa_free": 0,
                             "summa": 0,
                             "count": 0,
                             "value": {},
                         }
-                    self.wa[key]["parent"].append(dogovor)
+                    self.wa[key]["parent"].append(order)
                     s = self.wa[key]["value"].get(summa)
                     if not s:
                         self.wa[key]["value"][summa] = 1
@@ -719,199 +545,50 @@ class Report:
                 else:
                     if summa:
                         self.warnings.append(
-                            f'ср.взвеш: {client["name"]} {dogovor["number"]}  {summa} period:{period} tarif:{tarif} proc:{proc}'
+                            f"ср.взвеш: {item.name} {order.number}  {summa} period:{period} tarif:{tarif} proc:{rate}"
                         )
         summa = 0
         summa_free = 0
-        for key, client in self.wa.items():
-            summa += client["summa"]
-            summa_free += client["summa_free"]
+        for key, item in self.wa.items():
+            summa += item["summa"]
+            summa_free += item["summa_free"]
         self.wa["summa_free"] = summa_free
         self.wa["summa"] = summa
         self.wa["summa_wa"] = summa / summa_free if summa_free != 0 else 1
 
     # категории потребительских займов
     def set_kategoria(self):
-        kategoria = {
-            "1": {
-                "title": "30",
-                "count4": 0,
-                "count6": 0,
-                "summa5": 0,
-                "summa3": 0,
-                "summa6": 0,
-                "items": [],
-            },
-            "2": {
-                "title": "40",
-                "count4": 0,
-                "count6": 0,
-                "summa5": 0,
-                "summa3": 0,
-                "summa6": 0,
-                "items": [],
-            },
-            "3": {
-                "title": "50",
-                "count4": 0,
-                "count6": 0,
-                "summa5": 0,
-                "summa3": 0,
-                "summa6": 0,
-                "items": [],
-            },
-            "4": {
-                "title": "60",
-                "count4": 0,
-                "count6": 0,
-                "summa5": 0,
-                "summa3": 0,
-                "summa6": 0,
-                "items": [],
-            },
-            "5": {
-                "title": "70",
-                "count4": 0,
-                "count6": 0,
-                "summa5": 0,
-                "summa3": 0,
-                "summa6": 0,
-                "items": [],
-            },
-            "6": {
-                "title": "80",
-                "count4": 0,
-                "count6": 0,
-                "summa5": 0,
-                "summa3": 0,
-                "summa6": 0,
-                "items": [],
-            },
-            "7": {
-                "title": "99",
-                "count4": 0,
-                "count6": 0,
-                "summa5": 0,
-                "summa3": 0,
-                "summa6": 0,
-                "items": [],
-            },
-            "0": {
-                "title": "",
-                "count4": 0,
-                "count6": 0,
-                "summa5": 0,
-                "summa3": 0,
-                "summa6": 0,
-                "items": [],
-            },
-        }
-        reserve = {}
-        for client in self.clients.values():
+        kategoria = get_kategoria()
+        reserves = {}
+        client: Client = Client()
+        order: Order = Order()
+        for client in self.clients:
             pdn = 0.3
-            for dogovor in client["dogovor"].values():
-                pdn = float(dogovor["pdn"]) if dogovor.get("pdn") else pdn
-            for dogovor in client["dogovor"].values():
-                if dogovor.get("turn_debet_main"):
-                    dogovor["turn_debet_main"] = (
-                        float(dogovor["turn_debet_main"])
-                        if dogovor.get("turn_debet_main")
-                        else 0
-                    )
-                    dogovor["turn_debet_proc"] = (
-                        float(dogovor["turn_debet_proc"])
-                        if dogovor.get("turn_debet_proc")
-                        else 0
-                    )
-                    dogovor["end_debet_main"] = (
-                        float(dogovor["end_debet_main"])
-                        if dogovor.get("end_debet_main")
-                        else 0
-                    )
-                    dogovor["end_debet_proc"] = (
-                        float(dogovor["end_debet_proc"])
-                        if dogovor.get("end_debet_proc")
-                        else 0
-                    )
-                    dogovor["end_debet_fine"] = (
-                        float(dogovor["end_debet_fine"])
-                        if dogovor.get("end_debet_fine")
-                        else 0
-                    )
-                    dogovor["end_debet_penal"] = (
-                        float(dogovor["end_debet_penal"])
-                        if dogovor.get("end_debet_penal")
-                        else 0
-                    )
-                    dogovor["pdn"] = (
-                        float(dogovor["pdn"]) if dogovor.get("pdn") else pdn
-                    )
-                    dogovor["count_days_delay"] = (
-                        int(dogovor["count_days_delay"])
-                        if dogovor.get("count_days_delay")
-                        else 0
-                    )
-                    dogovor["rezerv_percent"] = self.__get_rezerv_percent(
-                        dogovor["count_days_delay"]
-                    )
+            for order in client.orders:
+                pdn = order.pdn if order.pdn else pdn
+            for order in client.orders:
+                t = get_type_pdn(order.summa, order.pdn)
+                summa = get_summa_saldo_end(order)
+                kategoria[t]["count4"] += 1
+                kategoria[t]["summa5"] += order.summa
+                kategoria[t]["summa3"] += summa
+                if order.count_days_delay > 90 and summa > 0:
+                    kategoria[t]["count6"] += 1
+                    kategoria[t]["summa6"] += summa
+                item = {"name": client.name, "parent": order}
+                kategoria[t]["items"].append(item)
 
-                    if dogovor["turn_debet_main"] >= 10000:
-                        if dogovor["pdn"] <= 0.3:
-                            t = "1"
-                        elif dogovor["pdn"] <= 0.4:
-                            t = "2"
-                        elif dogovor["pdn"] <= 0.5:
-                            t = "3"
-                        elif dogovor["pdn"] <= 0.6:
-                            t = "4"
-                        elif dogovor["pdn"] <= 0.7:
-                            t = "5"
-                        elif dogovor["pdn"] <= 0.8:
-                            t = "6"
-                        else:
-                            t = "7"
-                    else:
-                        t = "0"
-                    kategoria[t]["count4"] += 1
-                    kategoria[t]["summa5"] += dogovor["turn_debet_main"]
-                    kategoria[t]["summa3"] += (
-                        dogovor["end_debet_main"] + dogovor["end_debet_proc"]
-                    )
-                    if (
-                        dogovor["count_days_delay"] > 90
-                        and (dogovor["end_debet_main"] + dogovor["end_debet_proc"]) > 0
-                    ):
-                        kategoria[t]["count6"] += 1
-                        kategoria[t]["summa6"] += (
-                            dogovor["end_debet_main"] + dogovor["end_debet_proc"]
-                        )
-                    item = {"name": client["name"], "parent": dogovor}
-                    kategoria[t]["items"].append(item)
-
-                    reserve.setdefault(
-                        str(dogovor["rezerv_percent"]),
-                        {
-                            "percent": dogovor["rezerv_percent"],
-                            "summa_main": 0,
-                            "summa_proc": 0,
-                            "count": 0,
-                            "items": [],
-                        },
-                    )
-                    reserve[str(dogovor["rezerv_percent"])]["summa_main"] += dogovor[
-                        "turn_debet_main"
-                    ]
-                    reserve[str(dogovor["rezerv_percent"])]["summa_proc"] += dogovor[
-                        "end_debet_proc"
-                    ]
-                    reserve[str(dogovor["rezerv_percent"])]["count"] += 1
-                    reserve[str(dogovor["rezerv_percent"])]["items"].append(item)
-
-        reserve = sorted(reserve.items())
-        for item in reserve:
-            item[1]["items"] = sorted(item[1]["items"], key=lambda x: x["name"])
-
-        self.reserve = reserve
+                reserves.setdefault(str(order.percent), Reserve())
+                reserves[str(order.percent)].summa_main += get_summa_turn_main(order)
+                reserves[str(order.percent)].summa_percent += get_summa_turn_percent(
+                    order
+                )
+                reserves[str(order.percent)].count += 1
+                reserves[str(order.percent)].items.append(item)
+        reserves = sorted(reserves.items())
+        for item in reserves:
+            item[1].items = sorted(item[1].items, key=lambda x: x["name"])
+        self.reserve = reserves
         self.kategoria = kategoria
 
     def get_numbers(self):
@@ -939,6 +616,3 @@ class Report:
             return 80 / 100
         else:
             return 99 / 100
-
-    def __get_count_days_in_last_period(self):
-        pass
