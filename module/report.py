@@ -577,12 +577,13 @@ class Report:
                     kategoria[t]["summa6"] += summa
                 item = {"name": client.name, "parent": order}
                 kategoria[t]["items"].append(item)
-
+                order.percent = self.__get_rezerv_percent(order.count_days_delay)
                 reserves.setdefault(str(order.percent), Reserve())
-                reserves[str(order.percent)].summa_main += get_summa_turn_main(order)
-                reserves[str(order.percent)].summa_percent += get_summa_turn_percent(
-                    order
-                )
+                reserves[str(order.percent)].percent = order.percent
+                # # reserves[str(order.percent)].summa_main += get_summa_turn_main(order)
+                # # reserves[str(order.percent)].summa_percent += get_summa_turn_percent(
+                #     order
+                # )
                 reserves[str(order.percent)].count += 1
                 reserves[str(order.percent)].items.append(item)
         reserves = sorted(reserves.items())

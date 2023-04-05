@@ -149,12 +149,29 @@ class ExcelExporter:
                     self.workbook.write(
                         row, name["col"], Formula(f), type_name=name["type"]
                     )
+                    order.debet_main = order.summa - order.summa_credit
                 elif name["name"] == "debet_proc":
                     f = f"{Utils.rowcol_to_cell(row,get_col('calculate_percent'),col_abs=True)}-"
                     f += f"{Utils.rowcol_to_cell(row,get_col('payments_1c'),col_abs=True)}"
                     self.workbook.write(
                         row, name["col"], Formula(f), type_name=name["type"]
                     )
+                    summa_max = order.summa * Decimal(get_max_margin_rate(order.date))
+                    order.debet_proc = (
+                        min(
+                            summa_max,
+                            order.summa * Decimal(order.rate / 100) * order.count_days_common,
+                        )
+                        - order.summa_credit
+                    )
+                    value = sum(
+                        [
+                            x.summa
+                            for x in order.payments_1c
+                            if x.type == "O" and x.category == "C" and x.kind == "proc"
+                        ]
+                    )
+                    order.debet_proc -= value
                 elif name["name"] == "reserve":
                     col = get_col("count_days_delay")
                     f = (
@@ -508,30 +525,30 @@ class ExcelExporter:
                 self.workbook.write(
                     row,
                     col + 4,
-                    Formula(order.link["summa"])
-                    if order.link.get("summa")
+                    Formula(order.link["summa_address"])
+                    if order.link.get("summa_address")
                     else order.summa,
                 )
                 self.workbook.write(
                     row,
                     col + 5,
-                    Formula(order.link["reserve_main_address"])
-                    if order.link.get("reserve_main_address")
-                    else order.summa,
+                    Formula(order.link["debet_main_address"])
+                    if order.link.get("debet_main_address")
+                    else order.debet_main,
                 )
                 self.workbook.write(
                     row,
                     col + 6,
-                    Formula(order.link["reserve_proc_address"])
-                    if order.link.get("reserve_proc_address")
-                    else order.summa,
+                    Formula(order.link["debet_proc_address"])
+                    if order.link.get("debet_proc_address")
+                    else order.debet_proc,
                 )
                 self.workbook.write(
                     row,
                     col + 7,
-                    Formula(order.link["count_days_address"])
-                    if order.link.get("count_days_address")
-                    else order.count_days,
+                    Formula(order.link["count_days_delay_address"])
+                    if order.link.get("count_days_delay_address")
+                    else order.count_days_delay,
                 )
                 row += 1
 
@@ -561,7 +578,7 @@ class ExcelExporter:
             "pattern: pattern solid, fore_colour orange; font: color white"
         )
         for value in report.reserve:
-            reserve:Reserve=Reserve()
+            reserve: Reserve = Reserve()
             reserve = value[1]
             self.workbook.write(row, col, reserve.percent)
             f = (
@@ -612,11 +629,13 @@ class ExcelExporter:
         client: Client = Client()
         for client in report.clients:
             for order in client.orders:
-                self.workbook.write(row, col, Formula(order.link.get("reserve_address","")))
+                self.workbook.write(
+                    row, col, Formula(order.link.get("reserve_address", ""))
+                )
                 self.workbook.write(
                     row,
                     col + 1,
-                    Formula(client.link.get("name_address",""))
+                    Formula(client.link.get("name_address", ""))
                     if client.link.get("name_address")
                     else client.name,
                 )
@@ -630,28 +649,28 @@ class ExcelExporter:
                 self.workbook.write(
                     row,
                     col + 3,
-                    Formula(order.link["reserve_main_address"])
-                    if order.link.get("reserve_main_address")
-                    else order.summa,
+                    Formula(order.link["debet_main_address"])
+                    if order.link.get("debet_main_address")
+                    else order.debet_main,
                     num_format_str=num_format,
                 )
                 self.workbook.write(
                     row,
                     col + 4,
-                    Formula(order.link["reserve_proc_address"])
-                    if order.link.get("reserve_proc_address")
-                    else order.summa,
+                    Formula(order.link["debet_proc_address"])
+                    if order.link.get("debet_proc_address")
+                    else order.debet_proc,
                     num_format_str=num_format,
                 )
 
-                f = order.link.get("reserve_main_address","")
+                f = order.link.get("reserve_main_address", "")
                 self.workbook.write(row, col + 5, Formula(f), num_format_str=num_format)
                 f = order.link.get("reserve_proc_address")
                 self.workbook.write(row, col + 6, Formula(f), num_format_str=num_format)
                 self.workbook.write(
                     row,
                     col + 7,
-                    Formula(order.link.get("count_days_delay_address",""))
+                    Formula(order.link.get("count_days_delay_address", ""))
                     if order.link.get("count_days_delay_address")
                     else order.count_days_delay,
                     num_format_str=num_format,

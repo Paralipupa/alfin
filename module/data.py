@@ -61,6 +61,8 @@ class Order:
     date_calculate: date = None
     row: int = 0
     is_cashed: bool = False
+    debet_main: Decimal = 0
+    debet_proc: Decimal = 0
     link: dict = field(default_factory=dict)
 
 
