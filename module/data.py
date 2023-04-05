@@ -45,6 +45,7 @@ class Order:
     date_begin: date = None
     date_end: date = None
     summa: Decimal = 0
+    summa_credit: Decimal = 0
     rate: float = 0
     percent: float = 0
     tarif: Tarif = Tarif()

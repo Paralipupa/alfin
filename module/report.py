@@ -122,20 +122,20 @@ class Report:
     # Платежи
     def __record_order_payments(self):
         if self.__is_find(PATT_DOG_PLAT, "FLD_NUMBER"):
-            value: str = get_value_without_pattern(
+            date_payment: str = get_value_without_pattern(
                 self.record[self.fields["FLD_NUMBER"]], PATT_DOG_PLAT
             )
             if self.__is_find(PATT_CURRENCY, f"FLD_BEG_DEBET_{self.suf}"):
-                self.__add_payment(value, "FLD_BEG_DEBET", "B", "D")
+                self.__add_payment(date_payment, "FLD_BEG_DEBET", "B", "D")
 
             if self.__is_find(PATT_CURRENCY, f"FLD_TURN_DEBET_{self.suf}"):
-                self.__add_payment(value, "FLD_TURN_DEBET", "O", "D")
+                self.__add_payment(date_payment, "FLD_TURN_DEBET", "O", "D")
 
             if self.__is_find(PATT_CURRENCY, f"FLD_TURN_CREDIT_{self.suf}"):
-                self.__add_payment(value, "FLD_TURN_CREDIT", "O", "C")
+                self.__add_payment(date_payment, "FLD_TURN_CREDIT", "O", "C")
 
             if self.__is_find(PATT_CURRENCY, f"FLD_END_DEBET_{self.suf}"):
-                self.__add_payment(value, "FLD_END_DEBET", "E", "D")
+                self.__add_payment(date_payment, "FLD_END_DEBET", "E", "D")
 
     def __record_order_date(self):
         order = self.__get_current_order()
@@ -160,14 +160,14 @@ class Report:
     def __record_order_summa(self, is_forced: bool = False):
         if self.suf == "main":
             order = self.__get_current_order()
+            if self.__is_find(PATT_CURRENCY, f"FLD_TURN_DEBET_{self.suf}", "summa"):
+                order.summa = Decimal(self.record[self.fields[f"FLD_TURN_DEBET_{self.suf}"]])
+            if self.__is_find(PATT_CURRENCY, f"FLD_BEG_DEBET_{self.suf}", "summa"):
+                order.summa = Decimal(self.record[self.fields[f"FLD_BEG_DEBET_{self.suf}"]])
             if self.__is_find(PATT_CURRENCY, "FLD_SUMMA", "summa", is_forced=is_forced):
                 order.summa = Decimal(self.record[self.fields["FLD_SUMMA"]])
-            if self.__is_find(PATT_CURRENCY, "FLD_BEG_DEBET", "summa"):
-                order.summa = Decimal(self.record[self.fields["FLD_BEG_DEBET"]])
-            if self.__is_find(PATT_CURRENCY, "FLD_TURN_DEBET", "summa"):
-                order.summa = Decimal(self.record[self.fields["FLD_TURN_DEBET"]])
-            if self.__is_find(PATT_CURRENCY, "FLD_END_DEBET", "summa"):
-                order.summa = Decimal(self.record[self.fields["FLD_END_DEBET"]])
+            if self.__is_find(PATT_CURRENCY, f"FLD_TURN_CREDIT_{self.suf}", "summa_credit"):
+                order.summa_credit = Decimal(self.record[self.fields[f"FLD_END_DEBET_{self.suf}"]])
 
     def __record_order_period(self):
         self.__set_order_field(PATT_PERIOD, "FLD_PERIOD", "period")

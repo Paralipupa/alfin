@@ -49,9 +49,9 @@ class ExcelExporter:
                 {"name": "tarif", "title": "Тариф", "type": ""},
                 {"name": "count_days", "title": "Срок", "type": "float"},
                 {"name": "pdn", "title": "ПДН", "type": "float"},
-                {"name": "payments_1c", "title": "Оплата 1С(осн)", "type": "float"},
+                {"name": "summa_credit", "title": "Оплата 1С(осн)", "type": "float"},
                 {
-                    "name": "payments_1c_percent",
+                    "name": "payments_1c",
                     "title": "Оплата 1С(проц)",
                     "type": "float",
                 },
@@ -73,6 +73,8 @@ class ExcelExporter:
                     "title": "Проц.месяц",
                     "type": "float",
                 },
+                {"name": "debet_main", "title": "Остаток(осн)", "type": "float"},
+                {"name": "debet_proc", "title": "Остаток(проц)", "type": "float"},
                 {"name": "count_days_delay", "title": "Просрочка", "type": "int"},
                 {"name": "reserve", "title": "Разерв(%)", "type": "int", "col": 26},
             ]
@@ -98,7 +100,7 @@ class ExcelExporter:
                                 for x in value
                                 if x.type == "O"
                                 and x.category == "C"
-                                and x.kind == "main"
+                                and x.kind == "proc"
                             ]
                         )
                         self.workbook.write(
@@ -137,27 +139,22 @@ class ExcelExporter:
                     f += f"{Utils.rowcol_to_cell(row,get_col('summa'),col_abs=True)}*"
                     f += f"({Utils.rowcol_to_cell(row,get_col('rate'),col_abs=True)}/100)*"
                     f += f"{Utils.rowcol_to_cell(row,get_col('count_days_common'),col_abs=True)})-"
+                    f += f"{Utils.rowcol_to_cell(row,get_col('summa_credit'),col_abs=True)}"
+                    self.workbook.write(
+                        row, name["col"], Formula(f), type_name=name["type"]
+                    )
+                elif name["name"] == "debet_main":
+                    f = f"{Utils.rowcol_to_cell(row,get_col('summa'),col_abs=True)}-"
+                    f += f"{Utils.rowcol_to_cell(row,get_col('summa_credit'),col_abs=True)}"
+                    self.workbook.write(
+                        row, name["col"], Formula(f), type_name=name["type"]
+                    )
+                elif name["name"] == "debet_proc":
+                    f = f"{Utils.rowcol_to_cell(row,get_col('calculate_percent'),col_abs=True)}-"
                     f += f"{Utils.rowcol_to_cell(row,get_col('payments_1c'),col_abs=True)}"
                     self.workbook.write(
                         row, name["col"], Formula(f), type_name=name["type"]
                     )
-                elif name["name"] == "payments_1c_percent":
-                    if order.payments_base:
-                        value = sum(
-                            [
-                                x.summa
-                                for x in order.payments_1c
-                                if x.type == "O"
-                                and x.category == "C"
-                                and x.kind == "proc"
-                            ]
-                        )
-                        self.workbook.write(
-                            row,
-                            name["col"],
-                            value if value > 0 else "",
-                            type_name=name["type"],
-                        )
                 elif name["name"] == "reserve":
                     col = get_col("count_days_delay")
                     f = (
@@ -186,7 +183,7 @@ class ExcelExporter:
 
         def calculate_rezerves_main():
             f = f'IF({Utils.rowcol_to_cell(row,get_col("reserve"),col_abs=True)}="","",'
-            f += f'{Utils.rowcol_to_cell(row,get_col("summa"),col_abs=True)}*'
+            f += f'{Utils.rowcol_to_cell(row,get_col("debet_main"),col_abs=True)}*'
             f += f'{Utils.rowcol_to_cell(row,get_col("reserve"),col_abs=True)})'
             self.workbook.write(
                 row, len(names) + 1, Formula(f), num_format_str=num_format
@@ -197,7 +194,7 @@ class ExcelExporter:
 
         def calculate_rezerves_proc():
             f = f'IF({Utils.rowcol_to_cell(row,get_col("reserve"),col_abs=True)}="","",'
-            f += f'{Utils.rowcol_to_cell(row,get_col("calculate_percent"),col_abs=True)}*'
+            f += f'{Utils.rowcol_to_cell(row,get_col("debet_proc"),col_abs=True)}*'
             f += f'{Utils.rowcol_to_cell(row,get_col("reserve"),col_abs=True)})'
             self.workbook.write(
                 row, len(names) + 2, Formula(f), num_format_str=num_format
