@@ -15,7 +15,7 @@ INFO_LOG_FILENAME = os.path.join(BASE_DIR, "logs", "info.log")
 
 
 ENCONING = "utf-8"
-PATT_NAME = "(?:на|ич)\s*$"
+PATT_NAME = "(?:вна|вич|глы|глу|гли|улу|ызы)\s*$"
 PATT_FAMALY = "^\w+"
 PATT_CURRENCY = "^-?\d{1,8}(?:[\.,]\d+)?$"
 PATT_RATE = "^\d{1,3}(?:[\.,]\d+)?$"
@@ -33,9 +33,9 @@ LEN_DOG_NUMBER = 11
 SQL_CONNECT = {
     "dsn": "sqlserverdatasource",
     "port": "1433",
-    "database": "ArchiCreditW",
-    "user": "sa",
-    "password": "Raideff86reps$1",
+    "database": os.environ.get("SQL_DB", "ArchiCreditW"),
+    "user": os.environ.get("SQL_USER", "ArchiCreditW"),
+    "password": os.environ.get("SQL_PASSWORD", "11111"),
 }
 
 LOGGING = {

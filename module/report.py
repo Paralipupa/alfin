@@ -1,4 +1,5 @@
-import re
+import re, random
+from collections import OrderedDict
 from datetime import datetime, timedelta
 from module.excel_importer import ExcelImporter
 from module.excel_exporter import ExcelExporter
@@ -9,11 +10,9 @@ from module.helpers import (
     get_value_without_pattern,
     get_type_pdn,
     get_summa_saldo_end,
-    get_summa_turn_main,
-    get_summa_turn_percent,
+    get_attributes,
+    get_columns_head,
 )
-from module.data import get_kategoria
-from module.serializer import serializer, deserializer
 from module.settings import *
 from module.data import *
 
@@ -24,8 +23,13 @@ class Report:
     def __init__(self, filename: str):
         self.order_type = "Основной договор"
         self.name = str(filename)
-        self.clients = list()  # клиенты
-        self.suf = "main" if self.name.find("58") != -1 else "proc"
+        self.current_client_key: str = None
+        self.clients: OrderedDict = OrderedDict()  # клиенты
+        self.suf = (
+            "main"
+            if self.name.find("58") != -1 or self.name.find("59") != -1
+            else "proc"
+        )
         self.parser = ExcelImporter(self.name)
         self.current_client_name = ""
         self.current_dogovor_number = ""
@@ -36,6 +40,8 @@ class Report:
         self.kategoria = {}
         self.warnings = []
         self.fields = {}
+        self.tarifs = [(0, "noname"), (1, "Постоянный"), (2, "Старт")]
+        self.discounts = (2, 10, 31, 33, 42, 45, 47, 44, 46, 48)
 
     def __is_read(self) -> bool:
         self.read()
@@ -62,12 +68,23 @@ class Report:
                     self.__set_order_count_days()
 
     def __record_client(self) -> None:
-        if self.__is_find(PATT_NAME, "FLD_NAME"):
-            self.clients.append(Client(name=self.record[self.fields.get("FLD_NAME")]))
+        names = [x for x in self.record[self.fields.get("FLD_NAME")].split(" ") if x]
+        if self.__is_find(PATT_NAME, "FLD_NAME") or (
+            all(word[0].isupper() for word in names) and len(names) == 3
+        ):
+            self.current_client_key = (
+                self.record[self.fields.get("FLD_NAME")].replace(" ", "").lower()
+            )
+            self.clients.setdefault(
+                self.current_client_key,
+                Client(name=self.record[self.fields.get("FLD_NAME")]),
+            )
+            self.__set_new_order()
+            self.__record_order_summa()
 
     def __get_current_client(self) -> Client:
-        if len(self.clients) != 0:
-            return self.clients[-1]
+        if self.current_client_key:
+            return self.clients[self.current_client_key]
         else:
             return None
 
@@ -88,6 +105,7 @@ class Report:
     def __push_current_order(self) -> None:
         client = self.__get_current_client()
         order = self.__get_current_order()
+        order.client = client
         client.orders.append(order)
 
     def __push_current_payment(self) -> None:
@@ -148,30 +166,112 @@ class Report:
         )
 
     def __record_order_pdn(self):
-        self.__set_order_field(PATT_PDN, "FLD_PDN", "pdn")
+        self.__set_order_field(PATT_PDN, "FLD_PDN", "pdn", True)
 
     def __record_order_rate(self):
         self.__set_order_field(PATT_RATE, "FLD_RATE", "rate")
+        order = self.__get_current_order()
+        if order and order.rate:
+            order.rate = float(order.rate)
 
     def __record_order_tarif(self):
-        self.__set_order_field(PATT_TARIF, "FLD_TARIF", "tarif")
+        if self.__is_find(PATT_TARIF, "FLD_TARIF"):
+            order = self.__get_current_order()
+            order.tarif = Tarif()
+            name = self.record[self.fields["FLD_TARIF"]]
+            if name:
+                t = [x for x in self.tarifs if x[1] == name]
+                if not t:
+                    self.tarifs.append((len(self.tarifs), name))
+                    t = self.tarifs[-1]
+                else:
+                    t = t[0]
+                order.tarif.code = t[0]
+                order.tarif.name = t[1]
 
     # Сумма договора в одной из колонок
     def __record_order_summa(self, is_forced: bool = False):
         if self.suf == "main":
-            order = self.__get_current_order()
-            if self.__is_find(PATT_CURRENCY, f"FLD_TURN_DEBET_{self.suf}", "summa"):
-                order.summa = Decimal(self.record[self.fields[f"FLD_TURN_DEBET_{self.suf}"]])
-            if self.__is_find(PATT_CURRENCY, f"FLD_BEG_DEBET_{self.suf}", "summa"):
-                order.summa = Decimal(self.record[self.fields[f"FLD_BEG_DEBET_{self.suf}"]])
-            if self.__is_find(PATT_CURRENCY, "FLD_SUMMA", "summa", is_forced=is_forced):
-                order.summa = Decimal(self.record[self.fields["FLD_SUMMA"]])
-            if self.__is_find(PATT_CURRENCY, f"FLD_TURN_CREDIT_{self.suf}", "summa_credit"):
-                order.summa_credit = Decimal(self.record[self.fields[f"FLD_END_DEBET_{self.suf}"]])
+            b: bool = self.__set_order_field(
+                PATT_CURRENCY,
+                f"FLD_TURN_DEBET_{self.suf}",
+                "summa",
+                is_forced=is_forced,
+                value_type="decimal",
+            )
+            self.__set_order_field(
+                PATT_CURRENCY,
+                f"FLD_BEG_DEBET_{self.suf}",
+                "summa",
+                is_forced=is_forced and not b,
+                value_type="decimal",
+            )
+            self.__set_order_field(
+                PATT_CURRENCY,
+                "FLD_SUMMA",
+                "summa",
+                is_forced=is_forced and not b,
+                value_type="decimal",
+            )
+        self.__set_order_field(
+            PATT_CURRENCY,
+            f"FLD_BEG_DEBET_{self.suf}",
+            f"debet_beg_{self.suf}",
+            is_forced=is_forced,
+            value_type="decimal",
+        )
+        self.__set_order_field(
+            PATT_CURRENCY,
+            f"FLD_BEG_CREDIT_{self.suf}",
+            f"credit_beg_{self.suf}",
+            is_forced=is_forced,
+            value_type="decimal",
+        )
+        self.__set_order_field(
+            PATT_CURRENCY,
+            f"FLD_TURN_DEBET_{self.suf}",
+            f"debet_{self.suf}",
+            is_forced=is_forced,
+            value_type="decimal",
+        )
+        self.__set_order_field(
+            PATT_CURRENCY,
+            f"FLD_TURN_CREDIT_{self.suf}",
+            f"credit_{self.suf}",
+            is_forced=is_forced,
+            value_type="decimal",
+        )
+        self.__set_order_field(
+            PATT_CURRENCY,
+            f"FLD_END_DEBET_{self.suf}",
+            f"debet_end_{self.suf}",
+            is_forced=is_forced,
+            value_type="decimal",
+        )
+        self.__set_order_field(
+            PATT_CURRENCY,
+            f"FLD_END_CREDIT_{self.suf}",
+            f"credit_end_{self.suf}",
+            is_forced=is_forced,
+            value_type="decimal",
+        )
+        self.__set_order_field(
+            PATT_CURRENCY,
+            f"FLD_END_DEBET_pen",
+            "debet_penalty",
+            is_forced=is_forced,
+            value_type="decimal",
+        )
 
     def __record_order_period(self):
-        self.__set_order_field(PATT_PERIOD, "FLD_PERIOD", "period")
-        self.__set_order_field(PATT_PERIOD, "FLD_PERIOD_COMMON", "period_common")
+        self.__set_order_field(PATT_PERIOD, "FLD_PERIOD", "count_days")
+        self.__set_order_field(PATT_PERIOD, "FLD_PERIOD_COMMON", "count_days_common")
+        order = self.__get_current_order()
+        if order:
+            if order.count_days:
+                order.count_days = int(order.count_days)
+            if order.count_days_common:
+                order.count_days_common = int(order.count_days_common)
 
     # Номер договора
     def __record_order_number(self, index: int):
@@ -219,7 +319,6 @@ class Report:
 
     def __get_count_days_in_period(self, order: Order) -> int:
         n_first = 0
-        npoid = order.tarif
         date_first_day_in_month = self.__get_first_period()
         date_last_day_in_month = self.report_date
         order_date = order.date_begin
@@ -243,19 +342,23 @@ class Report:
             date_last_day_in_month = date_end
         num_days = (date_last_day_in_month - date_first_day_in_month).days + 1
         date1 = date2 = order_date
-        if npoid == 10:
+        if order.tarif.code == 10 or order.tarif.name.lower() == "старт":
             date1 += timedelta(days=1)
             date2 += timedelta(days=9)
         elif (
-            (npoid == 31)
-            or (npoid == 33)
-            or (npoid == 42)
-            or (npoid == 45)
-            or (npoid == 47)
+            (order.tarif.code == 31)
+            or (order.tarif.code == 33)
+            or (order.tarif.code == 42)
+            or (order.tarif.code == 45)
+            or (order.tarif.code == 47)
         ):
             date1 += timedelta(days=1)
             date2 += timedelta(days=6)
-        elif (npoid == 44) or (npoid == 46) or (npoid == 48):
+        elif (
+            (order.tarif.code == 44)
+            or (order.tarif.code == 46)
+            or (order.tarif.code == 48)
+        ):
             date1 += timedelta(days=16)
             date2 += timedelta(days=6)
         if not (
@@ -288,19 +391,8 @@ class Report:
         if order is None:
             order: Order = self.__get_current_order()
         last_day_on_period: datetime.date = self.report_date
-        npoid = order.tarif
         count_days = (last_day_on_period - order.date_begin).days
-        if (
-            (npoid == 10)
-            or (npoid == 31)
-            or (npoid == 33)
-            or (npoid == 42)
-            or (npoid == 45)
-            or (npoid == 47)
-            or (npoid == 44)
-            or (npoid == 46)
-            or (npoid == 48)
-        ):
+        if order.tarif.code in self.discounts:
             count_days -= 7
         return count_days if count_days > 0 else 0
 
@@ -343,10 +435,22 @@ class Report:
         column_fld_name: str = None,
         order_fld_name: str = "",
         is_forced: bool = False,
-    ) -> None:
+        value_type: str = "",
+    ) -> bool:
         if self.__is_find(pattern, column_fld_name, order_fld_name, is_forced):
             order = self.__get_current_order()
-            setattr(order, order_fld_name, self.record[self.fields[column_fld_name]])
+            if value_type == "decimal":
+                setattr(
+                    order,
+                    order_fld_name,
+                    Decimal(self.record[self.fields[column_fld_name]]),
+                )
+            else:
+                setattr(
+                    order, order_fld_name, self.record[self.fields[column_fld_name]]
+                )
+            return True
+        return False
 
     def __add_payment(
         self, date_payment: str, fld_name: str, p_type: str, p_category: str
@@ -364,78 +468,7 @@ class Report:
 
     # Устанавливаем номера колонок
     def set_columns(self):
-        items = [
-            {"name": ["FLD_NAME"], "pattern": "^Счет$|^ФИО|^Контрагент$", "off_col": 0},
-            {
-                "name": [f"FLD_BEG_DEBET_{self.suf}"],
-                "pattern": "^Сальдо на начало периода$",
-                "off_col": 0,
-            },
-            {
-                "name": [f"FLD_TURN_DEBET_{self.suf}", "FLD_SUMMA"],
-                "pattern": "^Обороты за период$",
-                "off_col": 0,
-            },
-            {
-                "name": [f"FLD_TURN_CREDIT_{self.suf}"],
-                "pattern": "^Обороты за период$",
-                "off_col": 1,
-            },
-            {
-                "name": [f"FLD_END_DEBET_{self.suf}"],
-                "pattern": "^Сальдо на конец периода$",
-                "off_col": 0,
-            },
-            {
-                "name": ["FLD_PERIOD"],
-                "pattern": "^Первоначальный срок займа$|^Общая сумма долга по процентам$",
-                "off_col": 0,
-            },
-            {
-                "name": ["FLD_PERIOD_COMMON"],
-                "pattern": "^кол-во дней для расчета проц\.$",
-                "off_col": 0,
-            },
-            {
-                "name": ["FLD_RATE"],
-                "pattern": "^Общая сумма долга по процентам$",
-                "off_col": 1,
-            },
-            {"name": ["FLD_RATE"], "pattern": "^Процентная ставка", "off_col": 0},
-            {
-                "name": ["FLD_TARIF"],
-                "pattern": "^Общая сумма долга по процентам$|^Наименование продукта$",
-                "off_col": 0,
-            },
-            {
-                "name": ["FLD_COUNT_DAYS"],
-                "pattern": "^кол-во дней начисления процента$",
-                "off_col": 0,
-            },
-            {
-                "name": ["FLD_COUNT_DAYS_DELAY"],
-                "pattern": "^кол-во дней просрочки до отчетного периода$",
-                "off_col": 0,
-            },
-            {"name": ["FLD_PDN"], "pattern": "^Показатель долговой|ПДН", "off_col": 0},
-            {
-                "name": ["FLD_END_DEBET_{self.suf}"],
-                "pattern": "^сумма начисл\. процентов$",
-                "off_col": 0,
-            },
-            {"name": ["FLD_NUMBER", "FLD_DATE"], "pattern": "^Счет$", "off_col": 0},
-            {
-                "name": ["FLD_NUMBER"],
-                "pattern": "^№ заявки$|^Договор$|^№ договора$",
-                "off_col": 0,
-            },
-            {"name": ["FLD_DATE"], "pattern": "^Дата выдачи", "off_col": 0},
-            {
-                "name": ["FLD_SUMMA"],
-                "pattern": "Сумма займа|^Выданная сумма займа$",
-                "off_col": 0,
-            },
-        ]
+        items = get_columns_head(self.suf)
         index = 0
         for record in self.parser.records:
             col = 0
@@ -468,29 +501,49 @@ class Report:
     def union_all(self, items):
         if not items:
             return
-        payment: Payment = Payment()
-        order: Order = Order()
-        order_sub: Order = Order()
-        for number, order in self.reference.items():
-            for order_sub in [
-                x.reference[number] for x in items if x.reference.get(number)
-            ]:
-                for payment in order_sub.payments_1c:
-                    order.payments_1c.append(payment)
-                    if (
-                        order.date_frozen is None
-                        and payment.date
-                        and payment.summa
-                        and payment.type == "O"
-                        and payment.category == "C"
-                    ):
-                        order.date_frozen = payment.date
-        # write(self.clients)
+        order_attrs = [x for x in get_attributes(Order()) if x.find("_proc") != -1 or x.find("_main") != -1]
+        order: Order
+        client: Client
+        for key, client in self.clients.items():
+            client_items = [
+                x.clients[key]
+                for x in items
+                if x.clients.get(key) and len(x.clients[key].orders) == 0
+            ]
+            for order in client.orders:
+                order_items = [
+                    x.reference[order.number]
+                    for x in items
+                    if x.reference.get(order.number)
+                ]
+                order_item: Order
+                for order_item in order_items:
+                    for attr in order_attrs:
+                        if not getattr(order, attr) and getattr(order_item, attr):
+                            setattr(order, attr, getattr(order_item, attr))
+                    payment: Payment
+                    for payment in order_item.payments_1c:
+                        order.payments_1c.append(payment)
+                        if (
+                            order.date_frozen is None
+                            and payment.date
+                            and payment.summa
+                            and payment.type == "O"
+                            and payment.category == "C"
+                        ):
+                            order.date_frozen = payment.date
+                if client_items:
+                    for client_item in client_items:
+                        for attr in order_attrs:
+                            if not getattr(order, attr) and getattr(
+                                client_item.order_cache, attr
+                            ):
+                                setattr(order, attr, getattr(client_item.order_cache, attr))
 
     def fill_from_archi(self, data: dict):
         if not data:
             return
-        for client in self.clients:
+        for client in self.clients.values():
             order: Order = Order()
             for order in client.orders:
                 if data["order"].get(order.number):
@@ -507,14 +560,15 @@ class Report:
     def set_weighted_average(self):
         item: Client = Client()
         order: Order = Order()
-        for item in self.clients:
+        for item in self.clients.values():
             for order in item.orders:
                 period = order.count_days
                 summa = order.summa
                 tarif = order.tarif.code
+                tarif_name = order.tarif.name
                 rate = order.rate
                 if period and summa and tarif and rate:
-                    key = f"{tarif}_{rate}"
+                    key = f"{tarif_name}_{rate}"
                     data = self.wa.get(key)
                     period = float(period)
                     if not data:
@@ -523,11 +577,9 @@ class Report:
                             "parent": [],
                             "stavka": float(rate),
                             "koef": 240.194
-                            if tarif == 46 or tarif == 48
+                            if tarif in self.discounts
                             else 365 * float(rate),
-                            "period": period - 7
-                            if tarif == 46 or tarif == 48
-                            else period,
+                            "period": period - 7 if tarif in self.discounts else period,
                             "summa_free": 0,
                             "summa": 0,
                             "count": 0,
@@ -558,14 +610,39 @@ class Report:
 
     # категории потребительских займов
     def set_kategoria(self):
+        def get_kategoria() -> dict:
+            d = {}
+            data = [
+                (1, "30"),
+                (2, "40"),
+                (3, "50"),
+                (4, "60"),
+                (5, "70"),
+                (6, "80"),
+                (7, "99"),
+                (0, ""),
+            ]
+            for x in data:
+                d[str(x[0])] = {
+                    "title": x[1],
+                    "count4": 0,
+                    "count6": 0,
+                    "summa5": 0,
+                    "summa3": 0,
+                    "summa6": 0,
+                    "items": [],
+                }
+            return d
+
         kategoria = get_kategoria()
         reserves = {}
         client: Client = Client()
         order: Order = Order()
-        for client in self.clients:
-            pdn = 0.3
+        random.seed()
+        for client in self.clients.values():
+            pdn = 0  ## random.random()
             for order in client.orders:
-                pdn = order.pdn if order.pdn else pdn
+                order.pdn = order.pdn if order.pdn else pdn
             for order in client.orders:
                 t = get_type_pdn(order.summa, order.pdn)
                 summa = get_summa_saldo_end(order)
@@ -580,10 +657,6 @@ class Report:
                 order.percent = self.__get_rezerv_percent(order.count_days_delay)
                 reserves.setdefault(str(order.percent), Reserve())
                 reserves[str(order.percent)].percent = order.percent
-                # # reserves[str(order.percent)].summa_main += get_summa_turn_main(order)
-                # # reserves[str(order.percent)].summa_percent += get_summa_turn_percent(
-                #     order
-                # )
                 reserves[str(order.percent)].count += 1
                 reserves[str(order.percent)].items.append(item)
         reserves = sorted(reserves.items())

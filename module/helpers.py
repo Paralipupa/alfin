@@ -155,7 +155,8 @@ def get_summa_turn_percent(order: Order):
         ]
     )
 
-def get_value_attr(attr_value: str, type_attr:str) -> Any:
+
+def get_value_attr(attr_value: str, type_attr: str) -> Any:
     if type_attr == "float":
         value = float(attr_value)
     elif type_attr == "int":
@@ -166,12 +167,117 @@ def get_value_attr(attr_value: str, type_attr:str) -> Any:
         value = str(attr_value)
     return value
 
-def get_max_margin_rate(ddate: datetime.datetime.date) ->float : 
-    if ddate < datetime.datetime.strptime('28.01.2019','%d.%m.%Y').date():
+
+def get_max_margin_rate(ddate: datetime.datetime.date) -> float:
+    if ddate < datetime.datetime.strptime("28.01.2019", "%d.%m.%Y").date():
         return 3
-    elif ddate < datetime.datetime.strptime('01.07.2019','%d.%m.%Y').date():
+    elif ddate < datetime.datetime.strptime("01.07.2019", "%d.%m.%Y").date():
         return 2.5
-    elif ddate < datetime.datetime.strptime('01.01.2020','%d.%m.%Y').date():
+    elif ddate < datetime.datetime.strptime("01.01.2020", "%d.%m.%Y").date():
         return 2
     else:
         return 1.5
+
+
+def get_attributes(obj) -> list:
+    return [x for x in dir(obj) if not x.startswith("__")]
+
+
+def get_columns_head(suf: str):
+    return [
+        {"name": ["FLD_NAME"], "pattern": "^Счет$|^ФИО|^Контрагент$", "off_col": 0},
+        {
+            "name": [f"FLD_BEG_DEBET_{suf}"],
+            "pattern": "^Сальдо на начало периода$",
+            "off_col": 0,
+        },
+        {
+            "name": [f"FLD_BEG_CREDIT_{suf}"],
+            "pattern": "^Сальдо на начало периода$",
+            "off_col": 1,
+        },
+        {
+            "name": [f"FLD_TURN_DEBET_{suf}", "FLD_SUMMA"],
+            "pattern": "^Обороты за период$",
+            "off_col": 0,
+        },
+        {
+            "name": [f"FLD_TURN_CREDIT_{suf}"],
+            "pattern": "^Обороты за период$",
+            "off_col": 1,
+        },
+        {
+            "name": [f"FLD_END_DEBET_{suf}"],
+            "pattern": "^Сальдо на конец периода$",
+            "off_col": 0,
+        },
+        {
+            "name": [f"FLD_END_CREDIT_{suf}"],
+            "pattern": "^Сальдо на конец периода$",
+            "off_col": 1,
+        },
+        {
+            "name": [f"FLD_END_DEBET_main"],
+            "pattern": "^Основной долг$",
+            "off_col": 0,
+        },
+        {
+            "name": [f"FLD_END_DEBET_proc"],
+            "pattern": "^Долг по процентам$",
+            "off_col": 0,
+        },
+        {
+            "name": [f"FLD_END_DEBET_pen"],
+            "pattern": "^Долг по единовременным штрафам$",
+            "off_col": 0,
+        },
+        {
+            "name": ["FLD_PERIOD"],
+            "pattern": "^Первоначальный срок займа$|^Общая сумма долга по процентам$",
+            "off_col": 0,
+        },
+        {
+            "name": ["FLD_PERIOD_COMMON"],
+            "pattern": "^кол-во дней для расчета проц\.$|^Общий срок займа$",
+            "off_col": 0,
+        },
+        {
+            "name": ["FLD_RATE"],
+            "pattern": "^Общая сумма долга по процентам$",
+            "off_col": 1,
+        },
+        {"name": ["FLD_RATE"], "pattern": "^Процентная ставка", "off_col": 0},
+        {
+            "name": ["FLD_TARIF"],
+            "pattern": "^Общая сумма долга по процентам$|^Наименование продукта$",
+            "off_col": 0,
+        },
+        {
+            "name": ["FLD_COUNT_DAYS"],
+            "pattern": "^кол-во дней начисления процента$",
+            "off_col": 0,
+        },
+        {
+            "name": ["FLD_COUNT_DAYS_DELAY"],
+            "pattern": "^кол-во дней просрочки до отчетного периода$",
+            "off_col": 0,
+        },
+        {"name": ["FLD_PDN"], "pattern": "^Показатель долговой|ПДН", "off_col": 0},
+        {
+            "name": [f"FLD_END_DEBET_{suf}"],
+            "pattern": "^сумма начисл\. процентов$",
+            "off_col": 0,
+        },
+        {"name": ["FLD_NUMBER", "FLD_DATE"], "pattern": "^Счет$", "off_col": 0},
+        {
+            "name": ["FLD_NUMBER"],
+            "pattern": "^№ заявки$|^Договор$|^№ договора$",
+            "off_col": 0,
+        },
+        {"name": ["FLD_DATE"], "pattern": "^Дата выдачи", "off_col": 0},
+        {
+            "name": ["FLD_SUMMA"],
+            "pattern": "Сумма займа|^Выданная сумма займа$",
+            "off_col": 0,
+        },
+    ]

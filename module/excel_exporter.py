@@ -43,20 +43,32 @@ class ExcelExporter:
         def get_names():
             return [
                 {"name": "number", "title": "Номер", "type": ""},
-                {"name": "date", "title": "Дата", "type": ""},
+                {"name": "date", "title": "Дата", "type": "date"},
                 {"name": "summa", "title": "Сумма", "type": "float"},
                 {"name": "rate", "title": "Ставка", "type": "float"},
                 {"name": "tarif", "title": "Тариф", "type": ""},
                 {"name": "count_days", "title": "Срок", "type": "float"},
                 {"name": "pdn", "title": "ПДН", "type": "float"},
-                {"name": "summa_credit", "title": "Оплата 1С(осн)", "type": "float"},
+                {"name": "debet_beg_main", "title": "Д(58)", "type": "float"},
+                {"name": "credit_beg_main", "title": "К(58)", "type": "float"},
+                {"name": "debet_main", "title": "Д(58)", "type": "float"},
+                {"name": "credit_main", "title": "К(58)", "type": "float"},
+                {"name": "debet_end_main", "title": "Д(58)", "type": "float"},
+                {"name": "credit_end_main", "title": "К(58)", "type": "float"},
+                {"name": "debet_beg_proc", "title": "Д(76)", "type": "float"},
+                {"name": "credit_beg_proc", "title": "К(76)", "type": "float"},
+                {"name": "debet_proc", "title": "Д(76)", "type": "float"},
+                {"name": "credit_proc", "title": "К(76)", "type": "float"},
+                {"name": "debet_end_proc", "title": "Д(76)", "type": "float"},
+                {"name": "credit_end_proc", "title": "К(76)", "type": "float"},
+                {"name": "credit_main", "title": "1С(осн)", "type": "float"},
                 {
-                    "name": "payments_1c",
-                    "title": "Оплата 1С(проц)",
+                    "name": "credit_proc",
+                    "title": "1С(проц)",
                     "type": "float",
                 },
-                {"name": "payments_base", "title": "Оплата Archi", "type": "float"},
-                {"name": "date_frozen", "title": "Дата заморозки", "type": ""},
+                {"name": "payments_base", "title": "Archi", "type": "float"},
+                {"name": "date_frozen", "title": "Дата заморозки", "type": "date"},
                 {
                     "name": "count_days_common",
                     "title": "Дней\n(всего)",
@@ -73,16 +85,15 @@ class ExcelExporter:
                     "title": "Проц.месяц",
                     "type": "float",
                 },
-                {"name": "debet_main", "title": "Остаток(осн)", "type": "float"},
-                {"name": "debet_proc", "title": "Остаток(проц)", "type": "float"},
+                {"name": "calc_debet_end_main", "title": "Остаток(осн)", "type": "float"},
+                {"name": "calc_debet_end_proc", "title": "Остаток(проц)", "type": "float"},
                 {"name": "count_days_delay", "title": "Просрочка", "type": "int"},
                 {"name": "reserve", "title": "Разерв(%)", "type": "int", "col": 26},
             ]
 
-        def write_value_attribute():
-            nonlocal name, row, order, attr_value
+        def write_value_attribute(value):
+            nonlocal name, row, order
             try:
-                value = attr_value
                 if name["name"] == "date_calculate":
                     if value != report.report_date:
                         self.workbook.write(
@@ -92,23 +103,36 @@ class ExcelExporter:
                     self.workbook.write(
                         row, name["col"], value.code, type_name=name["type"]
                     )
+                elif name["name"] == "count_days_common":
+                    f = f'IF({Utils.rowcol_to_cell(row,get_col("date_frozen"),col_abs=True)}="",'
+                    f += f'{Utils.rowcol_to_cell(0,0,col_abs=True)},{Utils.rowcol_to_cell(row,get_col("date_frozen"),col_abs=True)})-'
+                    f += f'{Utils.rowcol_to_cell(row,get_col("date"),col_abs=True)}'
+                    self.workbook.write(
+                        row, name["col"], Formula(f), type_name=name["type"]
+                    )
+                elif name["name"] == "count_days_delay":
+                    f = f'IF({Utils.rowcol_to_cell(row,get_col("count_days_common"),col_abs=True)}-'
+                    f += f'{Utils.rowcol_to_cell(row,get_col("count_days"),col_abs=True)}>0,'
+                    f += f'{Utils.rowcol_to_cell(row,get_col("count_days_common"),col_abs=True)}-'
+                    f += f'{Utils.rowcol_to_cell(row,get_col("count_days"),col_abs=True)},'
+                    f += f'"")'
+                    self.workbook.write(
+                        row, name["col"], Formula(f), type_name=name["type"]
+                    )
                 elif name["name"] == "payments_1c":
-                    if order.payments_base:
-                        value = sum(
-                            [
-                                x.summa
-                                for x in value
-                                if x.type == "O"
-                                and x.category == "C"
-                                and x.kind == "proc"
-                            ]
-                        )
-                        self.workbook.write(
-                            row,
-                            name["col"],
-                            value if value > 0 else "",
-                            type_name=name["type"],
-                        )
+                    value = sum(
+                        [
+                            x.summa
+                            for x in order.payments_1c
+                            if x.type == "O" and x.category == "C" and x.kind == "proc"
+                        ]
+                    )
+                    self.workbook.write(
+                        row,
+                        name["col"],
+                        value if value > 0 else "",
+                        type_name=name["type"],
+                    )
                 elif name["name"] == "payments_base":
                     if order.payments_base:
                         value = sum([x[2] for x in value])
@@ -135,43 +159,34 @@ class ExcelExporter:
                     )
                 elif name["name"] == "calculate_percent":
                     summa_max = order.summa * Decimal(get_max_margin_rate(order.date))
-                    f = f"MIN({summa_max},"
+                    f = f"MAX(MIN({summa_max},"
                     f += f"{Utils.rowcol_to_cell(row,get_col('summa'),col_abs=True)}*"
                     f += f"({Utils.rowcol_to_cell(row,get_col('rate'),col_abs=True)}/100)*"
                     f += f"{Utils.rowcol_to_cell(row,get_col('count_days_common'),col_abs=True)})-"
-                    f += f"{Utils.rowcol_to_cell(row,get_col('summa_credit'),col_abs=True)}"
+                    f += f"{Utils.rowcol_to_cell(row,get_col('credit_main'),col_abs=True)},0)"
                     self.workbook.write(
                         row, name["col"], Formula(f), type_name=name["type"]
                     )
-                elif name["name"] == "debet_main":
-                    f = f"{Utils.rowcol_to_cell(row,get_col('summa'),col_abs=True)}-"
-                    f += f"{Utils.rowcol_to_cell(row,get_col('summa_credit'),col_abs=True)}"
-                    self.workbook.write(
-                        row, name["col"], Formula(f), type_name=name["type"]
-                    )
-                    order.debet_main = order.summa - order.summa_credit
-                elif name["name"] == "debet_proc":
-                    f = f"{Utils.rowcol_to_cell(row,get_col('calculate_percent'),col_abs=True)}-"
-                    f += f"{Utils.rowcol_to_cell(row,get_col('payments_1c'),col_abs=True)}"
-                    self.workbook.write(
-                        row, name["col"], Formula(f), type_name=name["type"]
-                    )
-                    summa_max = order.summa * Decimal(get_max_margin_rate(order.date))
-                    order.debet_proc = (
-                        min(
-                            summa_max,
-                            order.summa * Decimal(order.rate / 100) * order.count_days_common,
+                elif name["name"] == "calc_debet_end_main":
+                    if order.debet_main == 0:
+                        f = f"MAX({Utils.rowcol_to_cell(row,get_col('summa'),col_abs=True)}-"
+                        f += f"{Utils.rowcol_to_cell(row,get_col('credit_main'),col_abs=True)},0)"
+                        self.workbook.write(
+                            row, name["col"], Formula(f), type_name=name["type"]
                         )
-                        - order.summa_credit
-                    )
-                    value = sum(
-                        [
-                            x.summa
-                            for x in order.payments_1c
-                            if x.type == "O" and x.category == "C" and x.kind == "proc"
-                        ]
-                    )
-                    order.debet_proc -= value
+                    else:
+                        self.workbook.write(
+                            row, name["col"], order.debet_main, type_name=name["type"]
+                        )
+                elif name["name"] == "calc_debet_end_proc":
+                        f = f"MAX({Utils.rowcol_to_cell(row,get_col('calculate_percent'),col_abs=True)}-"
+                        f += f"{Utils.rowcol_to_cell(row,get_col('credit_proc'),col_abs=True)},0)"
+                        self.workbook.write(
+                            row, name["col"], Formula(f), type_name=name["type"]
+                        )
+                        summa_max = order.summa * Decimal(
+                            get_max_margin_rate(order.date)
+                        )
                 elif name["name"] == "reserve":
                     col = get_col("count_days_delay")
                     f = (
@@ -200,7 +215,7 @@ class ExcelExporter:
 
         def calculate_rezerves_main():
             f = f'IF({Utils.rowcol_to_cell(row,get_col("reserve"),col_abs=True)}="","",'
-            f += f'{Utils.rowcol_to_cell(row,get_col("debet_main"),col_abs=True)}*'
+            f += f'{Utils.rowcol_to_cell(row,get_col("calc_debet_end_main"),col_abs=True)}*'
             f += f'{Utils.rowcol_to_cell(row,get_col("reserve"),col_abs=True)})'
             self.workbook.write(
                 row, len(names) + 1, Formula(f), num_format_str=num_format
@@ -211,7 +226,7 @@ class ExcelExporter:
 
         def calculate_rezerves_proc():
             f = f'IF({Utils.rowcol_to_cell(row,get_col("reserve"),col_abs=True)}="","",'
-            f += f'{Utils.rowcol_to_cell(row,get_col("debet_proc"),col_abs=True)}*'
+            f += f'{Utils.rowcol_to_cell(row,get_col("debet_end_proc"),col_abs=True)}*'
             f += f'{Utils.rowcol_to_cell(row,get_col("reserve"),col_abs=True)})'
             self.workbook.write(
                 row, len(names) + 2, Formula(f), num_format_str=num_format
@@ -238,7 +253,7 @@ class ExcelExporter:
         curr_type = "Основной договор"
         client: Client = Client()
         order: Order = Order()
-        for client in report.clients:
+        for client in report.clients.values():
             for order in client.orders:
                 if order.type and order.type != curr_type:
                     self.workbook.write(row, 0, order.type)
@@ -250,14 +265,13 @@ class ExcelExporter:
                     "name" + "_address"
                 ] = f"{self.workbook.sheet.name}!{Utils.rowcol_to_cell(row,0)}"
                 for name in names:
-                    attr_value = (
+                    value = (
                         getattr(order, name["name"])
                         if hasattr(order, name["name"])
                         else None
                     )
-                    if attr_value:
-                        # value = get_value_attr(attr_value, name["type"])
-                        write_value_attribute()
+                    if value:
+                        write_value_attribute(value)
                     else:
                         write_function()
                     order.link[
@@ -364,7 +378,7 @@ class ExcelExporter:
                         col,
                         Formula(order.link["name_address"])
                         if order.link.get("name_address")
-                        else order.name,
+                        else order.client.name,
                     )
                     self.workbook.write(
                         row,
@@ -532,15 +546,15 @@ class ExcelExporter:
                 self.workbook.write(
                     row,
                     col + 5,
-                    Formula(order.link["debet_main_address"])
-                    if order.link.get("debet_main_address")
+                    Formula(order.link["debet_end_main_address"])
+                    if order.link.get("debet_end_main_address")
                     else order.debet_main,
                 )
                 self.workbook.write(
                     row,
                     col + 6,
-                    Formula(order.link["debet_proc_address"])
-                    if order.link.get("debet_proc_address")
+                    Formula(order.link["debet_end_proc_address"])
+                    if order.link.get("debet_end_proc_address")
                     else order.debet_proc,
                 )
                 self.workbook.write(
@@ -627,7 +641,7 @@ class ExcelExporter:
         col = 0
         nrow_start = 1
         client: Client = Client()
-        for client in report.clients:
+        for client in report.clients.values():
             for order in client.orders:
                 self.workbook.write(
                     row, col, Formula(order.link.get("reserve_address", ""))
@@ -649,16 +663,16 @@ class ExcelExporter:
                 self.workbook.write(
                     row,
                     col + 3,
-                    Formula(order.link["debet_main_address"])
-                    if order.link.get("debet_main_address")
+                    Formula(order.link["debet_end_main_address"])
+                    if order.link.get("debet_end_main_address")
                     else order.debet_main,
                     num_format_str=num_format,
                 )
                 self.workbook.write(
                     row,
                     col + 4,
-                    Formula(order.link["debet_proc_address"])
-                    if order.link.get("debet_proc_address")
+                    Formula(order.link["debet_end_proc_address"])
+                    if order.link.get("debet_end_proc_address")
                     else order.debet_proc,
                     num_format_str=num_format,
                 )
@@ -675,8 +689,8 @@ class ExcelExporter:
                     else order.count_days_delay,
                     num_format_str=num_format,
                 )
-            nrow_start += 1
-            row += 1
+                nrow_start += 1
+                row += 1
 
     # %% Платежи
     def write_payment(self, report):

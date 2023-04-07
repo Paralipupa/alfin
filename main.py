@@ -1,5 +1,5 @@
 import pathlib
-from module.calculate import Calc
+from module.calculate_async import Calc
 
 if __name__ == '__main__':
     files=[]

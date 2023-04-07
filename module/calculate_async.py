@@ -1,3 +1,4 @@
+from multiprocessing import Pool, Manager
 from module.report import Report
 from module.connect import SQLServer
 from module.helpers import timing
@@ -21,15 +22,21 @@ class Calc:
                 self.items.append(Report(file))
 
     def read(self) -> None:
+        pool = Pool()
         for rep in self.items:
-            rep.get_parser()
+            pool.apply_async(rep.get_parser())
         if self.main_wa:
-            self.main_wa.get_parser()
+            pool.apply_async(self.main_wa.get_parser())
+        if self.main_res:
+            pool.apply_async(self.main_res.get_parser())
+        pool.close()
+        pool.join()
+
+        if self.main_wa:
             self.main_wa.union_all(self.items)
             self.read_from_archi()
             self.main_wa.fill_from_archi(self.archi_data)
         if self.main_res:
-            self.main_res.get_parser()
             self.main_res.union_all(self.items)
             self.read_from_archi()
             self.main_res.fill_from_archi(self.archi_data)

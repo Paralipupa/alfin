@@ -38,6 +38,7 @@ class Payment(HashMixin):
 
 @dataclass
 class Order:
+    client: dict = None
     type: str = None
     name: str = None
     number: str = None
@@ -45,7 +46,7 @@ class Order:
     date_begin: date = None
     date_end: date = None
     summa: Decimal = 0
-    summa_credit: Decimal = 0
+    credit_main: Decimal = 0
     rate: float = 0
     percent: float = 0
     tarif: Tarif = Tarif()
@@ -53,7 +54,7 @@ class Order:
     count_days_common: int = 0
     count_days_period: int = 0
     count_days_delay: int = 0
-    pdn: float = 0.3
+    pdn: float = 0
     payments_1c: List[Payment] = field(default_factory=list)
     payments_base: List[tuple] = field(default_factory=list)
     payment_cache: Payment = Payment()
@@ -61,8 +62,19 @@ class Order:
     date_calculate: date = None
     row: int = 0
     is_cashed: bool = False
-    debet_main: Decimal = 0
-    debet_proc: Decimal = 0
+    debet_beg_main: Decimal = 0
+    credit_beg_main: Decimal = 0  #
+    debet_main: Decimal = 0  # начислено по основному долгу
+    credit_main: Decimal = 0  # оплачено по основному долгу
+    debet_end_main: Decimal = 0
+    credit_end_main: Decimal = 0  # кредит по основному долгу
+    debet_beg_proc: Decimal = 0
+    credit_beg_proc: Decimal = 0  #
+    debet_proc: Decimal = 0  # начислено по процентам
+    credit_proc: Decimal = 0  # оплачено по процентам
+    debet_end_proc: Decimal = 0
+    credit_end_proc: Decimal = 0  # кредит по остатку
+    debet_penalty: Decimal = 0
     link: dict = field(default_factory=dict)
 
 
@@ -77,85 +89,7 @@ class Client:
 @dataclass
 class Reserve:
     percent: float = 0
-    summa_main: Decimal = 0
-    summa_percent: Decimal = 0
     count: int = 0
     items: list = field(default_factory=list)
 
-
-def get_kategoria():
     # +1!YtqY6dX
-    return {
-        "1": {
-            "title": "30",
-            "count4": 0,
-            "count6": 0,
-            "summa5": 0,
-            "summa3": 0,
-            "summa6": 0,
-            "items": [],
-        },
-        "2": {
-            "title": "40",
-            "count4": 0,
-            "count6": 0,
-            "summa5": 0,
-            "summa3": 0,
-            "summa6": 0,
-            "items": [],
-        },
-        "3": {
-            "title": "50",
-            "count4": 0,
-            "count6": 0,
-            "summa5": 0,
-            "summa3": 0,
-            "summa6": 0,
-            "items": [],
-        },
-        "4": {
-            "title": "60",
-            "count4": 0,
-            "count6": 0,
-            "summa5": 0,
-            "summa3": 0,
-            "summa6": 0,
-            "items": [],
-        },
-        "5": {
-            "title": "70",
-            "count4": 0,
-            "count6": 0,
-            "summa5": 0,
-            "summa3": 0,
-            "summa6": 0,
-            "items": [],
-        },
-        "6": {
-            "title": "80",
-            "count4": 0,
-            "count6": 0,
-            "summa5": 0,
-            "summa3": 0,
-            "summa6": 0,
-            "items": [],
-        },
-        "7": {
-            "title": "99",
-            "count4": 0,
-            "count6": 0,
-            "summa5": 0,
-            "summa3": 0,
-            "summa6": 0,
-            "items": [],
-        },
-        "0": {
-            "title": "",
-            "count4": 0,
-            "count6": 0,
-            "summa5": 0,
-            "summa3": 0,
-            "summa6": 0,
-            "items": [],
-        },
-    }
