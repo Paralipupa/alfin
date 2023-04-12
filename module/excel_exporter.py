@@ -26,8 +26,10 @@ class ExcelExporter:
         self.write_kategoria(report.kategoria)
         self.workbook.addSheet("Резервы")
         self.write_reserve(report)
-        # self.workbook.addSheet("Платежи")
-        # self.write_payment(report)
+        self.workbook.addSheet("59")
+        self.write_payment(report, "main")
+        self.workbook.addSheet("63")
+        self.write_payment(report, "proc")
         # self.workbook.addSheet("error")
         # self.write_errors(report.warnings)
         return self.workbook.save()
@@ -41,67 +43,87 @@ class ExcelExporter:
 
     def write_clients(self, report) -> bool:
         def get_names():
-            return [
-                {"name": "number", "title": "Номер", "type": ""},
-                {"name": "date", "title": "Дата", "type": "date"},
-                {"name": "summa", "title": "Сумма", "type": "float"},
-                {"name": "rate", "title": "Ставка", "type": "float"},
-                {"name": "tarif", "title": "Тариф", "type": ""},
-                {"name": "count_days", "title": "Срок", "type": "float"},
-                {"name": "pdn", "title": "ПДН", "type": "float"},
-                # {"name": "debet_beg_main", "title": "Д(58)", "type": "float"},
-                # {"name": "credit_beg_main", "title": "К(58)", "type": "float"},
-                # {"name": "debet_main", "title": "Д(58)", "type": "float"},
-                # {"name": "credit_main", "title": "К(58)", "type": "float"},
-                # {"name": "debet_end_main", "title": "Д(58)", "type": "float"},
-                # {"name": "credit_end_main", "title": "К(58)", "type": "float"},
-                # {"name": "debet_beg_proc", "title": "Д(76)", "type": "float"},
-                # {"name": "credit_beg_proc", "title": "К(76)", "type": "float"},
-                # {"name": "debet_proc", "title": "Д(76)", "type": "float"},
-                # {"name": "credit_proc", "title": "К(76)", "type": "float"},
-                # {"name": "debet_end_proc", "title": "Д(76)", "type": "float"},
-                # {"name": "credit_end_proc", "title": "К(76)", "type": "float"},
-                {"name": "credit_main", "title": "1С(осн)", "type": "float"},
-                {
-                    "name": "credit_proc",
-                    "title": "1С(проц)",
-                    "type": "float",
-                },
-                {"name": "payments_base", "title": "Archi", "type": "float"},
-                {"name": "date_frozen", "title": "Дата заморозки", "type": "date"},
-                {
-                    "name": "count_days_common",
-                    "title": "Дней\n(всего)",
-                    "type": "int",
-                },
-                {"name": "calculate_percent", "title": "Проц.всего", "type": "float"},
-                {
-                    "name": "count_days_period",
-                    "title": "Дней\n(месяц)",
-                    "type": "int",
-                },
-                {
-                    "name": "calculate_period",
-                    "title": "Проц.месяц",
-                    "type": "float",
-                },
-                {
-                    "name": "calc_debet_end_main",
-                    "title": "Остаток(осн)",
-                    "type": "float",
-                },
-                {
-                    "name": "calc_debet_end_proc",
-                    "title": "Остаток(проц)",
-                    "type": "float",
-                },
-                {"name": "count_days_delay", "title": "Просрочка", "type": "int"},
-                {"name": "reserve_percent", "title": "Разерв(%)", "type": "int"},
-                {"name": "calc_reserve_main", "title": "Разерв(осн)", "type": "float"},
-                {"name": "calc_reserve_proc", "title": "Разерв(проц)", "type": "float"},
-                {"name": "credit_end_main", "title": "Кредит(59)", "type": "float"},
-                {"name": "credit_end_proc", "title": "Кредит(63)", "type": "float"},
-            ]
+            return (
+                [
+                    {"name": "number", "title": "Номер", "type": ""},
+                    {"name": "date", "title": "Дата", "type": "date"},
+                    {"name": "summa", "title": "Сумма", "type": "float"},
+                    {"name": "rate", "title": "Ставка", "type": "float"},
+                    {"name": "tarif", "title": "Тариф", "type": ""},
+                    {"name": "count_days", "title": "Срок", "type": "float"},
+                    {"name": "pdn", "title": "ПДН", "type": "float"},
+                    {"name": "credit_main", "title": "1С(осн)", "type": "float"},
+                    {
+                        "name": "credit_proc",
+                        "title": "1С(проц)",
+                        "type": "float",
+                    },
+                ]
+                + ([
+                    {"name": "payments_base", "title": "Archi", "type": "float"},
+                    {"name": "date_frozen", "title": "Дата заморозки", "type": "date"},
+                ]
+                if report.is_archi
+                else [])
+                + [
+                    {
+                        "name": "count_days_common",
+                        "title": "Дней\n(всего)",
+                        "type": "int",
+                    },
+                    {
+                        "name": "calculate_percent",
+                        "title": "Проц.всего",
+                        "type": "float",
+                    },
+                    {
+                        "name": "count_days_period",
+                        "title": "Дней\n(месяц)",
+                        "type": "int",
+                    },
+                    {
+                        "name": "calculate_period",
+                        "title": "Проц.месяц",
+                        "type": "float",
+                    },
+                    {
+                        "name": "calc_debet_end_main",
+                        "title": "Остаток(осн)",
+                        "type": "float",
+                    },
+                    {
+                        "name": "calc_debet_end_proc",
+                        "title": "Остаток(проц)",
+                        "type": "float",
+                    },
+                    {"name": "count_days_delay", "title": "Просрочка", "type": "int"},
+                    {"name": "reserve_percent", "title": "Разерв(%)", "type": "int"},
+                    {
+                        "name": "calc_reserve_main",
+                        "title": "Разерв(осн)",
+                        "type": "float",
+                    },
+                    {"name": "credit_end_main", "title": "Кредит(59)", "type": "float"},
+                    {
+                        "name": "calc_reserve_proc",
+                        "title": "Разерв(проц)",
+                        "type": "float",
+                    },
+                    {"name": "credit_end_proc", "title": "Кредит(63)", "type": "float"},
+                    # {"name": "debet_beg_main", "title": "СальдНач(Д58)", "type": "float"},
+                    # {"name": "credit_beg_main", "title": "СальдоНач(К58)", "type": "float"},
+                    # {"name": "debet_main", "title": "Оборот(Д58)", "type": "float"},
+                    # {"name": "credit_main", "title": "Оборот(К58)", "type": "float"},
+                    # {"name": "debet_end_main", "title": "СальдКон(Д58)", "type": "float"},
+                    # {"name": "credit_end_main", "title": "СальдКон(К58)", "type": "float"},
+                    # {"name": "debet_beg_proc", "title": "СальдНач(Д76)", "type": "float"},
+                    # {"name": "credit_beg_proc", "title": "СальдНач(К76)", "type": "float"},
+                    # {"name": "debet_proc", "title": "Оборот(Д76)", "type": "float"},
+                    # {"name": "credit_proc", "title": "Оборот(К76)", "type": "float"},
+                    # {"name": "debet_end_proc", "title": "СальдКон(Д76)", "type": "float"},
+                    # {"name": "credit_end_proc", "title": "СальдКон(К76)", "type": "float"},
+                ]
+            )
 
         def write_value_attribute(value):
             nonlocal name, row, order
@@ -163,19 +185,33 @@ class ExcelExporter:
                     self.workbook.write(
                         row, name["col"], Formula(f), type_name=name["type"]
                     )
+                    order.calculate_percent = max(
+                        min(
+                            summa_max,
+                            order.summa
+                            * Decimal(order.rate)
+                            / 100
+                            * Decimal(order.count_days_common),
+                        )
+                        - order.credit_end_main,
+                        0,
+                    )
                 elif name["name"] == "calc_debet_end_main":
                     f = f"MAX({Utils.rowcol_to_cell(row,get_col('summa'),col_abs=True)}-"
                     f += f"{Utils.rowcol_to_cell(row,get_col('credit_main'),col_abs=True)},0)"
                     self.workbook.write(
                         row, name["col"], Formula(f), type_name=name["type"]
                     )
+                    order.debet_end_main = max(order.summa - order.credit_main, 0)
                 elif name["name"] == "calc_debet_end_proc":
                     f = f"MAX({Utils.rowcol_to_cell(row,get_col('calculate_percent'),col_abs=True)}-"
                     f += f"{Utils.rowcol_to_cell(row,get_col('credit_proc'),col_abs=True)},0)"
                     self.workbook.write(
                         row, name["col"], Formula(f), type_name=name["type"]
                     )
-                    summa_max = order.summa * Decimal(get_max_margin_rate(order.date))
+                    order.debet_end_proc = max(
+                        order.calculate_percent - order.credit_proc, 0
+                    )
                 elif name["name"] == "reserve_percent":
                     col = get_col("count_days_delay")
                     col1 = get_col("pdn")
@@ -202,10 +238,13 @@ class ExcelExporter:
                     )
                     self.workbook.write(row, name["col"], Formula(f))
                 elif name["name"] == "count_days_common":
-                    f = f'IF({Utils.rowcol_to_cell(row,get_col("date_frozen"),col_abs=True)}="",'
-                    f += f'{Utils.rowcol_to_cell(0,0,col_abs=True,row_abs=True)},'
-                    f += f'{Utils.rowcol_to_cell(row,get_col("date_frozen"),col_abs=True)})-'
-                    f += f'{Utils.rowcol_to_cell(row,get_col("date"),col_abs=True)}'
+                    if get_col("date_frozen")!=0:
+                        f = f'IF({Utils.rowcol_to_cell(row,get_col("date_frozen"),col_abs=True)}="",'
+                        f += f"{Utils.rowcol_to_cell(0,0,col_abs=True,row_abs=True)},"
+                        f += f'{Utils.rowcol_to_cell(row,get_col("date_frozen"),col_abs=True)})-'
+                        f += f'{Utils.rowcol_to_cell(row,get_col("date"),col_abs=True)}'
+                    else:
+                        f =f'{Utils.rowcol_to_cell(0,0,col_abs=True,row_abs=True)}-{Utils.rowcol_to_cell(row,get_col("date"),col_abs=True)}'
                     self.workbook.write(
                         row, name["col"], Formula(f), type_name=name["type"]
                     )
@@ -239,12 +278,11 @@ class ExcelExporter:
             f += f'{Utils.rowcol_to_cell(row,get_col("calc_debet_end_main"),col_abs=True)}*'
             f += f'{Utils.rowcol_to_cell(row,get_col("reserve_percent"),col_abs=True)}'
             f += f"))"
-            self.workbook.write(
-                row, name["col"], Formula(f), num_format_str=num_format
-            )
+            self.workbook.write(row, name["col"], Formula(f), num_format_str=num_format)
             order.link[
                 "calc_reserve_main" + "_address"
             ] = f"{self.workbook.sheet.name}!{Utils.rowcol_to_cell(row,len(names)+1)}"
+            order.calc_reserve_main = order.debet_end_main * Decimal(order.percent)
 
         def calculate_rezerves_proc():
             f = f'IF({Utils.rowcol_to_cell(row,get_col("reserve_percent"),col_abs=True)}="","",'
@@ -253,12 +291,11 @@ class ExcelExporter:
             f += f'{Utils.rowcol_to_cell(row,get_col("calc_debet_end_proc"),col_abs=True)}*'
             f += f'{Utils.rowcol_to_cell(row,get_col("reserve_percent"),col_abs=True)}'
             f += f"))"
-            self.workbook.write(
-                row, name["col"], Formula(f), num_format_str=num_format
-            )
+            self.workbook.write(row, name["col"], Formula(f), num_format_str=num_format)
             order.link[
                 "calc_reserve_proc" + "_address"
             ] = f"{self.workbook.sheet.name}!{Utils.rowcol_to_cell(row,len(names) + 2)}"
+            order.calc_reserve_proc = order.debet_end_proc * Decimal(order.percent)
 
         def write_header():
             row = 1
@@ -717,76 +754,97 @@ class ExcelExporter:
                 row += 1
 
     # %% Платежи
-    def write_payment(self, report):
-        row = 0
-        col = 0
-        self.workbook.write(row, 0, "Название")
+    def write_payment(self, report: dict, sub: str):
+        row, col = 0, 0
+        if report.is_archi:
+            self.workbook.write(row, 0, "ООО 'МКК Баргузин'")
+            self.workbook.write(row, 1, "3827059334")
+        else:
+            self.workbook.write(row, 0, "МКК 'Ирком'")
+            self.workbook.write(row, 1, "3808200398")
+        row += 1
+        self.workbook.write(row, 0, "ФИО")
         self.workbook.write(row, 1, "Договор")
         self.workbook.write(row, 2, "Сумма в 1С")
-        self.workbook.write(row, 3, "Сумма в Archi")
-        self.workbook.write(row, 4, "Дата")
-
+        self.workbook.write(row, 3, "Сумма расчета")
+        self.workbook.write(row, 4, "Сумма начисления")
+        self.workbook.write(row, 5, "Дата начисления")
+        self.workbook.write(row, 6, "Дебет")
+        self.workbook.write(row, 7, "Кредит")
+        self.workbook.write(row, 8, "Субконто")
+        self.workbook.write(row, 9, "Назначение")
+        self.workbook.write(row, 10, "Содержание")
+        row += 1
+        num_format = "#,##0.00"
         for client in report.clients.values():
-            num_format = "#,##0.00"
-            for dog in client["dogovor"].values():
-                if dog.get("payment"):
-                    sum_on_archi_str = ""
-                    sum_on_1c_str = ""
-                    sum_on_archi = 0
-                    sum_on_1c = 0
-                    d = None
-                    for pay in dog["payment"]:
-                        if pay[3].date() < report.report_date and pay[5] == 1:
-                            sum_on_archi += pay[2]
-                            sum_on_archi_str += f"+{pay[2]}"
-                            d = pay[3].date()
-                    if sum_on_archi > 0 and dog.get("plat"):
-                        for pay in dog["plat"]:
-                            if (
-                                pay.get("turn_credit_proc")
-                                and datetime.datetime.strptime(
-                                    pay["date_proc"], "%d.%m.%y"
-                                ).date()
-                                < report.report_date
-                            ):
-                                sum_on_1c += float(pay["turn_credit_proc"])
-                                sum_on_1c_str += f"+{float(pay['turn_credit_proc'])}"
-                        if float(sum_on_archi) != sum_on_1c:
-                            self.workbook.write(
-                                row,
-                                0,
-                                Formula(client["name_address"])
-                                if client.get("name_address")
-                                else client.get("name"),
-                            )
-                            self.workbook.write(
-                                row,
-                                1,
-                                Formula(dog["number_address"])
-                                if dog.get("number_address")
-                                else dog.get("number_address"),
-                            )
-                            try:
-                                self.workbook.write(
-                                    row,
-                                    2,
-                                    Formula(sum_on_1c_str.strip("+"))
-                                    if sum_on_1c_str
-                                    else 0,
-                                    num_format_str=num_format,
-                                )
-                                self.workbook.write(
-                                    row,
-                                    3,
-                                    Formula(sum_on_archi_str.strip("+"))
-                                    if sum_on_archi_str
-                                    else 0,
-                                    num_format_str=num_format,
-                                )
-                            except Exception as ex:
-                                pass
-                            self.workbook.write(row, 4, d, num_format_str="dd/mm/yyyy")
-                            row += 1
+            for order in client.orders:
+                summa_1c = getattr(order, f"credit_end_{sub}")
+                summa_calc = getattr(order, f"calc_reserve_{sub}")
+                if (summa_1c != 0 or summa_calc != 0) and summa_1c != summa_calc:
+                    self.workbook.write(
+                        row,
+                        col,
+                        client.name,
+                    )
+                    self.workbook.write(
+                        row,
+                        col + 1,
+                        order.number,
+                    )
+                    self.workbook.write(
+                        row,
+                        col + 2,
+                        Formula(order.link[f"credit_end_{sub}_address"]),
+                        num_format_str=num_format,
+                    )
+                    self.workbook.write(
+                        row,
+                        col + 3,
+                        Formula(order.link[f"calc_reserve_{sub}_address"]),
+                        num_format_str=num_format,
+                    )
+                    f = f"IF("
+                    f += f'IF({Utils.rowcol_to_cell(row,col+2,col_abs=True)}="",0,{Utils.rowcol_to_cell(row,col+2,col_abs=True)})>'
+                    f += f'IF({Utils.rowcol_to_cell(row,col+3,col_abs=True)}="",0,{Utils.rowcol_to_cell(row,col+3,col_abs=True)}),'
+                    f += f'IF({Utils.rowcol_to_cell(row,col+2,col_abs=True)}="",0,{Utils.rowcol_to_cell(row,col+2,col_abs=True)})-'
+                    f += f'IF({Utils.rowcol_to_cell(row,col+3,col_abs=True)}="",0,{Utils.rowcol_to_cell(row,col+3,col_abs=True)}),'
+                    f += f'IF({Utils.rowcol_to_cell(row,col+3,col_abs=True)}="",0,{Utils.rowcol_to_cell(row,col+3,col_abs=True)})-'
+                    f += f'IF({Utils.rowcol_to_cell(row,col+2,col_abs=True)}="",0,{Utils.rowcol_to_cell(row,col+2,col_abs=True)})'
+                    f += ")"
+
+                    self.workbook.write(
+                        row,
+                        col + 4,
+                        Formula(f),
+                        num_format_str=num_format,
+                    )
+                    self.workbook.write(
+                        row,
+                        col + 5,
+                        report.report_date,
+                        num_format_str=r"dd/mm/yyyy",
+                    )
+
+                    f = f"IF("
+                    f += f'IF({Utils.rowcol_to_cell(row,col+2,col_abs=True)}="",0,{Utils.rowcol_to_cell(row,col+2,col_abs=True)})<='
+                    f += f'IF({Utils.rowcol_to_cell(row,col+3,col_abs=True)}="",0,{Utils.rowcol_to_cell(row,col+3,col_abs=True)}),'
+                    f += f'"91.02", ' + ('"59"' if sub == "main" else '"63"')
+                    f += ")"
+                    self.workbook.write(row, col + 6, Formula(f))
+
+                    f = f"IF("
+                    f += f'IF({Utils.rowcol_to_cell(row,col+2,col_abs=True)}="",0,{Utils.rowcol_to_cell(row,col+2,col_abs=True)})>'
+                    f += f'IF({Utils.rowcol_to_cell(row,col+3,col_abs=True)}="",0,{Utils.rowcol_to_cell(row,col+3,col_abs=True)}),'
+                    f += f'"91.01", ' + ('"59"' if sub == "main" else '"63"')
+                    f += ")"
+                    self.workbook.write(
+                        row,
+                        col + 7,
+                        Formula(f),
+                    )
+                    self.workbook.write(row, col + 8, "'00010")
+
+                    row += 1
 
 
 # from xlwt import Utils

@@ -75,6 +75,9 @@ class Order:
     debet_end_proc: Decimal = 0
     credit_end_proc: Decimal = 0  # кредит по остатку
     debet_penalty: Decimal = 0
+    calculate_percent: Decimal = 0
+    calc_reserve_main: Decimal = 0
+    calc_reserve_proc: Decimal = 0
     link: dict = field(default_factory=dict)
 
 

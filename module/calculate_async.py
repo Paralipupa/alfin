@@ -6,6 +6,7 @@ from module.serializer import serializer, deserializer
 
 calc_cashe = {}
 
+
 class Calc:
     def __init__(self, files: list, is_archi: bool = False):
         self.main_wa: Report = None
@@ -16,8 +17,10 @@ class Calc:
         for file in files:
             if file.find("58") != -1 and self.main_res is None:
                 self.main_res = Report(file)
+                self.main_res.is_archi = is_archi
             elif file.find("58") != -1:
                 self.main_wa = Report(file)
+                self.main_wa.is_archi = is_archi
             else:
                 self.items.append(Report(file))
 
@@ -47,9 +50,9 @@ class Calc:
         numbers = []
         if self.is_archi:
             if self.main_wa is not None:
-                numbers = self.main_wa.get_numbers() 
+                numbers = self.main_wa.get_numbers()
             elif self.main_res is not None:
-                numbers = self.main_res.get_numbers() 
+                numbers = self.main_res.get_numbers()
             numbers_from_dump = deserializer(numbers_file)
             if len(numbers) != 0 and numbers == numbers_from_dump:
                 data = deserializer(data_file)
@@ -96,5 +99,3 @@ class Calc:
         self.report_kategoria()
         self.report_weighted_average()
         return self.write()
-
-

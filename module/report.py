@@ -509,7 +509,7 @@ class Report:
 
     def union_all(self, items):
         pattern: re.Pattern = re.compile(
-            "_proc|_main|pdn|rate|count_|tarif|date|percent"
+            "_proc|_main|pdn|rate|count_|date|percent"
         )
         if not items:
             return
@@ -533,6 +533,8 @@ class Report:
                     for attr in order_attrs:
                         if not getattr(order, attr) and getattr(order_item, attr):
                             setattr(order, attr, getattr(order_item, attr))
+                    if order_item.tarif.code != 0:
+                        order.tarif = order_item.tarif
                     payment: Payment
                     for payment in order_item.payments_1c:
                         order.payments_1c.append(payment)
