@@ -308,6 +308,8 @@ class XlsWrite:
                 self.sheet.write(row, col, value)
             if self.sheet.col(col).width < neededWidth:
                 self.sheet.col(col).width = neededWidth
+        except ValueError as ex:
+            logger.exception(f"Write to Excel:row={row} col={col} value={value}")
         except Exception as ex:
             logger.exception(f"Write to Excel:row={row} col={col} value={value}")
 
@@ -323,7 +325,7 @@ def get_file_reader(fname):
         return XlsxFile
     if file_extension == ".csv":
         return CsvFile
-    raise Exception("Unknown file type")
+    raise Exception(f"Unknown file type {file_extension}")
 
 
 def get_file_write(fname):

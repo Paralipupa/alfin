@@ -14,9 +14,9 @@ class Calc:
         self.items: list[Report] = []
         self.is_archi = is_archi
         for file in files:
-            if file.find("58RES") != -1:
-                self.main_res = Report(files)
-            elif file.find("58WA") != -1:
+            if file.find("58") != -1 and self.main_res is None:
+                self.main_res = Report(file)
+            elif file.find("58") != -1:
                 self.main_wa = Report(file)
             else:
                 self.items.append(Report(file))
@@ -46,9 +46,12 @@ class Calc:
         data_file = "data.dump"
         numbers = []
         if self.is_archi:
-            numbers = self.main_wa.get_numbers()
+            if self.main_wa is not None:
+                numbers = self.main_wa.get_numbers() 
+            elif self.main_res is not None:
+                numbers = self.main_res.get_numbers() 
             numbers_from_dump = deserializer(numbers_file)
-            if numbers == numbers_from_dump:
+            if len(numbers) != 0 and numbers == numbers_from_dump:
                 data = deserializer(data_file)
                 self.archi_data = data
             else:

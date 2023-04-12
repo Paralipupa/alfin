@@ -44,12 +44,13 @@ class Report:
         self.discounts = (2, 10, 31, 33, 42, 45, 47, 44, 46, 48)
 
     def __is_read(self) -> bool:
-        self.read()
-        self.set_columns()
-        return not (
-            self.fields.get("FLD_NAME", -1) == -1
-            or self.fields.get("FLD_NUMBER", -1) == -1
-        )
+        if self.read():
+            self.set_columns()
+            return not (
+                self.fields.get("FLD_NAME", -1) == -1
+                or self.fields.get("FLD_NUMBER", -1) == -1
+            )
+        return False
 
     def get_parser(self):
         if self.__is_read():
@@ -66,6 +67,7 @@ class Report:
                     self.__record_order_rate()
                     self.__record_order_tarif()
                     self.__set_order_count_days()
+        return
 
     def __record_client(self) -> None:
         names = [x for x in self.record[self.fields.get("FLD_NAME")].split(" ") if x]
@@ -166,7 +168,7 @@ class Report:
         )
 
     def __record_order_pdn(self):
-        self.__set_order_field(PATT_PDN, "FLD_PDN", "pdn", True)
+        self.__set_order_field(PATT_PDN, "FLD_PDN", "pdn", True, value_type="float")
 
     def __record_order_rate(self):
         self.__set_order_field(PATT_RATE, "FLD_RATE", "rate")
@@ -288,10 +290,11 @@ class Report:
             order = self.__get_current_order()
         if order and order.count_days != 0:
             try:
-                order.date_end = order.date_begin + timedelta(order.count_days)
-                order.count_days_period = self.__get_count_days_in_period(order)
-                order.count_days_common = self.__get_count_days_common(order)
-                order.count_days_delay = self.__get_count_days_delay(order)
+                if order.date_begin:
+                    order.date_end = order.date_begin + timedelta(order.count_days)
+                    order.count_days_period = self.__get_count_days_in_period(order)
+                    order.count_days_common = self.__get_count_days_common(order)
+                    order.count_days_delay = self.__get_count_days_delay(order)
             except Exception as ex:
                 logger.exception("__set_order_count_days:")
 
@@ -445,6 +448,12 @@ class Report:
                     order_fld_name,
                     Decimal(self.record[self.fields[column_fld_name]]),
                 )
+            elif value_type == "float":
+                setattr(
+                    order,
+                    order_fld_name,
+                    float(self.record[self.fields[column_fld_name]]),
+                )
             else:
                 setattr(
                     order, order_fld_name, self.record[self.fields[column_fld_name]]
@@ -491,17 +500,20 @@ class Report:
             if index > 20:
                 return
 
-    def read(self):
-        self.parser.read()
+    def read(self) -> bool:
+        return self.parser.read()
 
     def write_to_excel(self, filename: str = "output_full") -> str:
         exel = ExcelExporter("output_excel")
         return exel.write(self)
 
     def union_all(self, items):
+        pattern: re.Pattern = re.compile(
+            "_proc|_main|pdn|rate|count_|tarif|date|percent"
+        )
         if not items:
             return
-        order_attrs = [x for x in get_attributes(Order()) if x.find("_proc") != -1 or x.find("_main") != -1]
+        order_attrs = [x for x in get_attributes(Order()) if pattern.search(x)]
         order: Order
         client: Client
         for key, client in self.clients.items():
@@ -538,7 +550,9 @@ class Report:
                             if not getattr(order, attr) and getattr(
                                 client_item.order_cache, attr
                             ):
-                                setattr(order, attr, getattr(client_item.order_cache, attr))
+                                setattr(
+                                    order, attr, getattr(client_item.order_cache, attr)
+                                )
 
     def fill_from_archi(self, data: dict):
         if not data:
@@ -642,7 +656,10 @@ class Report:
         for client in self.clients.values():
             pdn = 0  ## random.random()
             for order in client.orders:
-                order.pdn = order.pdn if order.pdn else pdn
+                if order.pdn:
+                    if order.pdn > 1:
+                        pdn = order.pdn / 100
+                order.pdn = round(pdn, 2)
             for order in client.orders:
                 t = get_type_pdn(order.summa, order.pdn)
                 summa = get_summa_saldo_end(order)
