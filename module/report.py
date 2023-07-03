@@ -17,7 +17,7 @@ from module.settings import *
 from module.data import *
 
 logger = logging.getLogger(__name__)
-
+PDN_ALL = dict()
 
 class Report:
     def __init__(self, filename: str):
@@ -34,7 +34,7 @@ class Report:
         self.current_client_name = ""
         self.current_dogovor_number = ""
         self.current_dogovor_type = "Основной договор"
-        self.report_date =  datetime.strptime("31.03.2023","%d.%m.%Y").date() #  datetime.now().date().replace(day=1) - timedelta(days=1)
+        self.report_date =  datetime.strptime("31.12.2022","%d.%m.%Y").date() #  datetime.now().date().replace(day=1) - timedelta(days=1)
         self.reference = {}  # ссылки на документы в рамках одного документа
         self.wa = {}
         self.kategoria = {}
@@ -169,6 +169,8 @@ class Report:
 
     def __record_order_pdn(self):
         self.__set_order_field(PATT_PDN, "FLD_PDN", "pdn", True, value_type="float")
+        if getattr(self.clients[self.current_client_key].order_cache,"pdn",0) != 0:
+            PDN_ALL[self.current_client_key] = self.clients[self.current_client_key].order_cache.pdn
 
     def __record_order_rate(self):
         self.__set_order_field(PATT_RATE, "FLD_RATE", "rate")
@@ -405,8 +407,8 @@ class Report:
         try:
             return (
                 (
-                    last_day_on_period - order.date_begin - timedelta(order.count_days)
-                ).days
+                    last_day_on_period - order.date_begin - timedelta(order.count_days) 
+                ).days + ((order.count_days // 31)-1 if order.count_days>=31 else 0)
                 if last_day_on_period > order.date_end
                 else 0
             )
@@ -655,8 +657,8 @@ class Report:
         client: Client = Client()
         order: Order = Order()
         random.seed()
-        for client in self.clients.values():
-            pdn = 0  ## random.random()
+        for key_client, client in self.clients.items():
+            pdn = PDN_ALL.get(key_client,30) / 100
             for order in client.orders:
                 if order.pdn:
                     if order.pdn > 1:

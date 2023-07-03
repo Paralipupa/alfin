@@ -26,10 +26,10 @@ class ExcelExporter:
         self.write_kategoria(report.kategoria)
         self.workbook.addSheet("Резервы")
         self.write_reserve(report)
-        self.workbook.addSheet("59")
-        self.write_payment(report, "main")
-        self.workbook.addSheet("63")
-        self.write_payment(report, "proc")
+        self.workbook.addSheet("ОперацииВручную")
+        self.write_payment(report)
+        # self.workbook.addSheet("63")
+        # self.write_payment(report, "proc")
         # self.workbook.addSheet("error")
         # self.write_errors(report.warnings)
         return self.workbook.save()
@@ -52,10 +52,11 @@ class ExcelExporter:
                     {"name": "tarif", "title": "Тариф", "type": ""},
                     {"name": "count_days", "title": "Срок", "type": "float"},
                     {"name": "pdn", "title": "ПДН", "type": "float"},
-                    {"name": "credit_main", "title": "1С(осн)", "type": "float"},
+                    {"name": "credit_main",
+                        "title": "оплата 1С(осн)", "type": "float"},
                     {
                         "name": "credit_proc",
-                        "title": "1С(проц)",
+                        "title": "оплата 1С(проц)",
                         "type": "float",
                     },
                 ]
@@ -63,8 +64,8 @@ class ExcelExporter:
                     {"name": "payments_base", "title": "Archi", "type": "float"},
                     {"name": "date_frozen", "title": "Дата заморозки", "type": "date"},
                 ]
-                if report.is_archi
-                else [])
+                    if report.is_archi
+                    else [])
                 + [
                     {
                         "name": "count_days_common",
@@ -92,24 +93,27 @@ class ExcelExporter:
                         "type": "float",
                     },
                     {
-                        "name": "debet_end_proc", #"calc_debet_end_proc",
+                        "name": "debet_end_proc",  # "calc_debet_end_proc",
                         "title": "Остаток(проц)",
                         "type": "float",
                     },
                     {"name": "count_days_delay", "title": "Просрочка", "type": "int"},
-                    {"name": "reserve_percent", "title": "Разерв(%)", "type": "int"},
+                    {"name": "reserve_percent",
+                        "title": "Разерв(%)", "type": "int"},
                     {
                         "name": "calc_reserve_main",
                         "title": "Разерв(осн)",
                         "type": "float",
                     },
-                    {"name": "credit_end_main", "title": "Кредит(59)", "type": "float"},
+                    {"name": "credit_end_main",
+                        "title": "Кредит(59)", "type": "float"},
                     {
                         "name": "calc_reserve_proc",
                         "title": "Разерв(проц)",
                         "type": "float",
                     },
-                    {"name": "credit_end_proc", "title": "Кредит(63)", "type": "float"},
+                    {"name": "credit_end_proc",
+                        "title": "Кредит(63)", "type": "float"},
                     # {"name": "debet_beg_main", "title": "СальдНач(Д58)", "type": "float"},
                     # {"name": "credit_beg_main", "title": "СальдоНач(К58)", "type": "float"},
                     # {"name": "debet_main", "title": "Оборот(Д58)", "type": "float"},
@@ -158,7 +162,8 @@ class ExcelExporter:
                             row, name["col"], value, type_name=name["type"]
                         )
                 else:
-                    self.workbook.write(row, name["col"], value, type_name=name["type"])
+                    self.workbook.write(
+                        row, name["col"], value, type_name=name["type"])
             except Exception as ex:
                 print(
                     f"{self.workbook.sheet.name} ({name['name']}): {row}, {name['col']}, {value}"
@@ -176,7 +181,8 @@ class ExcelExporter:
                         row, name["col"], Formula(f), type_name=name["type"]
                     )
                 elif name["name"] == "calculate_percent":
-                    summa_max = order.summa * Decimal(get_max_margin_rate(order.date))
+                    summa_max = order.summa * \
+                        Decimal(get_max_margin_rate(order.date))
                     f = f"MAX(MIN({summa_max},"
                     f += f"{Utils.rowcol_to_cell(row,get_col('summa'),col_abs=True)}*"
                     f += f"({Utils.rowcol_to_cell(row,get_col('rate'),col_abs=True)}/100)*"
@@ -202,7 +208,8 @@ class ExcelExporter:
                     self.workbook.write(
                         row, name["col"], Formula(f), type_name=name["type"]
                     )
-                    order.debet_end_main = max(order.summa - order.credit_main, 0)
+                    order.debet_end_main = max(
+                        order.summa - order.credit_main, 0)
                 elif name["name"] == "calc_debet_end_proc":
                     f = f"MAX({Utils.rowcol_to_cell(row,get_col('calculate_percent'),col_abs=True)}-"
                     f += f"{Utils.rowcol_to_cell(row,get_col('credit_proc'),col_abs=True)},0)"
@@ -224,7 +231,7 @@ class ExcelExporter:
                         + f'{Utils.rowcol_to_cell(row,get_col("pdn"),col_abs=True)}>=0.5),0,'
                         + f'IF(AND({Utils.rowcol_to_cell(row,col,col_abs=True)}="",'
                         + f'OR({Utils.rowcol_to_cell(row,get_col("calc_debet_end_main"),col_abs=True)}<10000,'
-                        + f'{Utils.rowcol_to_cell(row,get_col("pdn"),col_abs=True)}<0.5)),"",'
+                        + f'{Utils.rowcol_to_cell(row,get_col("pdn"),col_abs=True)}<0.5)),-1,'
                         + f"IF(AND({Utils.rowcol_to_cell(row,col,col_abs=True)}<=7,{Utils.rowcol_to_cell(row,col-1,col_abs=True)}>=0),0,"
                         + f"IF({Utils.rowcol_to_cell(row,col,col_abs=True)}<=30,3/100,"
                         + f"IF({Utils.rowcol_to_cell(row,col,col_abs=True)}<=60,10/100,"
@@ -234,17 +241,19 @@ class ExcelExporter:
                         + f"IF({Utils.rowcol_to_cell(row,col,col_abs=True)}<=270,65/100,"
                         + f"IF({Utils.rowcol_to_cell(row,col,col_abs=True)}<=360,80/100,"
                         + f"IF({Utils.rowcol_to_cell(row,col,col_abs=True)}>360,99/100,"
-                        + f'"")))))))))))))'
+                        + f'IF({Utils.rowcol_to_cell(row,get_col("count_days"),col_abs=True)}>31,0,'
+                        + f'""))))))))))))))'
+
                     )
                     self.workbook.write(row, name["col"], Formula(f))
                 elif name["name"] == "count_days_common":
-                    if get_col("date_frozen")!=0:
+                    if get_col("date_frozen") != 0:
                         f = f'IF({Utils.rowcol_to_cell(row,get_col("date_frozen"),col_abs=True)}="",'
                         f += f"{Utils.rowcol_to_cell(0,0,col_abs=True,row_abs=True)},"
                         f += f'{Utils.rowcol_to_cell(row,get_col("date_frozen"),col_abs=True)})-'
                         f += f'{Utils.rowcol_to_cell(row,get_col("date"),col_abs=True)}'
                     else:
-                        f =f'{Utils.rowcol_to_cell(0,0,col_abs=True,row_abs=True)}-{Utils.rowcol_to_cell(row,get_col("date"),col_abs=True)}'
+                        f = f'{Utils.rowcol_to_cell(0,0,col_abs=True,row_abs=True)}-{Utils.rowcol_to_cell(row,get_col("date"),col_abs=True)}'
                     self.workbook.write(
                         row, name["col"], Formula(f), type_name=name["type"]
                     )
@@ -273,29 +282,35 @@ class ExcelExporter:
 
         def calculate_rezerves_main():
             f = f'IF({Utils.rowcol_to_cell(row,get_col("reserve_percent"),col_abs=True)}="","",'
+            f += f'IF({Utils.rowcol_to_cell(row,get_col("reserve_percent"),col_abs=True)}<0,"",'
             f += f'IF({Utils.rowcol_to_cell(row,get_col("reserve_percent"),col_abs=True)}=0,'
             f += f'{Utils.rowcol_to_cell(row,get_col("calc_debet_end_main"),col_abs=True)}*1/10,'
             f += f'{Utils.rowcol_to_cell(row,get_col("calc_debet_end_main"),col_abs=True)}*'
             f += f'{Utils.rowcol_to_cell(row,get_col("reserve_percent"),col_abs=True)}'
-            f += f"))"
-            self.workbook.write(row, name["col"], Formula(f), num_format_str=num_format)
+            f += f")))"
+            self.workbook.write(row, name["col"], Formula(
+                f), num_format_str=num_format)
             order.link[
                 "calc_reserve_main" + "_address"
             ] = f"{self.workbook.sheet.name}!{Utils.rowcol_to_cell(row,len(names)+1)}"
-            order.calc_reserve_main = order.debet_end_main * Decimal(order.percent)
+            order.calc_reserve_main = order.debet_end_main * \
+                Decimal(order.percent)
 
         def calculate_rezerves_proc():
             f = f'IF({Utils.rowcol_to_cell(row,get_col("reserve_percent"),col_abs=True)}="","",'
+            f += f'IF({Utils.rowcol_to_cell(row,get_col("reserve_percent"),col_abs=True)}<0,"",'
             f += f'IF({Utils.rowcol_to_cell(row,get_col("reserve_percent"),col_abs=True)}=0,'
             f += f'{Utils.rowcol_to_cell(row,get_col("debet_end_proc"),col_abs=True)}*1/10,'
             f += f'{Utils.rowcol_to_cell(row,get_col("debet_end_proc"),col_abs=True)}*'
             f += f'{Utils.rowcol_to_cell(row,get_col("reserve_percent"),col_abs=True)}'
-            f += f"))"
-            self.workbook.write(row, name["col"], Formula(f), num_format_str=num_format)
+            f += f")))"
+            self.workbook.write(row, name["col"], Formula(
+                f), num_format_str=num_format)
             order.link[
                 "calc_reserve_proc" + "_address"
             ] = f"{self.workbook.sheet.name}!{Utils.rowcol_to_cell(row,len(names) + 2)}"
-            order.calc_reserve_proc = order.debet_end_proc * Decimal(order.percent)
+            order.calc_reserve_proc = order.debet_end_proc * \
+                Decimal(order.percent)
 
         def write_header():
             row = 1
@@ -309,7 +324,8 @@ class ExcelExporter:
         # ----------------------------------------------------------------------------------------------------------
         names = get_names()
         num_format = "#,##0.00"
-        self.workbook.write(0, 0, report.report_date, num_format_str=r"dd/mm/yyyy")
+        self.workbook.write(0, 0, report.report_date,
+                            num_format_str=r"dd/mm/yyyy")
         write_header()
         row = 2
         curr_type = "Основной договор"
@@ -392,7 +408,8 @@ class ExcelExporter:
                         f"SUM({Utils.rowcol_pair_to_cellrange(row+5,col,row+5+len(value['value'])-1,col)})"
                     ),
                 )
-                sorted_value = sorted(value["value"].items(), key=lambda x: float(x[0]))
+                sorted_value = sorted(
+                    value["value"].items(), key=lambda x: float(x[0]))
                 row += 3
                 row_start = row
                 row += 1
@@ -460,14 +477,16 @@ class ExcelExporter:
         self.workbook.write(
             0,
             3,
-            Formula(f"SUM({Utils.rowcol_pair_to_cellrange(4,0,4,len(result)*5)})"),
+            Formula(
+                f"SUM({Utils.rowcol_pair_to_cellrange(4,0,4,len(result)*5)})"),
             num_format_str=num_format,
         )
         self.workbook.write(1, 2, "Общая сумма(ср.вз.)")
         self.workbook.write(
             1,
             3,
-            Formula(f"SUM({Utils.rowcol_pair_to_cellrange(5,0,5,len(result)*5)})"),
+            Formula(
+                f"SUM({Utils.rowcol_pair_to_cellrange(5,0,5,len(result)*5)})"),
             num_format_str=num_format,
         )
         self.workbook.write(2, 2, "Сред.взвеш.")
@@ -635,35 +654,40 @@ class ExcelExporter:
                 + f"{Utils.rowcol_to_cell(row,col,col_abs=True)}"
                 + ")"
             )
-            self.workbook.write(row, col + 2, Formula(f), pattern_style_3, num_format)
+            self.workbook.write(row, col + 2, Formula(f),
+                                pattern_style_3, num_format)
             f = (
                 f"SUMIF({Utils.rowcol_pair_to_cellrange(nrow_start,col,nrow_start+len(report.clients),col)},"
                 + f"{Utils.rowcol_to_cell(row,col,col_abs=True)},"
                 + f"{Utils.rowcol_pair_to_cellrange(nrow_start,col+3,nrow_start+len(report.clients),col+3)}"
                 + ")"
             )
-            self.workbook.write(row, col + 3, Formula(f), pattern_style_3, num_format)
+            self.workbook.write(row, col + 3, Formula(f),
+                                pattern_style_3, num_format)
             f = (
                 f"SUMIF({Utils.rowcol_pair_to_cellrange(nrow_start,col,nrow_start+len(report.clients),col)},"
                 + f"{Utils.rowcol_to_cell(row,col,col_abs=True)},"
                 + f"{Utils.rowcol_pair_to_cellrange(nrow_start,col+4,nrow_start+len(report.clients),col+4)}"
                 + ")"
             )
-            self.workbook.write(row, col + 4, Formula(f), pattern_style_3, num_format)
+            self.workbook.write(row, col + 4, Formula(f),
+                                pattern_style_3, num_format)
             f = (
                 f"SUMIF({Utils.rowcol_pair_to_cellrange(nrow_start,col,nrow_start+len(report.clients),col)},"
                 + f"{Utils.rowcol_to_cell(row,col,col_abs=True)},"
                 + f"{Utils.rowcol_pair_to_cellrange(nrow_start,col+5,nrow_start+len(report.clients),col+5)}"
                 + ")"
             )
-            self.workbook.write(row, col + 5, Formula(f), pattern_style_5, num_format)
+            self.workbook.write(row, col + 5, Formula(f),
+                                pattern_style_5, num_format)
             f = (
                 f"SUMIF({Utils.rowcol_pair_to_cellrange(nrow_start,col,nrow_start+len(report.clients),col)},"
                 + f"{Utils.rowcol_to_cell(row,col,col_abs=True)},"
                 + f"{Utils.rowcol_pair_to_cellrange(nrow_start,col+6,nrow_start+len(report.clients),col+6)}"
                 + ")"
             )
-            self.workbook.write(row, col + 6, Formula(f), pattern_style_5, num_format)
+            self.workbook.write(row, col + 6, Formula(f),
+                                pattern_style_5, num_format)
             return
 
         row = 0
@@ -707,7 +731,8 @@ class ExcelExporter:
         for client in report.clients.values():
             for order in client.orders:
                 self.workbook.write(
-                    row, col, Formula(order.link.get("reserve_percent_address", ""))
+                    row, col, Formula(order.link.get(
+                        "reserve_percent_address", ""))
                 )
                 self.workbook.write(
                     row,
@@ -737,9 +762,11 @@ class ExcelExporter:
                 )
 
                 f = order.link.get("calc_reserve_main_address", "")
-                self.workbook.write(row, col + 5, Formula(f), num_format_str=num_format)
+                self.workbook.write(row, col + 5, Formula(f),
+                                    num_format_str=num_format)
                 f = order.link.get("calc_reserve_proc_address")
-                self.workbook.write(row, col + 6, Formula(f), num_format_str=num_format)
+                self.workbook.write(row, col + 6, Formula(f),
+                                    num_format_str=num_format)
                 m = order.link.get("count_days_delay_address", "")
                 f = f'IF({m}=0,"",{m})'
                 self.workbook.write(
@@ -754,7 +781,90 @@ class ExcelExporter:
                 row += 1
 
     # %% Платежи
-    def write_payment(self, report: dict, sub: str):
+    def write_payment(self, report: dict):
+        def __write(sub: str):
+            nonlocal client, order, row, col, num_format
+            summa_1c = getattr(order, f"credit_end_{sub}")
+            summa_calc = getattr(order, f"calc_reserve_{sub}")
+            # if (summa_1c != 0 or summa_calc != 0) and summa_1c != summa_calc:
+            self.workbook.write(
+                row,
+                col,
+                client.name,
+            )
+            self.workbook.write(
+                row,
+                col + 1,
+                order.number,
+            )
+            self.workbook.write(
+                row,
+                col + 2,
+                Formula(order.link[f"credit_end_{sub}_address"]),
+                num_format_str=num_format,
+            )
+            self.workbook.write(
+                row,
+                col + 3,
+                Formula(order.link[f"calc_reserve_{sub}_address"]),
+                num_format_str=num_format,
+            )
+            f = f"IF("
+            f += f'IF({Utils.rowcol_to_cell(row,col+2,col_abs=True)}="",0,{Utils.rowcol_to_cell(row,col+2,col_abs=True)})>'
+            f += f'IF({Utils.rowcol_to_cell(row,col+3,col_abs=True)}="",0,{Utils.rowcol_to_cell(row,col+3,col_abs=True)}),'
+            f += f'IF({Utils.rowcol_to_cell(row,col+2,col_abs=True)}="",0,{Utils.rowcol_to_cell(row,col+2,col_abs=True)})-'
+            f += f'IF({Utils.rowcol_to_cell(row,col+3,col_abs=True)}="",0,{Utils.rowcol_to_cell(row,col+3,col_abs=True)}),'
+            f += f'IF({Utils.rowcol_to_cell(row,col+3,col_abs=True)}="",0,{Utils.rowcol_to_cell(row,col+3,col_abs=True)})-'
+            f += f'IF({Utils.rowcol_to_cell(row,col+2,col_abs=True)}="",0,{Utils.rowcol_to_cell(row,col+2,col_abs=True)})'
+            f += ")"
+
+            self.workbook.write(
+                row,
+                col + 4,
+                Formula(f),
+                num_format_str=num_format,
+            )
+            self.workbook.write(
+                row,
+                col + 5,
+                report.report_date,
+                num_format_str=r"dd/mm/yyyy",
+            )
+
+            f = f"IF("
+            f += f'IF({Utils.rowcol_to_cell(row,col+2,col_abs=True)}="",0,{Utils.rowcol_to_cell(row,col+2,col_abs=True)})<='
+            f += f'IF({Utils.rowcol_to_cell(row,col+3,col_abs=True)}="",0,{Utils.rowcol_to_cell(row,col+3,col_abs=True)}),'
+            f += f'"91.02", ' + ('"59"' if sub == "main" else '"63"')
+            f += ")"
+            self.workbook.write(row, col + 6, Formula(f))
+
+            f = f"IF("
+            f += f'IF({Utils.rowcol_to_cell(row,col+2,col_abs=True)}="",0,{Utils.rowcol_to_cell(row,col+2,col_abs=True)})>'
+            f += f'IF({Utils.rowcol_to_cell(row,col+3,col_abs=True)}="",0,{Utils.rowcol_to_cell(row,col+3,col_abs=True)}),'
+            f += f'"91.01", ' + ('"59"' if sub == "main" else '"63"')
+            f += ")"
+            self.workbook.write(
+                row,
+                col + 7,
+                Formula(f),
+            )
+            self.workbook.write(row, col + 8, "'00010")
+
+            f = f"IF("
+            f += f'IF({Utils.rowcol_to_cell(row,col+2,col_abs=True)}="",0,{Utils.rowcol_to_cell(row,col+2,col_abs=True)})>'
+            f += f'IF({Utils.rowcol_to_cell(row,col+3,col_abs=True)}="",0,{Utils.rowcol_to_cell(row,col+3,col_abs=True)}),'
+            f += f'"корректировка начисленного резерва", ' + \
+                ('"резерв по основному долгу"' if sub ==
+                 "main" else '"резерв по процентам"')
+            f += ")"
+            self.workbook.write(
+                row,
+                col + 9,
+                Formula(f),
+            )
+
+            row += 1
+
         row, col = 0, 0
         if report.is_archi:
             self.workbook.write(row, 0, "ООО 'МКК Баргузин'")
@@ -765,8 +875,8 @@ class ExcelExporter:
         row += 1
         self.workbook.write(row, 0, "ФИО")
         self.workbook.write(row, 1, "Договор")
-        self.workbook.write(row, 2, "Сумма в 1С")
-        self.workbook.write(row, 3, "Сумма расчета")
+        self.workbook.write(row, 2, "в 1С")
+        self.workbook.write(row, 3, "Расчет")
         self.workbook.write(row, 4, "Сумма начисления")
         self.workbook.write(row, 5, "Дата начисления")
         self.workbook.write(row, 6, "Дебет")
@@ -778,73 +888,40 @@ class ExcelExporter:
         num_format = "#,##0.00"
         for client in report.clients.values():
             for order in client.orders:
-                summa_1c = getattr(order, f"credit_end_{sub}")
-                summa_calc = getattr(order, f"calc_reserve_{sub}")
-                if (summa_1c != 0 or summa_calc != 0) and summa_1c != summa_calc:
-                    self.workbook.write(
-                        row,
-                        col,
-                        client.name,
-                    )
-                    self.workbook.write(
-                        row,
-                        col + 1,
-                        order.number,
-                    )
-                    self.workbook.write(
-                        row,
-                        col + 2,
-                        Formula(order.link[f"credit_end_{sub}_address"]),
-                        num_format_str=num_format,
-                    )
-                    self.workbook.write(
-                        row,
-                        col + 3,
-                        Formula(order.link[f"calc_reserve_{sub}_address"]),
-                        num_format_str=num_format,
-                    )
-                    f = f"IF("
-                    f += f'IF({Utils.rowcol_to_cell(row,col+2,col_abs=True)}="",0,{Utils.rowcol_to_cell(row,col+2,col_abs=True)})>'
-                    f += f'IF({Utils.rowcol_to_cell(row,col+3,col_abs=True)}="",0,{Utils.rowcol_to_cell(row,col+3,col_abs=True)}),'
-                    f += f'IF({Utils.rowcol_to_cell(row,col+2,col_abs=True)}="",0,{Utils.rowcol_to_cell(row,col+2,col_abs=True)})-'
-                    f += f'IF({Utils.rowcol_to_cell(row,col+3,col_abs=True)}="",0,{Utils.rowcol_to_cell(row,col+3,col_abs=True)}),'
-                    f += f'IF({Utils.rowcol_to_cell(row,col+3,col_abs=True)}="",0,{Utils.rowcol_to_cell(row,col+3,col_abs=True)})-'
-                    f += f'IF({Utils.rowcol_to_cell(row,col+2,col_abs=True)}="",0,{Utils.rowcol_to_cell(row,col+2,col_abs=True)})'
-                    f += ")"
+                __write("main")
+            for order in client.orders:
+                __write("proc")
 
-                    self.workbook.write(
-                        row,
-                        col + 4,
-                        Formula(f),
-                        num_format_str=num_format,
-                    )
-                    self.workbook.write(
-                        row,
-                        col + 5,
-                        report.report_date,
-                        num_format_str=r"dd/mm/yyyy",
-                    )
 
-                    f = f"IF("
-                    f += f'IF({Utils.rowcol_to_cell(row,col+2,col_abs=True)}="",0,{Utils.rowcol_to_cell(row,col+2,col_abs=True)})<='
-                    f += f'IF({Utils.rowcol_to_cell(row,col+3,col_abs=True)}="",0,{Utils.rowcol_to_cell(row,col+3,col_abs=True)}),'
-                    f += f'"91.02", ' + ('"59"' if sub == "main" else '"63"')
-                    f += ")"
-                    self.workbook.write(row, col + 6, Formula(f))
+# , count_days:int, pdn:float, rest: float, count_delay ):
+def reservePersent(order):    
+    return order.percent
+    
 
-                    f = f"IF("
-                    f += f'IF({Utils.rowcol_to_cell(row,col+2,col_abs=True)}="",0,{Utils.rowcol_to_cell(row,col+2,col_abs=True)})>'
-                    f += f'IF({Utils.rowcol_to_cell(row,col+3,col_abs=True)}="",0,{Utils.rowcol_to_cell(row,col+3,col_abs=True)}),'
-                    f += f'"91.01", ' + ('"59"' if sub == "main" else '"63"')
-                    f += ")"
-                    self.workbook.write(
-                        row,
-                        col + 7,
-                        Formula(f),
-                    )
-                    self.workbook.write(row, col + 8, "'00010")
 
-                    row += 1
+        # f = (
+        #     ""
+        #     + f'IF(AND({Utils.rowcol_to_cell(row,col,col_abs=True)}="",{Utils.rowcol_to_cell(row,col1,col_abs=True)}=""),"-1",'
+        #     + f'IF({Utils.rowcol_to_cell(row,col1,col_abs=True)}="","-2",'
+        #     + f'IF(AND({Utils.rowcol_to_cell(row,col,col_abs=True)}="",'
+        #     + f'{Utils.rowcol_to_cell(row,get_col("calc_debet_end_main"),col_abs=True)}>=10000,'
+        #     + f'{Utils.rowcol_to_cell(row,get_col("pdn"),col_abs=True)}>=0.5),0,'
+        #     + f'IF(AND({Utils.rowcol_to_cell(row,col,col_abs=True)}="",'
+        #     + f'OR({Utils.rowcol_to_cell(row,get_col("calc_debet_end_main"),col_abs=True)}<10000,'
+        #     + f'{Utils.rowcol_to_cell(row,get_col("pdn"),col_abs=True)}<0.5)),"",'
+        #     + f"IF(AND({Utils.rowcol_to_cell(row,col,col_abs=True)}<=7,{Utils.rowcol_to_cell(row,col-1,col_abs=True)}>=0),0,"
+        #     + f"IF({Utils.rowcol_to_cell(row,col,col_abs=True)}<=30,3/100,"
+        #     + f"IF({Utils.rowcol_to_cell(row,col,col_abs=True)}<=60,10/100,"
+        #     + f"IF({Utils.rowcol_to_cell(row,col,col_abs=True)}<=90,20/100,"
+        #     + f"IF({Utils.rowcol_to_cell(row,col,col_abs=True)}<=120,40/100,"
+        #     + f"IF({Utils.rowcol_to_cell(row,col,col_abs=True)}<=180,50/100,"
+        #     + f"IF({Utils.rowcol_to_cell(row,col,col_abs=True)}<=270,65/100,"
+        #     + f"IF({Utils.rowcol_to_cell(row,col,col_abs=True)}<=360,80/100,"
+        #     + f"IF({Utils.rowcol_to_cell(row,col,col_abs=True)}>360,99/100,"
+        #     + f'IF({Utils.rowcol_to_cell(row,get_col("count_days"),col_abs=True)}>31,0,'
+        #     + f'"-3"))))))))))))))'
+
+        # )
 
 
 # from xlwt import Utils
