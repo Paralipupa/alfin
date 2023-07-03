@@ -34,7 +34,7 @@ class Report:
         self.current_client_name = ""
         self.current_dogovor_number = ""
         self.current_dogovor_type = "Основной договор"
-        self.report_date = datetime.now().date().replace(day=1) - timedelta(days=1)
+        self.report_date =  datetime.strptime("31.03.2023","%d.%m.%Y").date() #  datetime.now().date().replace(day=1) - timedelta(days=1)
         self.reference = {}  # ссылки на документы в рамках одного документа
         self.wa = {}
         self.kategoria = {}

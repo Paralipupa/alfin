@@ -92,7 +92,7 @@ class ExcelExporter:
                         "type": "float",
                     },
                     {
-                        "name": "calc_debet_end_proc",
+                        "name": "debet_end_proc", #"calc_debet_end_proc",
                         "title": "Остаток(проц)",
                         "type": "float",
                     },
@@ -287,8 +287,8 @@ class ExcelExporter:
         def calculate_rezerves_proc():
             f = f'IF({Utils.rowcol_to_cell(row,get_col("reserve_percent"),col_abs=True)}="","",'
             f += f'IF({Utils.rowcol_to_cell(row,get_col("reserve_percent"),col_abs=True)}=0,'
-            f += f'{Utils.rowcol_to_cell(row,get_col("calc_debet_end_proc"),col_abs=True)}*1/10,'
-            f += f'{Utils.rowcol_to_cell(row,get_col("calc_debet_end_proc"),col_abs=True)}*'
+            f += f'{Utils.rowcol_to_cell(row,get_col("debet_end_proc"),col_abs=True)}*1/10,'
+            f += f'{Utils.rowcol_to_cell(row,get_col("debet_end_proc"),col_abs=True)}*'
             f += f'{Utils.rowcol_to_cell(row,get_col("reserve_percent"),col_abs=True)}'
             f += f"))"
             self.workbook.write(row, name["col"], Formula(f), num_format_str=num_format)

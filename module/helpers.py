@@ -216,16 +216,16 @@ def get_columns_head(suf: str):
             "pattern": "^Сальдо на конец периода$",
             "off_col": 1,
         },
-        {
-            "name": [f"FLD_END_DEBET_main"],
-            "pattern": "^Основной долг$",
-            "off_col": 0,
-        },
-        {
-            "name": [f"FLD_END_DEBET_proc"],
-            "pattern": "^Долг по процентам$",
-            "off_col": 0,
-        },
+        # {
+        #     "name": [f"FLD_END_DEBET_main"],
+        #     "pattern": "^Основной долг$",
+        #     "off_col": 0,
+        # },
+        # {
+        #     "name": [f"FLD_END_DEBET_proc"],
+        #     "pattern": "^Долг по процентам$",
+        #     "off_col": 0,
+        # },
         {
             "name": [f"FLD_END_DEBET_pen"],
             "pattern": "^Долг по единовременным штрафам$",
