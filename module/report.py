@@ -1,6 +1,8 @@
-import re, random
+import re
+import random
 from collections import OrderedDict
 from datetime import datetime, timedelta
+from dateutil import parser
 from module.excel_importer import ExcelImporter
 from module.excel_exporter import ExcelExporter
 from module.helpers import (
@@ -15,12 +17,15 @@ from module.helpers import (
 )
 from module.settings import *
 from module.data import *
+from .helpers import get_max_margin_rate
+
 
 logger = logging.getLogger(__name__)
 PDN_ALL = dict()
 
+
 class Report:
-    def __init__(self, filename: str):
+    def __init__(self, filename: str, purpose_date: datetime.date):
         self.order_type = "Основной договор"
         self.name = str(filename)
         self.current_client_key: str = None
@@ -34,7 +39,9 @@ class Report:
         self.current_client_name = ""
         self.current_dogovor_number = ""
         self.current_dogovor_type = "Основной договор"
-        self.report_date =  datetime.strptime("31.12.2022","%d.%m.%Y").date() #  datetime.now().date().replace(day=1) - timedelta(days=1)
+        # datetime.now().date().replace(day=1) - timedelta(days=1)
+        self.report_date = purpose_date
+        # self.report_date =  datetime.strptime("30.06.2022","%d.%m.%Y").date() #  datetime.now().date().replace(day=1) - timedelta(days=1)
         self.reference = {}  # ссылки на документы в рамках одного документа
         self.wa = {}
         self.kategoria = {}
@@ -66,16 +73,18 @@ class Report:
                     self.__record_order_pdn()
                     self.__record_order_rate()
                     self.__record_order_tarif()
-                    self.__set_order_count_days()
+                    # self.__set_order_count_days()
         return
 
     def __record_client(self) -> None:
-        names = [x for x in self.record[self.fields.get("FLD_NAME")].split(" ") if x]
+        names = [x for x in self.record[self.fields.get(
+            "FLD_NAME")].split(" ") if x]
         if self.__is_find(PATT_NAME, "FLD_NAME") or (
             all(word[0].isupper() for word in names) and len(names) == 3
         ):
             self.current_client_key = (
-                self.record[self.fields.get("FLD_NAME")].replace(" ", "").lower()
+                self.record[self.fields.get("FLD_NAME")].replace(
+                    " ", "").lower()
             )
             self.clients.setdefault(
                 self.current_client_key,
@@ -160,16 +169,21 @@ class Report:
     def __record_order_date(self):
         order = self.__get_current_order()
         if self.__is_find(PATT_DOG_DATE, "FLD_DATE", "date"):
-            order.date = to_date(get_long_date(self.record[self.fields["FLD_DATE"]]))
+            order.date = to_date(get_long_date(
+                self.record[self.fields["FLD_DATE"]]))
             order.date_begin = order.date
+            if self.__is_find(PATT_DOG_DATE, "FLD_DATE_BEGIN", "date_begin", True):
+                order.date_begin = to_date(get_long_date(
+                    self.record[self.fields["FLD_DATE_BEGIN"]]))
         self.__set_order_field(PATT_DOG_DATE, "FLD_DATE_END", "date_end")
         self.__set_order_field(
             PATT_COUNT_DAYS, "FLD_COUNT_DAYS_DELAY", "count_days_delay"
         )
 
     def __record_order_pdn(self):
-        self.__set_order_field(PATT_PDN, "FLD_PDN", "pdn", True, value_type="float")
-        if getattr(self.clients[self.current_client_key].order_cache,"pdn",0) != 0:
+        self.__set_order_field(PATT_PDN, "FLD_PDN", "pdn",
+                               True, value_type="float")
+        if getattr(self.clients[self.current_client_key].order_cache, "pdn", 0) != 0:
             PDN_ALL[self.current_client_key] = self.clients[self.current_client_key].order_cache.pdn
 
     def __record_order_rate(self):
@@ -269,7 +283,8 @@ class Report:
 
     def __record_order_period(self):
         self.__set_order_field(PATT_PERIOD, "FLD_PERIOD", "count_days")
-        self.__set_order_field(PATT_PERIOD, "FLD_PERIOD_COMMON", "count_days_common")
+        self.__set_order_field(
+            PATT_PERIOD, "FLD_PERIOD_COMMON", "count_days_common")
         order = self.__get_current_order()
         if order:
             if order.count_days:
@@ -281,7 +296,8 @@ class Report:
     def __record_order_number(self, index: int):
         if self.__is_find(PATT_DOG_NUMBER, "FLD_NUMBER"):
             order = self.__get_current_order()
-            order.number = get_order_number(self.record[self.fields.get("FLD_NUMBER")])
+            order.number = get_order_number(
+                self.record[self.fields.get("FLD_NUMBER")])
             order.row = index
             self.reference.setdefault(order.number, order)
             self.__record_order_summa(True)
@@ -293,10 +309,35 @@ class Report:
         if order and order.count_days != 0:
             try:
                 if order.date_begin:
-                    order.date_end = order.date_begin + timedelta(order.count_days)
-                    order.count_days_period = self.__get_count_days_in_period(order)
-                    order.count_days_common = self.__get_count_days_common(order)
+                    order.date_end = order.date_begin + \
+                        timedelta(order.count_days)
+                    order.count_days_period = self.__get_count_days_in_period(
+                        order)
+                    order.count_days_common = self.__get_count_days_common(
+                        order)
                     order.count_days_delay = self.__get_count_days_delay(order)
+                    order.summa_percent = order.summa * \
+                        Decimal(order.rate)/100 * order.count_days_period
+                    summa_max = order.summa * \
+                        Decimal(get_max_margin_rate(order.date))
+                    order.calculate_percent = max(
+                        min(summa_max, order.summa_percent - order.credit_main), 0)
+                    order.debet_end_main = max(
+                        order.summa - order.credit_main, 0)
+                    order.debet_end_proc = max(
+                        order.calculate_percent - order.credit_proc, 0
+                    )
+                    order.percent = self.__get_reserve_persent(order)
+                    if order.percent == 0:
+                        order.calc_reserve_main = round(order.debet_end_main * Decimal(0.1),2)
+                        order.calc_reserve_proc = round(order.debet_end_proc * Decimal(0.1),2)
+                    elif order.percent>0:
+                        order.calc_reserve_main = round(order.debet_end_main * Decimal(order.percent),2)
+                        order.calc_reserve_proc = round(order.debet_end_proc * Decimal(order.percent),2)
+                    
+                
+
+
             except Exception as ex:
                 logger.exception("__set_order_count_days:")
 
@@ -367,13 +408,15 @@ class Report:
             date1 += timedelta(days=16)
             date2 += timedelta(days=6)
         if not (
-            (date_first_day_in_month == date1) and (date_first_day_in_month == date2)
+            (date_first_day_in_month == date1) and (
+                date_first_day_in_month == date2)
         ):
             if (
                 date1 < date_first_day_in_month
                 and date2 > date_first_day_in_month - timedelta(days=1)
             ):
-                num_days -= (date2 - date_first_day_in_month + timedelta(days=1)).days
+                num_days -= (date2 - date_first_day_in_month +
+                             timedelta(days=1)).days
             elif date1 > date_first_day_in_month - timedelta(
                 days=1
             ) and date2 < date_last_day_in_month + timedelta(days=1):
@@ -383,7 +426,8 @@ class Report:
                 and date1 < date_last_day_in_month + timedelta(days=1)
                 and date2 > date_last_day_in_month
             ):
-                num_days -= (date_last_day_in_month - date1 + timedelta(days=1)).days
+                num_days -= (date_last_day_in_month -
+                             date1 + timedelta(days=1)).days
             elif (
                 date1 < date_first_day_in_month
                 and date1 < date_last_day_in_month > date_last_day_in_month
@@ -407,8 +451,9 @@ class Report:
         try:
             return (
                 (
-                    last_day_on_period - order.date_begin - timedelta(order.count_days) 
-                ).days + ((order.count_days // 31)-1 if order.count_days>=31 else 0)
+                    last_day_on_period - order.date_begin -
+                    timedelta(order.count_days)
+                ).days - ((order.count_days // 31)-1 if order.count_days >= 31 else 0)
                 if last_day_on_period > order.date_end
                 else 0
             )
@@ -430,7 +475,8 @@ class Report:
                 or (not getattr(order, order_fld_name) or is_forced)
             )
             and re.search(
-                pattern, self.record[self.fields.get(column_fld_name)], re.IGNORECASE
+                pattern, self.record[self.fields.get(
+                    column_fld_name)], re.IGNORECASE
             )
         )
 
@@ -555,8 +601,10 @@ class Report:
                                 client_item.order_cache, attr
                             ):
                                 setattr(
-                                    order, attr, getattr(client_item.order_cache, attr)
+                                    order, attr, getattr(
+                                        client_item.order_cache, attr)
                                 )
+                self.__set_order_count_days(order)
 
     def fill_from_archi(self, data: dict):
         if not data:
@@ -569,7 +617,7 @@ class Report:
                     order.tarif.code = data["order"][order.number][6]
                     order.tarif.name = data["order"][order.number][7]
                     order.count_days = data["order"][order.number][2]
-                    self.__set_order_count_days(order)
+                    # self.__set_order_count_days(order)
                 if data["payment"].get(order.number):
                     for payment in data["payment"][order.number]:
                         order.payments_base.append(payment)
@@ -609,7 +657,8 @@ class Report:
                         self.wa[key]["value"][summa] = 1
                     else:
                         self.wa[key]["value"][summa] += 1
-                    self.wa[key]["summa"] += float(summa) * self.wa[key]["koef"]
+                    self.wa[key]["summa"] += float(summa) * \
+                        self.wa[key]["koef"]
                     self.wa[key]["summa_free"] += float(summa)
                     self.wa[key]["count"] += 1
                 else:
@@ -658,7 +707,7 @@ class Report:
         order: Order = Order()
         random.seed()
         for key_client, client in self.clients.items():
-            pdn = PDN_ALL.get(key_client,30) / 100
+            pdn = PDN_ALL.get(key_client, 0) / 100
             for order in client.orders:
                 if order.pdn:
                     if order.pdn > 1:
@@ -675,7 +724,6 @@ class Report:
                     kategoria[t]["summa6"] += summa
                 item = {"name": client.name, "parent": order}
                 kategoria[t]["items"].append(item)
-                order.percent = self.__get_rezerv_percent(order.count_days_delay)
                 reserves.setdefault(str(order.percent), Reserve())
                 reserves[str(order.percent)].percent = order.percent
                 reserves[str(order.percent)].count += 1
@@ -693,6 +741,13 @@ class Report:
         ]
 
     def __get_rezerv_percent(self, count: int) -> float:
+        pass
+
+
+    def __get_reserve_persent(self, order):
+        if (order.count_days_delay == 0) and (order.pdn < 0.5 or order.debet_end_main < 10000):
+            return -1
+        count = order.count_days_delay
         if count <= 7:
             return 0
         elif count <= 30:
@@ -711,3 +766,4 @@ class Report:
             return 80 / 100
         else:
             return 99 / 100
+

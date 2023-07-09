@@ -175,8 +175,10 @@ def get_max_margin_rate(ddate: datetime.datetime.date) -> float:
         return 2.5
     elif ddate < datetime.datetime.strptime("01.01.2020", "%d.%m.%Y").date():
         return 2
-    else:
+    elif ddate < datetime.datetime.strptime("01.07.2023", "%d.%m.%Y").date():
         return 1.5
+    else:
+        return 1.3
 
 
 def get_attributes(obj) -> list:
@@ -275,6 +277,7 @@ def get_columns_head(suf: str):
             "off_col": 0,
         },
         {"name": ["FLD_DATE"], "pattern": "^Дата выдачи", "off_col": 0},
+        {"name": ["FLD_DATE_BEGIN"], "pattern": "^Дата пролонгации", "off_col": 0},
         {
             "name": ["FLD_SUMMA"],
             "pattern": "Сумма займа|^Выданная сумма займа$",

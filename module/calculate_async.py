@@ -1,4 +1,5 @@
 from multiprocessing import Pool, Manager
+from datetime import datetime
 from module.report import Report
 from module.connect import SQLServer
 from module.helpers import timing
@@ -8,7 +9,7 @@ calc_cashe = {}
 
 
 class Calc:
-    def __init__(self, files: list, is_archi: bool = False):
+    def __init__(self, files: list, purpose_date: datetime.date, is_archi: bool = False):
         self.main_wa: Report = None
         self.main_res: Report = None
         self.archi_data = None
@@ -16,13 +17,13 @@ class Calc:
         self.is_archi = is_archi
         for file in files:
             if file.find("58") != -1 and self.main_res is None:
-                self.main_res = Report(file)
+                self.main_res = Report(file, purpose_date)
                 self.main_res.is_archi = is_archi
             elif file.find("58") != -1:
-                self.main_wa = Report(file)
+                self.main_wa = Report(file, purpose_date)
                 self.main_wa.is_archi = is_archi
             else:
-                self.items.append(Report(file))
+                self.items.append(Report(file, purpose_date))
 
     def read(self) -> None:
         pool = Pool()

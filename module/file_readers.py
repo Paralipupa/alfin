@@ -275,9 +275,12 @@ class XlsWrite:
             logger.exception("Save error")
         return None
 
-    def addSheet(self, title: str = ""):
+    def addSheet(self, title: str = "", sheet: object=None ):
         title = f"Лист {len(self.book._Workbook__worksheets)+1}" if not title else title
-        self.sheet = self.book.add_sheet(title)
+        if sheet is None:
+            self.sheet = self.book.add_sheet(title)
+        else:
+            self.sheets[title] = sheet
         return self.sheet
 
     def write(
