@@ -68,6 +68,7 @@ def get_date(date_str: str) -> datetime.date:
         "%d-%m-%Y",
         "%d/%m/%Y",
         "%Y-%m-%d",
+        "%Y-%m-%d %H:%M:%S",
         "%d-%m-%y",
         "%d/%m/%y",
         "%B %Y",
@@ -266,7 +267,7 @@ def get_columns_head(suf: str):
         },
         {"name": ["FLD_PDN"], "pattern": "^Показатель долговой|ПДН", "off_col": 0},
         {
-            "name": [f"FLD_END_DEBET_{suf}"],
+            "name": [f"FLD_END_DEBET_proc_58"],
             "pattern": "^сумма начисл\. процентов$",
             "off_col": 0,
         },
@@ -278,9 +279,35 @@ def get_columns_head(suf: str):
         },
         {"name": ["FLD_DATE"], "pattern": "^Дата выдачи", "off_col": 0},
         {"name": ["FLD_DATE_BEGIN"], "pattern": "^Дата пролонгации", "off_col": 0},
+        {"name": ["FLD_DATE_FROZEN"], "pattern": "^дата заморозки$", "off_col": 0}, 
         {
             "name": ["FLD_SUMMA"],
             "pattern": "Сумма займа|^Выданная сумма займа$",
             "off_col": 0,
+        },
+        {
+            "name": ["FLD_SUMMA_PAYMENT"],
+            "pattern": "^Общая сумма основного долга$", # из 58,03рез1
+            "off_col": 0,
+        },
+        {
+            "name": ["FLD_SUMMA_RESERVE_MAIN"],
+            "pattern": "^резерв по основному долгу$", # из 58,03рез1
+            "off_col": 0,
+        },
+        {
+            "name": ["FLD_SUMMA_RESERVE_MAIN_PDN"],
+            "pattern": "^резерв по основному долгу$", # из 58,03рез1
+            "off_col": 1,
+        },
+        {
+            "name": ["FLD_SUMMA_RESERVE_PROC"],
+            "pattern": "^резерв по процентам$", # из 58,03рез1
+            "off_col": 0,
+        },
+        {
+            "name": ["FLD_SUMMA_RESERVE_PROC_PDN"],
+            "pattern": "^резерв по процентам$", # из 58,03рез1
+            "off_col": 1,
         },
     ]

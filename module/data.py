@@ -73,12 +73,18 @@ class Order:
     debet_proc: Decimal = 0  # начислено по процентам
     credit_proc: Decimal = 0  # оплачено по процентам
     debet_end_proc: Decimal = 0
+    debet_end_proc_58: Decimal = 0 # данные из 58рез1 (сумма начисл. процентов)
     credit_end_proc: Decimal = 0  # кредит по остатку
     debet_penalty: Decimal = 0
-    summa_percent: Decimal = 0
-    calculate_percent: Decimal = 0
+    summa_percent_period: Decimal = 0
+    summa_percent_all: Decimal = 0
     summa_reserve_main: Decimal = 0
     summa_reserve_proc: Decimal = 0
+    summa_reserve_main_58: Decimal = 0 # данные из 58рез1 (резерв по основному долгу)
+    summa_reserve_main_58_pdn: Decimal = 0 # данные из 58рез1 (резерв по основному долгу ПДН)
+    summa_reserve_proc_58: Decimal = 0 # данные из 58рез1 (резерв по процентам)
+    summa_reserve_proc_58_pdn: Decimal = 0 # данные из 58рез1 (резерв по процентам ПДН)
+    summa_payment: Decimal = 0
     calc_reserve_main: Decimal = 0
     calc_reserve_proc: Decimal = 0
     link: dict = field(default_factory=dict)

@@ -25,7 +25,7 @@ PDN_ALL = dict()
 
 
 class Report:
-    def __init__(self, filename: str, purpose_date: datetime.date):
+    def __init__(self, filename: str, purpose_date: datetime.date = None):
         self.order_type = "Основной договор"
         self.name = str(filename)
         self.current_client_key: str = None
@@ -40,7 +40,10 @@ class Report:
         self.current_dogovor_number = ""
         self.current_dogovor_type = "Основной договор"
         # datetime.now().date().replace(day=1) - timedelta(days=1)
-        self.report_date = purpose_date
+        if purpose_date is None:
+            self.report_date = datetime.now().date().replace(day=1) - timedelta(days=1)
+        else:
+            self.report_date = purpose_date
         # self.report_date =  datetime.strptime("30.06.2022","%d.%m.%Y").date() #  datetime.now().date().replace(day=1) - timedelta(days=1)
         self.reference = {}  # ссылки на документы в рамках одного документа
         self.wa = {}
@@ -73,7 +76,7 @@ class Report:
                     self.__record_order_pdn()
                     self.__record_order_rate()
                     self.__record_order_tarif()
-                    # self.__set_order_count_days()
+                    self.__set_order_count_days()
         return
 
     def __record_client(self) -> None:
@@ -106,6 +109,14 @@ class Report:
         else:
             None
 
+    def __set_current_order(self, order: Order) -> Order:
+        for attribute, value in vars(order).items():
+            if ((isinstance(value, str) or isinstance(value, float) or isinstance(value, int) or
+                 isinstance(value, Decimal) or isinstance(value, datetime) or
+                 isinstance(value, date)) and value):
+                setattr(
+                    self.clients[self.current_client_key].order_cache, attribute, value)
+
     def __get_current_payment(self) -> Payment:
         order = self.__get_current_order()
         if order:
@@ -129,6 +140,7 @@ class Report:
         client: Client = self.__get_current_client()
         if client:
             client.order_cache = Order()
+            client.order_cache.client = client
 
     def __clean_payment(self) -> None:
         order: Order = self.__get_current_order()
@@ -139,7 +151,10 @@ class Report:
         if self.__is_find("Договор", "FLD_NUMBER"):
             client: Client = self.__get_current_client()
             if client:
+                order_cache = client.order_cache
                 self.__set_new_order()
+                if order_cache.client is not None and len(client.orders) == 0:
+                    self.__set_current_order(order_cache)
                 order = self.__get_current_order()
                 order.type = self.order_type
                 order.name = client.name
@@ -175,6 +190,9 @@ class Report:
             if self.__is_find(PATT_DOG_DATE, "FLD_DATE_BEGIN", "date_begin", True):
                 order.date_begin = to_date(get_long_date(
                     self.record[self.fields["FLD_DATE_BEGIN"]]))
+        if self.__is_find(PATT_DOG_DATE, "FLD_DATE_FROZEN", "date_frozen"):
+            order.date_frozen = to_date(get_long_date(
+                self.record[self.fields["FLD_DATE_FROZEN"]]))
         self.__set_order_field(PATT_DOG_DATE, "FLD_DATE_END", "date_end")
         self.__set_order_field(
             PATT_COUNT_DAYS, "FLD_COUNT_DAYS_DELAY", "count_days_delay"
@@ -231,6 +249,13 @@ class Report:
                 is_forced=is_forced and not b,
                 value_type="decimal",
             )
+            self.__set_order_field(
+                PATT_CURRENCY,
+                "FLD_SUMMA_PAYMENT",
+                "summa_payment",
+                is_forced=is_forced and not b,
+                value_type="decimal",
+            )
         self.__set_order_field(
             PATT_CURRENCY,
             f"FLD_BEG_DEBET_{self.suf}",
@@ -280,6 +305,42 @@ class Report:
             is_forced=is_forced,
             value_type="decimal",
         )
+        self.__set_order_field(
+            PATT_CURRENCY,
+            f"FLD_END_DEBET_proc_58",
+            f"debet_end_proc_58",
+            is_forced=False,
+            value_type="decimal",
+        )
+        self.__set_order_field(
+            PATT_CURRENCY,
+            f"FLD_SUMMA_RESERVE_MAIN",
+            f"summa_reserve_main_58",
+            is_forced=False,
+            value_type="decimal",
+        )
+        self.__set_order_field(
+            PATT_CURRENCY,
+            f"FLD_SUMMA_RESERVE_MAIN_PDN",
+            f"summa_reserve_main_58_pdn",
+            is_forced=False,
+            value_type="decimal",
+        )
+        self.__set_order_field(
+            PATT_CURRENCY,
+            f"FLD_SUMMA_RESERVE_PROC",
+            f"summa_reserve_proc_58",
+            is_forced=False,
+            value_type="decimal",
+        )
+        self.__set_order_field(
+            PATT_CURRENCY,
+            f"FLD_SUMMA_RESERVE_PROC_PDN",
+            f"summa_reserve_proc_58_pdn",
+            is_forced=False,
+            value_type="decimal",
+        )
+        return
 
     def __record_order_period(self):
         self.__set_order_field(PATT_PERIOD, "FLD_PERIOD", "count_days")
@@ -309,6 +370,7 @@ class Report:
         if order and order.count_days != 0:
             try:
                 if order.date_begin:
+                    is_recalc_proc = False
                     order.date_end = order.date_begin + \
                         timedelta(order.count_days)
                     order.count_days_period = self.__get_count_days_in_period(
@@ -316,27 +378,38 @@ class Report:
                     order.count_days_common = self.__get_count_days_common(
                         order)
                     order.count_days_delay = self.__get_count_days_delay(order)
-                    order.summa_percent = order.summa * \
-                        Decimal(order.rate)/100 * order.count_days_period
-                    summa_max = order.summa * \
+                    if order.debet_end_main == 0:
+                        is_recalc_proc = True
+                        order.debet_end_main = max(
+                            order.summa - order.credit_main, 0)
+                    order.summa_percent_period = round(order.debet_end_main *
+                                                       Decimal(order.rate)/100 * order.count_days_period, 2)
+                    order.summa_percent_all = round(order.debet_end_main *
+                                                    Decimal(order.rate)/100 * order.count_days_common, 2)
+
+                    summa_percent_max = order.summa * \
                         Decimal(get_max_margin_rate(order.date))
-                    order.calculate_percent = max(
-                        min(summa_max, order.summa_percent - order.credit_main), 0)
-                    order.debet_end_main = max(
-                        order.summa - order.credit_main, 0)
-                    order.debet_end_proc = max(
-                        order.calculate_percent - order.credit_proc, 0
-                    )
+                    if order.debet_end_proc == 0:
+                        if order.debet_end_proc_58 != 0:
+                            order.debet_end_proc = order.debet_end_proc_58
+                        else:
+                            order.debet_end_proc = round(max(min(
+                                summa_percent_max, order.summa_percent_all) - order.summa_payment
+                                - (order.credit_proc if order.summa_payment == 0 else 0), 0), 2)
+                        if self.is_archi and is_recalc_proc is False:
+                            order.debet_end_proc = order.debet_end_proc_58
+
                     order.percent = self.__get_reserve_persent(order)
                     if order.percent == 0:
-                        order.calc_reserve_main = round(order.debet_end_main * Decimal(0.1),2)
-                        order.calc_reserve_proc = round(order.debet_end_proc * Decimal(0.1),2)
-                    elif order.percent>0:
-                        order.calc_reserve_main = round(order.debet_end_main * Decimal(order.percent),2)
-                        order.calc_reserve_proc = round(order.debet_end_proc * Decimal(order.percent),2)
-                    
-                
-
+                        order.calc_reserve_main = round(
+                            order.debet_end_main * Decimal(0.1), 2)
+                        order.calc_reserve_proc = round(
+                            order.debet_end_proc * Decimal(0.1), 2)
+                    elif order.percent > 0:
+                        order.calc_reserve_main = round(
+                            order.debet_end_main * Decimal(order.percent), 2)
+                        order.calc_reserve_proc = round(
+                            order.debet_end_proc * Decimal(order.percent), 2)
 
             except Exception as ex:
                 logger.exception("__set_order_count_days:")
@@ -440,9 +513,17 @@ class Report:
         if order is None:
             order: Order = self.__get_current_order()
         last_day_on_period: datetime.date = self.report_date
+        if order.date_frozen:
+            last_day_on_period = order.date_frozen
         count_days = (last_day_on_period - order.date_begin).days
         if order.tarif.code in self.discounts:
-            count_days -= 7
+            if order.tarif.code == 48:
+                if count_days >= 16 and count_days <= 22:
+                    count_days = 16
+                elif count_days > 22:
+                    count_days -= 7
+            else:
+                count_days -= 7
         return count_days if count_days > 0 else 0
 
     # Количество дней просрочки
@@ -468,17 +549,18 @@ class Report:
         is_forced: bool = False,
     ) -> bool:
         order = self.__get_current_order()
-        return (
-            self.fields.get(column_fld_name, -1) != -1
-            and (
-                order_fld_name is None
-                or (not getattr(order, order_fld_name) or is_forced)
-            )
-            and re.search(
+        if (
+                self.fields.get(column_fld_name, -1) != -1
+                and (
+                    order_fld_name is None
+                    or (not getattr(order, order_fld_name) or is_forced)
+                )):
+            if is_forced or re.search(
                 pattern, self.record[self.fields.get(
                     column_fld_name)], re.IGNORECASE
-            )
-        )
+            ):
+                return True
+        return False
 
     def __set_order_field(
         self,
@@ -489,24 +571,32 @@ class Report:
         value_type: str = "",
     ) -> bool:
         if self.__is_find(pattern, column_fld_name, order_fld_name, is_forced):
+            value = self.record[self.fields[column_fld_name]].replace(
+                "Нет данных", "").strip()
             order = self.__get_current_order()
-            if value_type == "decimal":
-                setattr(
-                    order,
-                    order_fld_name,
-                    Decimal(self.record[self.fields[column_fld_name]]),
-                )
-            elif value_type == "float":
-                setattr(
-                    order,
-                    order_fld_name,
-                    float(self.record[self.fields[column_fld_name]]),
-                )
-            else:
-                setattr(
-                    order, order_fld_name, self.record[self.fields[column_fld_name]]
-                )
-            return True
+            try:
+                if value_type == "decimal":
+                    if value == "":
+                        value = "0"
+                    setattr(
+                        order,
+                        order_fld_name,
+                        Decimal(value),
+                    )
+                elif value_type == "float":
+                    if value == "":
+                        value = "0"
+                    setattr(
+                        order,
+                        order_fld_name,
+                        float(value),
+                    )
+                else:
+                    setattr(
+                        order, order_fld_name, value)
+                return True
+            except Exception as ex:
+                pass
         return False
 
     def __add_payment(
@@ -562,14 +652,33 @@ class Report:
         if not items:
             return
         order_attrs = [x for x in get_attributes(Order()) if pattern.search(x)]
-        order: Order
         client: Client
+        order: Order
+
+        for item in items:
+            if re.search('63', item.name):
+                for key, client in item.clients.items():
+                    for order in client.orders:
+                        if self.reference.get(order.number) is None:
+                            i = 1
+                            while self.clients.get(f"{key}_{i}"):
+                                i += 1
+                            self.clients[f"{key}_{i}"] = client
+                            self.reference.setdefault(order.number, order)
+        for item in items:
+            if re.search('59', item.name):
+                for key, client in item.clients.items():
+                    if self.clients.get(f"{key}_{1}") and self.clients.get(key) is None:
+                        if len(self.clients[f"{key}_{1}"].orders) != 0 and self.clients[f"{key}_{1}"].orders[0].credit_end_main == 0:
+                            self.clients[f"{key}_{1}"].orders[0].credit_end_main = client.order_cache.credit_end_main
+
         for key, client in self.clients.items():
             client_items = [
                 x.clients[key]
                 for x in items
                 if x.clients.get(key) and len(x.clients[key].orders) == 0
             ]
+
             for order in client.orders:
                 order_items = [
                     x.reference[order.number]
@@ -578,22 +687,24 @@ class Report:
                 ]
                 order_item: Order
                 for order_item in order_items:
-                    for attr in order_attrs:
-                        if not getattr(order, attr) and getattr(order_item, attr):
-                            setattr(order, attr, getattr(order_item, attr))
-                    if order_item.tarif.code != 0:
-                        order.tarif = order_item.tarif
-                    payment: Payment
-                    for payment in order_item.payments_1c:
-                        order.payments_1c.append(payment)
-                        if (
-                            order.date_frozen is None
-                            and payment.date
-                            and payment.summa
-                            and payment.type == "O"
-                            and payment.category == "C"
-                        ):
-                            order.date_frozen = payment.date
+                    if order_item.number == order.number:
+                        for attr in order_attrs:
+                            if not getattr(order, attr) and getattr(order_item, attr):
+                                setattr(order, attr, getattr(order_item, attr))
+                        if order_item.tarif.code != 0:
+                            order.tarif = order_item.tarif
+                        payment: Payment
+                        for payment in order_item.payments_1c:
+                            order.payments_1c.append(payment)
+                            if (
+                                (order.date_frozen is None or order.date_frozen <
+                                 payment.date)
+                                and payment.date
+                                and payment.summa
+                                and payment.type == "O"
+                                and payment.category == "C"
+                            ):
+                                order.date_frozen = payment.date
                 if client_items:
                     for client_item in client_items:
                         for attr in order_attrs:
@@ -617,10 +728,12 @@ class Report:
                     order.tarif.code = data["order"][order.number][6]
                     order.tarif.name = data["order"][order.number][7]
                     order.count_days = data["order"][order.number][2]
-                    # self.__set_order_count_days(order)
+                    # if order.summa == 0:
+                    #     order.summa = data["order"][order.number][8]
                 if data["payment"].get(order.number):
                     for payment in data["payment"][order.number]:
                         order.payments_base.append(payment)
+                self.__set_order_count_days(order)
 
     # средневзвешенная величина
     def set_weighted_average(self):
@@ -743,12 +856,11 @@ class Report:
     def __get_rezerv_percent(self, count: int) -> float:
         pass
 
-
     def __get_reserve_persent(self, order):
-        if (order.count_days_delay == 0) and (order.pdn < 0.5 or order.debet_end_main < 10000):
-            return -1
         count = order.count_days_delay
-        if count <= 7:
+        if (count <= 7) and (order.pdn < 0.5 or order.debet_end_main < 10000):
+            return -1
+        elif count <= 7:
             return 0
         elif count <= 30:
             return 3 / 100
@@ -766,4 +878,3 @@ class Report:
             return 80 / 100
         else:
             return 99 / 100
-

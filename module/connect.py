@@ -17,7 +17,7 @@ class SQLServer():
             pass
 
     def get_orders(self, numbers: list = ['0']):
-        mSQL = "SELECT o.ID, o.MAINPERCENT, o.DAYSQUANT, o.NUMBER, cast(c.[CREATIONDATETIME] as DateTime) as CREATEDATE, c.FULLNAME, o.POID, p.NAME"
+        mSQL = "SELECT o.ID, o.MAINPERCENT, o.DAYSQUANT, o.NUMBER, cast(c.[CREATIONDATETIME] as DateTime) as CREATEDATE, c.FULLNAME, o.POID, p.NAME, o.LOANCOSTALL"
         mSQL = mSQL + " FROM [Orders] o "
         mSQL = mSQL + " INNER JOIN [CLIENTS] c ON c.[ID]=o.[CLIENTID]"
         mSQL = mSQL + " INNER JOIN [PERCENT_OPTIONS] p ON o.[POID]=p.[ID]"

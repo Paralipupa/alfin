@@ -16,10 +16,16 @@ class Calc:
         self.items: list[Report] = []
         self.is_archi = is_archi
         for file in files:
-            if file.find("58") != -1 and self.main_res is None:
+            if file.find("58рез") != -1 and self.main_res is None:
                 self.main_res = Report(file, purpose_date)
                 self.main_res.is_archi = is_archi
-            elif file.find("58") != -1:
+            elif file.find("58рез") != -1 and self.main_wa is None:
+                self.main_wa = Report(file, purpose_date)
+                self.main_wa.is_archi = is_archi
+            elif file.find("58") != -1 and self.main_res is None:
+                self.main_res = Report(file, purpose_date)
+                self.main_res.is_archi = is_archi
+            elif file.find("58") != -1 and self.main_wa is None:
                 self.main_wa = Report(file, purpose_date)
                 self.main_wa.is_archi = is_archi
             else:
