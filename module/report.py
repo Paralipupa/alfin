@@ -397,7 +397,8 @@ class Report:
                                 summa_percent_max, order.summa_percent_all) - order.summa_payment
                                 - (order.credit_proc if order.summa_payment == 0 else 0), 0), 2)
                         if self.is_archi and is_recalc_proc is False:
-                            order.debet_end_proc = order.debet_end_proc_58
+                            if self.__is_find(PATT_CURRENCY, "FLD_SUMMA_RESERVE_PROC_PDN", "summa_reserve_proc_58_pdn", True):
+                                order.debet_end_proc = order.debet_end_proc_58
 
                     order.percent = self.__get_reserve_persent(order)
                     if order.percent == 0:
@@ -641,8 +642,9 @@ class Report:
     def read(self) -> bool:
         return self.parser.read()
 
-    def write_to_excel(self, filename: str = "output_full") -> str:
-        exel = ExcelExporter("output_excel")
+    def write_to_excel(self) -> str:
+        file_name = "report_barguzin" if self.is_archi else "report_irkom"
+        exel = ExcelExporter(file_name)
         return exel.write(self)
 
     def union_all(self, items):

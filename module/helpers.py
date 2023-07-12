@@ -56,7 +56,7 @@ def to_date(x: str) -> datetime.date:
     d = get_date(x)
     if d:
         return d
-    return x
+    return None
 
 
 def get_date(date_str: str) -> datetime.date:

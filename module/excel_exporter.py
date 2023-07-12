@@ -736,10 +736,10 @@ class ExcelExporter:
         names = [
             "Ставка",
             "Кол-во",
-            "Основной",
-            "Процент",
-            "Резерв(осн)",
-            "Резерв(проц)",
+            "Дт.58",
+            "Дт.76",
+            "Дт.59",
+            "Дт.63",
         ]
         for name in names:
             self.workbook.write(row, col, name, "align: horiz center")
@@ -888,9 +888,6 @@ class ExcelExporter:
             pattern_style_positive = (
                 "pattern: pattern solid, fore_colour green; font: color yellow;"
             )
-            pattern_style_negative = (
-                "pattern: pattern solid, fore_colour red; font: color yellow;"
-            )
             num_format = "#,##0.00"
             summa_calc = getattr(order, f"calc_reserve_{sub}")
             if summa_calc != 0:
@@ -990,27 +987,7 @@ class ExcelExporter:
                     summa_calc,
                     num_format_str=num_format,
                 )
-                # f = f'IF(AND({Utils.rowcol_to_cell(row-1,col,col_abs=True)}={Utils.rowcol_to_cell(row,col,col_abs=True)},{Utils.rowcol_to_cell(row-1,col+6,col_abs=True)}={Utils.rowcol_to_cell(row,col+6,col_abs=True)}),0,'
-                # f += f'ABS({Utils.rowcol_to_cell(row,col+2,col_abs=True)}-{Utils.rowcol_to_cell(row,col+3,col_abs=True)})'
-                # f += ')'
-
                 f = f'ABS({summa_1c-summa_calc})'
-
-                # f += f'IF(AND({Utils.rowcol_to_cell(row-1,col,col_abs=True)}={Utils.rowcol_to_cell(row,col,col_abs=True)},{Utils.rowcol_to_cell(row-1,col+6,col_abs=True)}={Utils.rowcol_to_cell(row,col+6,col_abs=True)}),0,'
-                # f = f"IF("
-                # f += f'{Utils.rowcol_to_cell(row,col+2,col_abs=True)}>{Utils.rowcol_to_cell(row,col+3,col_abs=True)},'
-                # f += f'{Utils.rowcol_to_cell(row,col+2,col_abs=True)}-{Utils.rowcol_to_cell(row,col+3,col_abs=True)},'
-                # f += f'{Utils.rowcol_to_cell(row,col+3,col_abs=True)}-{Utils.rowcol_to_cell(row,col+2,col_abs=True)}'
-                # f += ")"
-                # f = f"IF("
-                # f += f'IF({Utils.rowcol_to_cell(row,col+2,col_abs=True)}="",0,{Utils.rowcol_to_cell(row,col+2,col_abs=True)})>'
-                # f += f'IF({Utils.rowcol_to_cell(row,col+3,col_abs=True)}="",0,{Utils.rowcol_to_cell(row,col+3,col_abs=True)}),'
-                # f += f'IF({Utils.rowcol_to_cell(row,col+2,col_abs=True)}="",0,{Utils.rowcol_to_cell(row,col+2,col_abs=True)})-'
-                # f += f'IF({Utils.rowcol_to_cell(row,col+3,col_abs=True)}="",0,{Utils.rowcol_to_cell(row,col+3,col_abs=True)}),'
-                # f += f'IF({Utils.rowcol_to_cell(row,col+3,col_abs=True)}="",0,{Utils.rowcol_to_cell(row,col+3,col_abs=True)})-'
-                # f += f'IF({Utils.rowcol_to_cell(row,col+2,col_abs=True)}="",0,{Utils.rowcol_to_cell(row,col+2,col_abs=True)})'
-                # f += ")"
-
                 self.workbook.write(
                     row,
                     col + 4,
@@ -1061,7 +1038,6 @@ class ExcelExporter:
                     col + 11,
                     order.percent,
                 )
-
                 row += 1
             return
 
@@ -1087,47 +1063,12 @@ class ExcelExporter:
         self.workbook.write(row, 11, "Процент")
         row += 1
         num_format = "#,##0.00"
-        # for client in report.clients.values():
-        #     summa_main = 0
-        #     summa_proc = 0
-        #     summa_reserve_main = 0
-        #     summa_reserve_proc = 0
-        #     for order in client.orders:
-        #         if summa_reserve_main == 0 and order.calc_reserve_main != 0:
-        #             summa_reserve_main = order.calc_reserve_main
-        #         if summa_reserve_proc == 0 and order.calc_reserve_proc != 0:
-        #             summa_reserve_proc = order.calc_reserve_proc
-        #         if summa_main == 0 and order.credit_end_main != 0:
-        #             summa_main = order.credit_end_main
-        #         else:
-        #             order.credit_end_main = 0
-        #         if summa_proc == 0 and order.credit_end_proc != 0:
-        #             summa_proc = order.credit_end_proc
-        #         else:
-        #             order.credit_end_proc = 0
-        #     if (summa_reserve_main != 0 and summa_main != 0) or (summa_proc != 0 and summa_reserve_proc != 0):
-        #         for order in client.orders:
-        #             if summa_main != 0 and order.calc_reserve_main != 0:
-        #                 order.credit_end_main = summa_main
-        #                 summa_main = 0
-        #             else:
-        #                 order.credit_end_main = 0
-        #             if summa_proc != 0 and order.calc_reserve_proc != 0:
-        #                 order.credit_end_proc = summa_proc
-        #                 summa_main = 0
-        #             else:
-        #                 order.credit_end_proc = 0
-
         for client in report.clients.values():
             for order in client.orders:
                 __write_down("main")
         for client in report.clients.values():
             for order in client.orders:
-                __write_down("proc")
-
-        for client in report.clients.values():
-            for order in client.orders:
                 __write_up("main")
         for client in report.clients.values():
             for order in client.orders:
-                __write_up("proc")
+                __write("proc")
