@@ -202,6 +202,8 @@ class Report:
         self.__set_order_field(PATT_PDN, "FLD_PDN", "pdn",
                                True, value_type="float")
         if getattr(self.clients[self.current_client_key].order_cache, "pdn", 0) != 0:
+            if self.clients[self.current_client_key].order_cache.pdn < 3:
+                self.clients[self.current_client_key].order_cache.pdn *= 100
             PDN_ALL[self.current_client_key] = self.clients[self.current_client_key].order_cache.pdn
 
     def __record_order_rate(self):
