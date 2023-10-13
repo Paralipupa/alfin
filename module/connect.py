@@ -24,7 +24,7 @@ class SQLServer():
         mSQL = mSQL + " WHERE o.[NUMBER] in ('{}')".format("','".join(numbers))
         cursor = self.connection.cursor()
         cursor.execute(mSQL)
-        results = cursor.fetchall()
+        results = [list(x) for x in cursor.fetchall()]
         keys = [f"{x[3]}" for x in results]
         data = dict(zip(keys, results))
         return data
@@ -37,7 +37,7 @@ class SQLServer():
         mSQL = mSQL + " ORDER BY o.ID DESC"
         cursor = self.connection.cursor()
         cursor.execute(mSQL)
-        results = cursor.fetchall()
+        results = [list(x) for x in cursor.fetchall()]
         keys = [f"{x[1]}" for x in results]
         data = dict(zip(keys, results))
         return data
@@ -50,7 +50,7 @@ class SQLServer():
         mSQL = mSQL + " ORDER BY o.ID DESC"
         cursor = self.connection.cursor()
         cursor.execute(mSQL)
-        results = cursor.fetchall()
+        results = [list(x) for x in cursor.fetchall()]
         data = {}
         for item in results:
             data.setdefault(item[1], [])

@@ -51,47 +51,39 @@ class Report:
         self.warnings = []
         self.fields = {}
         self.tarifs = [(0, "noname"), (1, "Постоянный"), (2, "Старт")]
-        self.discounts = (2, 10, 31, 33, 42, 45, 47, 44, 46, 48)
-
-    def __is_read(self) -> bool:
-        if self.read():
-            self.set_columns()
-            return not (
-                self.fields.get("FLD_NAME", -1) == -1
-                or self.fields.get("FLD_NUMBER", -1) == -1
-            )
-        return False
+        self.discounts = (2, 10, 31, 33, 42, 45, 47, 44, 46, 48, 51, 52)
+        self.is_find_columns = False
 
     def get_parser(self):
-        if self.__is_read():
+        if self.read():
+            headers = get_columns_head(self.suf)
             for index, self.record in enumerate(self.parser.records):
-                self.__record_order_type()
-                self.__record_client()
-                if self.__get_current_client():
-                    self.__record_order_name()
-                    self.__record_order_number(index)
-                    self.__record_order_date()
-                    self.__record_order_period()
-                    self.__record_order_payments()
-                    self.__record_order_pdn()
-                    self.__record_order_rate()
-                    self.__record_order_tarif()
-                    self.__set_order_count_days()
+                if self.is_find_columns is False:
+                    self.set_columns(headers)
+                    if index > 20:
+                        break
+                if self.is_find_columns is True:
+                    self.__record_order_type()
+                    self.__record_client()
+                    if self.__get_current_client():
+                        self.__record_order_name()
+                        self.__record_order_number(index)
+                        self.__record_order_date()
+                        self.__record_order_period()
+                        self.__record_order_payments()
+                        self.__record_order_pdn()
+                        self.__record_order_rate()
+                        self.__record_order_tarif()
+                        self.__set_order_count_days()
         return
 
     def __record_client(self) -> None:
-        names = [x for x in self.record[self.fields.get(
-            "FLD_NAME")].split(" ") if x]
-        if self.__is_find(PATT_NAME, "FLD_NAME") or (
-            all(word[0].isupper() for word in names) and len(names) == 3
-        ):
-            self.current_client_key = (
-                self.record[self.fields.get("FLD_NAME")].replace(
-                    " ", "").lower()
-            )
+        names = re.findall(PATT_NAME, self.record[self.fields.get("FLD_NAME")])
+        if names:
+            self.current_client_key = names[0].replace(" ","").lower()
             self.clients.setdefault(
                 self.current_client_key,
-                Client(name=self.record[self.fields.get("FLD_NAME")]),
+                Client(name=names[0]),
             )
             self.__set_new_order()
             self.__record_order_summa()
@@ -357,10 +349,11 @@ class Report:
 
     # Номер договора
     def __record_order_number(self, index: int):
-        if self.__is_find(PATT_DOG_NUMBER, "FLD_NUMBER"):
+        numbers = re.search(
+            PATT_DOG_NUMBER, self.record[self.fields.get("FLD_NUMBER")])
+        if numbers:
             order = self.__get_current_order()
-            order.number = get_order_number(
-                self.record[self.fields.get("FLD_NUMBER")])
+            order.number = get_order_number(numbers[0])
             order.row = index
             self.reference.setdefault(order.number, order)
             self.__record_order_summa(True)
@@ -617,29 +610,23 @@ class Report:
             self.__push_current_payment()
 
     # Устанавливаем номера колонок
-    def set_columns(self):
-        items = get_columns_head(self.suf)
-        index = 0
-        for record in self.parser.records:
-            col = 0
-            for cell in record:
-                if re.search("Оборотно-сальдовая ведомость по счету", cell):
-                    x = re.findall("(?<=г\. - ).+(?= г[\.])", cell)
-                    if x:
-                        self.report_date = to_date(x[0])
+    def set_columns(self, items):
+        col = 0
+        for cell in self.record:
+            if re.search("Оборотно-сальдовая ведомость по счету", cell):
+                x = re.findall("(?<=г\. - ).+(?= г[\.])", cell)
+                if x:
+                    self.report_date = to_date(x[0])
 
-                for item in items:
-                    for name in item["name"]:
-                        if not self.fields.get(name) and re.search(
-                            item["pattern"], cell
-                        ):
-                            self.fields[name] = col + item["off_col"]
-                col += 1
-            if self.fields.get("FLD_NAME", -1) != -1:
-                return
-            index += 1
-            if index > 20:
-                return
+            for item in items:
+                for name in item["name"]:
+                    if not self.fields.get(name) and re.search(
+                        item["pattern"], cell
+                    ):
+                        self.fields[name] = col + item["off_col"]
+            col += 1
+        if self.fields.get("FLD_NAME", -1) != -1:
+            self.is_find_columns = True
 
     def read(self) -> bool:
         return self.parser.read()
@@ -729,11 +716,10 @@ class Report:
             for order in client.orders:
                 if data["order"].get(order.number):
                     order.rate = data["order"][order.number][1]
+                    order.count_days = data["order"][order.number][2]
+                    order.tarif = Tarif()
                     order.tarif.code = data["order"][order.number][6]
                     order.tarif.name = data["order"][order.number][7]
-                    order.count_days = data["order"][order.number][2]
-                    # if order.summa == 0:
-                    #     order.summa = data["order"][order.number][8]
                 if data["payment"].get(order.number):
                     for payment in data["payment"][order.number]:
                         order.payments_base.append(payment)
@@ -759,7 +745,7 @@ class Report:
                         self.wa[key] = {
                             "parent": [],
                             "stavka": float(rate),
-                            "koef": 240.194
+                            "koef": 226.065
                             if tarif in self.discounts
                             else 365 * float(rate),
                             "period": period - 7 if tarif in self.discounts else period,

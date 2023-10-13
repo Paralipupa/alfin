@@ -4,6 +4,7 @@ from decimal import Decimal
 from typing import Any
 from module.settings import LEN_DOG_NUMBER, ENCONING
 from module.data import Order
+from .settings import PATT_NAME, PATT_DOG_NUMBER
 
 logger = logging.getLogger(__name__)
 
@@ -188,7 +189,14 @@ def get_attributes(obj) -> list:
 
 def get_columns_head(suf: str):
     return [
-        {"name": ["FLD_NAME"], "pattern": "^Счет$|^ФИО|^Контрагент$", "off_col": 0},
+        {"name": ["FLD_NAME"], "pattern": f"{PATT_NAME}|^Контрагент$", "off_col": 0},
+        {"name": ["FLD_NUMBER", "FLD_DATE"], "pattern": f"{PATT_DOG_NUMBER}|^Контрагент$", "off_col": 0},
+        {"name": ["FLD_DATE"], "pattern": "^Дата выдачи", "off_col": 0},
+        {
+            "name": ["FLD_NUMBER"],
+            "pattern": "^№ заявки$|^Договор$|^№ договора$",
+            "off_col": 0,
+        },
         {
             "name": [f"FLD_BEG_DEBET_{suf}"],
             "pattern": "^Сальдо на начало периода$",
@@ -213,6 +221,16 @@ def get_columns_head(suf: str):
             "name": [f"FLD_END_DEBET_{suf}"],
             "pattern": "^Сальдо на конец периода$",
             "off_col": 0,
+        },
+        {
+            "name": [f"FLD_BEG_DEBET_{suf}"],
+            "pattern": "^Дебет$",
+            "off_col": 1,
+        },
+        {
+            "name": [f"FLD_END_DEBET_{suf}"],
+            "pattern": "^Дебет$",
+            "off_col": 1,
         },
         {
             "name": [f"FLD_END_CREDIT_{suf}"],
@@ -271,13 +289,6 @@ def get_columns_head(suf: str):
             "pattern": "^сумма начисл\. процентов$",
             "off_col": 0,
         },
-        {"name": ["FLD_NUMBER", "FLD_DATE"], "pattern": "^Счет$", "off_col": 0},
-        {
-            "name": ["FLD_NUMBER"],
-            "pattern": "^№ заявки$|^Договор$|^№ договора$",
-            "off_col": 0,
-        },
-        {"name": ["FLD_DATE"], "pattern": "^Дата выдачи", "off_col": 0},
         {"name": ["FLD_DATE_BEGIN"], "pattern": "^Дата пролонгации", "off_col": 0},
         {"name": ["FLD_DATE_FROZEN"], "pattern": "^дата заморозки$", "off_col": 0}, 
         {
