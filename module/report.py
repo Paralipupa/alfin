@@ -349,6 +349,8 @@ class Report:
 
     # Номер договора
     def __record_order_number(self, index: int):
+        if self.fields.get("FLD_NUMBER") is None:
+            return
         numbers = re.search(
             PATT_DOG_NUMBER, self.record[self.fields.get("FLD_NUMBER")])
         if numbers:
