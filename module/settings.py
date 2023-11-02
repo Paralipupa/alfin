@@ -34,7 +34,8 @@ PATT_DOG_PLAT = "Обороты за "
 LEN_DOG_NUMBER = 11
 
 SQL_CONNECT = {
-    "dsn": "sqlserverdatasource",
+    "dsn": os.environ.get("SQL_DSN", "sqlserverdatasource"),
+    "server":os.environ.get("SQL_SERVER", "10.10.10.1"),
     "port": "1433",
     "database": os.environ.get("SQL_DB", "ArchiCreditW"),
     "user": os.environ.get("SQL_USER", "ArchiCreditW"),
