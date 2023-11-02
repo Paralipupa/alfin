@@ -9,7 +9,9 @@ calc_cashe = {}
 
 
 class Calc:
-    def __init__(self, files: list, purpose_date: datetime.date, is_archi: bool = False):
+    def __init__(
+        self, files: list, purpose_date: datetime.date, is_archi: bool = False
+    ):
         self.main_wa: Report = None
         self.main_res: Report = None
         self.archi_data = None
@@ -41,6 +43,9 @@ class Calc:
             pool.apply_async(self.main_res.get_parser())
         pool.close()
         pool.join()
+
+        if self.main_res is None and self.main_wa is None and self.items:
+            self.main_res = self.items.pop(0)
 
         if self.main_wa:
             self.main_wa.union_all(self.items)
