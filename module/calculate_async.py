@@ -60,7 +60,7 @@ class Calc:
         numbers_file = "numbers.dump"
         data_file = "data.dump"
         numbers = []
-        if self.is_archi:
+        if hasattr(self, "is_archi") and self.is_archi:
             if self.main_wa is not None:
                 numbers = self.main_wa.get_numbers()
             elif self.main_res is not None:

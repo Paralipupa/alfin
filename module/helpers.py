@@ -237,6 +237,16 @@ def get_columns_head(suf: str):
             "pattern": "^Сальдо на конец периода$",
             "off_col": 1,
         },
+        {
+            "name": [f"FLD_BEG_CREDIT_{suf}"],
+            "pattern": "^Кредит$",
+            "off_col": 1,
+        },
+        {
+            "name": [f"FLD_END_CREDIT_{suf}"],
+            "pattern": "^Кредит$",
+            "off_col": 1,
+        },
         # {
         #     "name": [f"FLD_END_DEBET_main"],
         #     "pattern": "^Основной долг$",
@@ -320,5 +330,15 @@ def get_columns_head(suf: str):
             "name": ["FLD_SUMMA_RESERVE_PROC_PDN"],
             "pattern": "^резерв по процентам$", # из 58,03рез1
             "off_col": 1,
+        },
+        {
+            "name": ["FLD_DOC_PERIOD"],
+            "pattern": "^Период$", # Период оплаты
+            "off_col": 0,
+        },
+        {
+            "name": ["FLD_DOCUMENT"],
+            "pattern": "^Документ$", # документ
+            "off_col": 0,
         },
     ]

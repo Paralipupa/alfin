@@ -53,6 +53,7 @@ class Report:
         self.tarifs = [(0, "noname"), (1, "Постоянный"), (2, "Старт")]
         self.discounts = (2, 10, 31, 33, 42, 45, 47, 44, 46, 48, 51, 52)
         self.is_find_columns = False
+        self.is_archi = False
 
     def get_parser(self):
         if self.read():
@@ -74,6 +75,9 @@ class Report:
                         self.__record_order_pdn()
                         self.__record_order_rate()
                         self.__record_order_tarif()
+                        self.__record_document()
+                        self.__record_doc_period()
+                        self.__record_doc_summa()
                         self.__set_order_count_days()
         return
 
@@ -98,6 +102,14 @@ class Report:
         client: Client = self.__get_current_client()
         if client:
             return client.order_cache
+        else:
+            None
+
+    def __get_current_document(self) -> Client:
+        client: Client = self.__get_current_client()
+        if client:
+            if client.documents:
+                return client.documents[-1]
         else:
             None
 
@@ -140,6 +152,26 @@ class Report:
             client.order_cache = Order()
             client.order_cache.client = client
 
+    def __set_new_document(self, text: str) -> None:
+        client: Client = self.__get_current_client()
+        if client:
+            document = Document(text)
+            document.order = self.__get_current_order()
+            client.documents.append(document)
+        return
+
+    def __set_doc_period(self, text: str) -> None:
+        document: Document = self.__get_current_document()
+        if document:
+            period = to_date(text)
+            if period:
+                document.date_period = period
+
+    def __set_doc_summa(self, text: str) -> None:
+        document: Document = self.__get_current_document()
+        if document:
+            document.summa = float(text)
+
     def __clean_payment(self) -> None:
         order: Order = self.__get_current_order()
         if order:
@@ -181,9 +213,9 @@ class Report:
 
     def __record_order_date(self):
         order = self.__get_current_order()
-        if self.__is_find(PATT_DOG_DATE, "FLD_DATE", "date"):
-            order.date = to_date(get_long_date(self.record[self.fields["FLD_DATE"]]))
-            order.date_begin = order.date
+        if self.__is_find(PATT_DOG_DATE, "FLD_DATE", "date_order"):
+            order.date_order = to_date(get_long_date(self.record[self.fields["FLD_DATE"]]))
+            order.date_begin = order.date_order
             if self.__is_find(PATT_DOG_DATE, "FLD_DATE_BEGIN", "date_begin", True):
                 order.date_begin = to_date(
                     get_long_date(self.record[self.fields["FLD_DATE_BEGIN"]])
@@ -367,6 +399,41 @@ class Report:
             self.__record_order_summa(True)
             self.__push_current_order()
 
+    # Документ
+    def __record_document(self):
+        if self.fields.get("FLD_DOCUMENT") is None:
+            return
+        numbers = re.search(PATT_DOCUMENT, self.record[self.fields.get("FLD_DOCUMENT")])
+        if numbers:
+            self.__set_new_document(self.record[self.fields.get("FLD_DOCUMENT")])
+        return
+
+    # Период
+    def __record_doc_period(self):
+        if self.fields.get("FLD_DOC_PERIOD") is None:
+            return
+        numbers = re.search(
+            PATT_DOC_PERIOD, self.record[self.fields.get("FLD_DOC_PERIOD")]
+        )
+        if numbers:
+            self.__set_doc_period(self.record[self.fields.get("FLD_DOC_PERIOD")])
+        return
+
+    # Сумма документа
+    def __record_doc_summa(self):
+        if self.fields.get("FLD_END_DEBET_proc") is None and self.fields.get("FLD_END_CREDIT_proc") is None:
+            return
+        numbers = re.search(
+            PATT_CURRENCY, self.record[self.fields.get("FLD_END_DEBET_proc")]
+        )
+        if numbers is None:
+            numbers = re.search(
+                PATT_CURRENCY, self.record[self.fields.get("FLD_END_CREDIT_proc")]
+            )
+        if numbers:
+            self.__set_doc_summa(numbers.group(0))
+        return
+
     def __set_order_count_days(self, order: Order = None):
         if order is None:
             order = self.__get_current_order()
@@ -397,7 +464,7 @@ class Report:
                     )
 
                     summa_percent_max = order.summa * Decimal(
-                        get_max_margin_rate(order.date)
+                        get_max_margin_rate(order.date_order)
                     )
                     if order.debet_end_proc == 0:
                         if order.debet_end_proc_58 != 0:
@@ -659,7 +726,11 @@ class Report:
         return self.parser.read()
 
     def write_to_excel(self) -> str:
-        file_name = "report_barguzin" if self.get("is_archi") else "report_irkom"
+        file_name = (
+            "report_barguzin"
+            if hasattr(self, "is_archi") and self.is_archi
+            else "report_irkom"
+        )
         exel = ExcelExporter(file_name)
         return exel.write(self)
 
