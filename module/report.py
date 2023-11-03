@@ -82,7 +82,10 @@ class Report:
         return
 
     def __record_client(self) -> None:
-        names = re.findall(PATT_NAME, self.record[self.fields.get("FLD_NAME")])
+        num = self.fields.get("FLD_NAME")
+        names = re.findall(PATT_NAME, self.record[num])
+        if bool(names) is False:
+            names = re.findall(PATT_NAME, self.record[num-1])
         if names:
             self.current_client_key = names[0].replace(" ", "").lower()
             self.clients.setdefault(
@@ -717,7 +720,7 @@ class Report:
             for item in items:
                 for name in item["name"]:
                     if not self.fields.get(name) and re.search(item["pattern"], cell):
-                        self.fields[name] = col + item["off_col"]
+                        self.fields[name]= col + item["off_col"]
             col += 1
         if self.fields.get("FLD_NAME", -1) != -1:
             self.is_find_columns = True

@@ -1127,6 +1127,7 @@ class ExcelExporter:
             self.workbook.write(row, 8, "Основание")
             self.workbook.write(row, 9, "Номер док-та")
             self.workbook.write(row, 10, "Дата договора")
+            self.workbook.write(row, 11, "Номер договора")
             return
 
         def __write(document: Document):
@@ -1209,6 +1210,12 @@ class ExcelExporter:
                     document.order.get_date() if document.order else "",
                     num_format_str=r"dd/mm/yyyy"
                 )
+                # 10
+                self.workbook.write(
+                    row,
+                    col + 11,
+                    document.order.number if document.order else "",
+                )
                 row += 1
             return
 
@@ -1217,8 +1224,10 @@ class ExcelExporter:
         row += 1
         num_format = "#,##0.00"
         client: Client = None
-        for client in report.clients.values():
+        sort_clients = sorted(report.clients.values(), key=lambda x: x.name)
+        for client in sort_clients:
             if client.documents:
                 document: Document = None
-                for document in client.documents:
+                sort_document = sorted(client.documents, key=lambda x: (x.date_period, -int(x.code),))
+                for document in sort_document:
                     __write(document)
