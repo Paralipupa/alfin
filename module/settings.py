@@ -40,7 +40,7 @@ SQL_CONNECT = {
     "server":os.environ.get("SQL_SERVER", "10.10.10.1"),
     "port": "1433",
     "database": os.environ.get("SQL_DB", "ArchiCreditW"),
-    "user": os.environ.get("SQL_USER", "ArchiCreditW"),
+    "user": os.environ.get("SQL_USER", "sa"),
     "password": os.environ.get("SQL_PASSWORD", "11111"),
 }
 
