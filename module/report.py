@@ -46,6 +46,7 @@ class Report:
             self.report_date = purpose_date
         # self.report_date =  datetime.strptime("30.06.2022","%d.%m.%Y").date() #  datetime.now().date().replace(day=1) - timedelta(days=1)
         self.reference = {}  # ссылки на документы в рамках одного документа
+        self.documents = [] #документы по порядку
         self.wa = {}
         self.kategoria = {}
         self.warnings = []
@@ -160,7 +161,9 @@ class Report:
         if client:
             document = Document(text)
             document.order = self.__get_current_order()
+            document.client = client   
             client.documents.append(document)
+            self.documents.append(document)
         return
 
     def __set_doc_period(self, text: str) -> None:

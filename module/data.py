@@ -110,9 +110,12 @@ class Document:
     code: str = ""
     basis: str = ""
     order: Order = None
+    client = None
+    is_print: bool = False
 
     def __init__(self, text: str):
         self.text = text
+        self.is_print = False
         if text.find("Приходный") != -1:
             self.code = "1"
         elif text.find("Расходный") != -1:

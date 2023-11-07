@@ -1,10 +1,12 @@
 import datetime
 import re
+import logging
 from xlwt import Utils, Formula, XFStyle
 from module.file_readers import get_file_write
 from module.helpers import to_date, get_value_attr, get_max_margin_rate
 from module.data import *
 
+logger = logging.getLogger(__name__)
 
 class ExcelExporter:
     def __init__(self, file_name: str, page_name: str = None):
@@ -1223,11 +1225,33 @@ class ExcelExporter:
         __write_head()
         row += 1
         num_format = "#,##0.00"
-        client: Client = None
-        sort_clients = sorted(report.clients.values(), key=lambda x: x.name)
-        for client in sort_clients:
-            if client.documents:
-                document: Document = None
-                sort_document = sorted(client.documents, key=lambda x: (x.date_period, -int(x.code),))
-                for document in sort_document:
-                    __write(document)
+        # client: Client = None
+        # sort_clients = sorted(report.clients.values(), key=lambda x: x.name)
+        # for client in sort_clients:
+        #     if client.documents:
+        #         document: Document = None
+        #         sort_documents = sorted(client.documents, key=lambda x: (x.date_period, int(x.code),))
+        #         for document in sort_documents:
+        #             __write(document)
+
+        # order : Order = None
+        # for order in report.documents:
+        #     if order.client.documents:
+        #         client : Client = order.client
+        #         document: Document = None
+        #         sort_documents = sorted([x for x in client.documents if x.is_print is False], key=lambda x: (x.date_period, int(x.code),))
+        #         date_period = None
+        #         for document in sort_documents:
+        #             if date_period is not None and date_period != document.date_period:
+        #                 break
+        #             __write(document)
+        #             document.is_print = True
+        #             date_period = document.date_period
+
+        for document in report.documents:
+            client = document.client
+            __write(document)
+
+                        
+
+

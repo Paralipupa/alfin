@@ -7,19 +7,19 @@ class SQLServer:
         self.connection = None
         self.set_connection()
 
-    # 1. install 
+    # 1. install
     #   sudo apt-get install unixodbc unixodbc-dev freetds-dev tdsodbc
     # 2. sudo vim /etc/freetds/freetds.conf
-        # [MSSQL]
-        # host = SERVER
-        # port = 1433
-        # tds version = 7.4
-        # client charset = UTF-8
+    # [MSSQL]
+    # host = SERVER
+    # port = 1433
+    # tds version = 7.4
+    # client charset = UTF-8
     # 3. test
     #   tsql -S MSSQL -U sa -P Raideff86reps$1
     # https://devicetests.com/connecting-ms-sql-freetds-unixodbc-ubuntu-no-default-driver-error#:~:text=FreeTDS%20is%20a%20set%20of,execute%20statements%20for%20data%20sources
     # sudo nano /etc/odbcinst.ini
-    
+
     # install postgresql
     # https://www.postgresql.org/download/linux/ubuntu/
     #
@@ -52,11 +52,13 @@ class SQLServer:
             pass
 
     def get_orders(self, numbers: list = ["0"]):
-        mSQL = "SELECT o.ID, o.MAINPERCENT, o.DAYSQUANT, o.NUMBER, cast(c.[CREATIONDATETIME] as DateTime) as CREATEDATE, c.FULLNAME, o.POID, p.NAME, o.LOANCOSTALL"
-        mSQL = mSQL + " FROM [Orders] o "
-        mSQL = mSQL + " INNER JOIN [CLIENTS] c ON c.[ID]=o.[CLIENTID]"
-        mSQL = mSQL + " INNER JOIN [PERCENT_OPTIONS] p ON o.[POID]=p.[ID]"
-        mSQL = mSQL + " WHERE o.[NUMBER] in ('{}')".format("','".join(numbers))
+        mSQL = "SELECT o.ID, o.MAINPERCENT, o.DAYSQUANT, o.NUMBER, cast(c.[CREATIONDATETIME] as DateTime) as CREATEDATE,"
+        mSQL += "c.FULLNAME, o.POID, p.NAME, o.LOANCOSTALL,c.DOCS,c.DOCNUM,cast(c.[DOCBEGINDATE] as DateTime) as DOCDATE"
+        # mSQL += "c.DOCCONTENT "
+        mSQL += " FROM [Orders] o "
+        mSQL += " INNER JOIN [CLIENTS] c ON c.[ID]=o.[CLIENTID]"
+        mSQL += " INNER JOIN [PERCENT_OPTIONS] p ON o.[POID]=p.[ID]"
+        mSQL += " WHERE o.[NUMBER] in ('{}')".format("','".join(numbers))
         cursor = self.connection.cursor()
         cursor.execute(mSQL)
         results = [list(x) for x in cursor.fetchall()]
