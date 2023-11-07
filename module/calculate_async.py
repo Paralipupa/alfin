@@ -31,7 +31,7 @@ class Calc:
                 self.main_wa = Report(file, purpose_date)
                 self.main_wa.is_archi = is_archi
             else:
-                self.items.append(Report(file, purpose_date))
+                self.items.append(Report(file, purpose_date=purpose_date, is_archi=is_archi))
 
     def read(self) -> None:
         pool = Pool()

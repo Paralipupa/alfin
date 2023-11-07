@@ -1119,17 +1119,11 @@ class ExcelExporter:
                 self.workbook.write(row, 1, "3808200398")
             row += 1
             self.workbook.write(row, 0, "Дата")
-            self.workbook.write(row, 1, "Код")
-            self.workbook.write(row, 2, "Сумма")
-            self.workbook.write(row, 3, "Код вида")
-            self.workbook.write(row, 4, "Статус")
-            self.workbook.write(row, 5, "Тип")
-            self.workbook.write(row, 6, "Номер счета")
-            self.workbook.write(row, 7, "ФИО")
-            self.workbook.write(row, 8, "Основание")
-            self.workbook.write(row, 9, "Номер док-та")
-            self.workbook.write(row, 10, "Дата договора")
-            self.workbook.write(row, 11, "Номер договора")
+            self.workbook.write(row, 1, "ФИО")
+            self.workbook.write(row, 2, "Основание")
+            self.workbook.write(row, 3, "Cчет")
+            self.workbook.write(row, 4, "Приход")
+            self.workbook.write(row, 5, "Расход")
             return
 
         def __write(document: Document):
@@ -1154,70 +1148,39 @@ class ExcelExporter:
                 self.workbook.write(
                     row,
                     col + 1,
-                    document.code,
+                    client.name,
                 )
+
                 # 2
                 self.workbook.write(
                     row,
                     col + 2,
-                    document.summa,
-                    num_format_str=num_format,
+                    document.basis,
                 )
+
                 # 3
                 self.workbook.write(
                     row,
                     col + 3,
-                    "04856",
+                    '',
                 )
+
                 # 4
                 self.workbook.write(
                     row,
                     col + 4,
-                    "1",
+                    document.summa if document.code == '1' else None,
+                    num_format_str=num_format,
                 )
+
                 # 5
                 self.workbook.write(
                     row,
                     col + 5,
-                    "ФЛ",
+                    document.summa if document.code == '2' else None,
+                    num_format_str=num_format,
                 )
-                # 6
-                self.workbook.write(
-                    row,
-                    col + 6,
-                    client.account,
-                )
-                # 7
-                self.workbook.write(
-                    row,
-                    col + 7,
-                    client.name,
-                )
-                # 8
-                self.workbook.write(
-                    row,
-                    col + 8,
-                    document.basis,
-                )
-                # 9
-                self.workbook.write(
-                    row,
-                    col + 9,
-                    document.number
-                )
-                # 10
-                self.workbook.write(
-                    row,
-                    col + 10,
-                    document.order.get_date() if document.order else "",
-                    num_format_str=r"dd/mm/yyyy"
-                )
-                # 10
-                self.workbook.write(
-                    row,
-                    col + 11,
-                    document.order.number if document.order else "",
-                )
+
                 row += 1
             return
 
@@ -1245,7 +1208,7 @@ class ExcelExporter:
         #             if date_period is not None and date_period != document.date_period:
         #                 break
         #             __write(document)
-        #             document.is_print = True
+        #             document.is_print = T rue
         #             date_period = document.date_period
 
         for document in report.documents:

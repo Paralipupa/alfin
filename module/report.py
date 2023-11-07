@@ -25,7 +25,9 @@ PDN_ALL = dict()
 
 
 class Report:
-    def __init__(self, filename: str, purpose_date: datetime.date = None):
+    def __init__(
+        self, filename: str, purpose_date: datetime.date = None, is_archi: bool = False
+    ):
         self.order_type = "Основной договор"
         self.name = str(filename)
         self.current_client_key: str = None
@@ -46,7 +48,7 @@ class Report:
             self.report_date = purpose_date
         # self.report_date =  datetime.strptime("30.06.2022","%d.%m.%Y").date() #  datetime.now().date().replace(day=1) - timedelta(days=1)
         self.reference = {}  # ссылки на документы в рамках одного документа
-        self.documents = [] #документы по порядку
+        self.documents = []  # документы по порядку
         self.wa = {}
         self.kategoria = {}
         self.warnings = []
@@ -54,7 +56,7 @@ class Report:
         self.tarifs = [(0, "noname"), (1, "Постоянный"), (2, "Старт")]
         self.discounts = (2, 10, 31, 33, 42, 45, 47, 44, 46, 48, 51, 52)
         self.is_find_columns = False
-        self.is_archi = False
+        self.is_archi = is_archi
 
     def get_parser(self):
         if self.read():
@@ -70,13 +72,13 @@ class Report:
                     if self.__get_current_client():
                         self.__record_order_name()
                         self.__record_order_number(index)
+                        self.__record_document()
                         self.__record_order_date()
                         self.__record_order_period()
                         self.__record_order_payments()
                         self.__record_order_pdn()
                         self.__record_order_rate()
                         self.__record_order_tarif()
-                        self.__record_document()
                         self.__record_doc_period()
                         self.__record_doc_summa()
                         self.__set_order_count_days()
@@ -86,7 +88,7 @@ class Report:
         num = self.fields.get("FLD_NAME")
         names = re.findall(PATT_NAME, self.record[num])
         if bool(names) is False:
-            names = re.findall(PATT_NAME, self.record[num-1])
+            names = re.findall(PATT_NAME, self.record[num - 1])
         if names:
             self.current_client_key = names[0].replace(" ", "").lower()
             self.clients.setdefault(
@@ -155,13 +157,14 @@ class Report:
         if client:
             client.order_cache = Order()
             client.order_cache.client = client
+            self.__clean_payment()
 
     def __set_new_document(self, text: str) -> None:
         client: Client = self.__get_current_client()
         if client:
             document = Document(text)
             document.order = self.__get_current_order()
-            document.client = client   
+            document.client = client
             client.documents.append(document)
             self.documents.append(document)
         return
@@ -216,11 +219,22 @@ class Report:
 
             if self.__is_find(PATT_CURRENCY, f"FLD_END_DEBET_{self.suf}"):
                 self.__add_payment(date_payment, "FLD_END_DEBET", "E", "D")
+        if self.fields.get("FLD_DOCUMENT") is not None and self.__is_find(
+            PATT_PAYMENT_DOCUMENT, "FLD_DOCUMENT"
+        ):
+            if self.__is_find(PATT_CURRENCY, f"FLD_BEG_DEBET_{self.suf}"):
+                date_payment = self.record[self.fields["FLD_DOC_PERIOD"]]
+                self.__add_payment(date_payment, "FLD_BEG_DEBET", "B", "D")
+            if self.__is_find(PATT_CURRENCY, f"FLD_BEG_CREDIT_{self.suf}"):
+                date_payment = self.record[self.fields["FLD_DOC_PERIOD"]]
+                self.__add_payment(date_payment, "FLD_BEG_CREDIT_", "O", "C")
 
     def __record_order_date(self):
         order = self.__get_current_order()
         if self.__is_find(PATT_DOG_DATE, "FLD_DATE", "date_order"):
-            order.date_order = to_date(get_long_date(self.record[self.fields["FLD_DATE"]]))
+            order.date_order = to_date(
+                get_long_date(self.record[self.fields["FLD_DATE"]])
+            )
             order.date_begin = order.date_order
             if self.__is_find(PATT_DOG_DATE, "FLD_DATE_BEGIN", "date_begin", True):
                 order.date_begin = to_date(
@@ -409,7 +423,9 @@ class Report:
     def __record_document(self):
         if self.fields.get("FLD_DOCUMENT") is None:
             return
-        numbers = re.search(PATT_DOCUMENT, self.record[self.fields.get("FLD_DOCUMENT")])
+        numbers = re.search(
+            PATT_PAYMENT_DOCUMENT, self.record[self.fields.get("FLD_DOCUMENT")]
+        )
         if numbers:
             self.__set_new_document(self.record[self.fields.get("FLD_DOCUMENT")])
         return
@@ -427,7 +443,10 @@ class Report:
 
     # Сумма документа
     def __record_doc_summa(self):
-        if self.fields.get("FLD_END_DEBET_proc") is None and self.fields.get("FLD_END_CREDIT_proc") is None:
+        if (
+            self.fields.get("FLD_END_DEBET_proc") is None
+            and self.fields.get("FLD_END_CREDIT_proc") is None
+        ):
             return
         numbers = re.search(
             PATT_CURRENCY, self.record[self.fields.get("FLD_END_DEBET_proc")]
@@ -723,7 +742,7 @@ class Report:
             for item in items:
                 for name in item["name"]:
                     if not self.fields.get(name) and re.search(item["pattern"], cell):
-                        self.fields[name]= col + item["off_col"]
+                        self.fields[name] = col + item["off_col"]
             col += 1
         if self.fields.get("FLD_NAME", -1) != -1:
             self.is_find_columns = True
