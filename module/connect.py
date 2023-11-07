@@ -26,8 +26,8 @@ class SQLServer:
             SQL_CONNECT["password"],
             SQL_CONNECT["database"],
         )
-        # con_string = "DRIVER={{ODBC Driver 18 for SQL Server}};SERVER={server};DATABASE={database};UID={user};PWD={password}".format(
-        #     server=SQL_CONNECT["server"],
+        # con_string = "DRIVER={{FreeTDS}};SERVER={server};DATABASE={database};UID={user};PWD={password}".format(
+        #     server="sqlserver",
         #     database=SQL_CONNECT["database"],
         #     user=SQL_CONNECT["user"],
         #     password=SQL_CONNECT["password"],
