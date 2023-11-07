@@ -7,6 +7,19 @@ class SQLServer:
         self.connection = None
         self.set_connection()
 
+    # 1. install 
+    #   sudo apt-get install unixodbc unixodbc-dev freetds-dev tdsodbc
+    # 2. sudo vim /etc/freetds/freetds.conf
+        # [MSSQL]
+        # host = SERVER
+        # port = 1433
+        # tds version = 7.4
+        # client charset = UTF-8
+    # 3. test
+    #   tsql -S MSSQL -U sa -P Raideff86reps$1
+    # https://devicetests.com/connecting-ms-sql-freetds-unixodbc-ubuntu-no-default-driver-error#:~:text=FreeTDS%20is%20a%20set%20of,execute%20statements%20for%20data%20sources
+    # sudo nano /etc/odbcinst.ini
+    
     # install postgresql
     # https://www.postgresql.org/download/linux/ubuntu/
     #
@@ -26,7 +39,7 @@ class SQLServer:
             SQL_CONNECT["password"],
             SQL_CONNECT["database"],
         )
-        # con_string = "DRIVER={{ODBC Driver 18 for SQL Server}};SERVER={server};DATABASE={database};UID={user};PWD={password}".format(
+        # con_string = "DRIVER={{FreeTDS}};SERVER={server};DATABASE={database};UID={user};PWD={password}".format(
         #     server=SQL_CONNECT["server"],
         #     database=SQL_CONNECT["database"],
         #     user=SQL_CONNECT["user"],
