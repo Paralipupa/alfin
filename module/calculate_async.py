@@ -10,28 +10,28 @@ calc_cashe = {}
 
 class Calc:
     def __init__(
-        self, files: list, purpose_date: datetime.date, is_archi: bool = False
+        self, files: list, purpose_date: datetime.date, **options
     ):
         self.main_wa: Report = None
         self.main_res: Report = None
         self.archi_data = None
         self.items: list[Report] = []
-        self.is_archi = is_archi
+        self.options = options
         for file in files:
             if file.find("58рез") != -1 and self.main_res is None:
                 self.main_res = Report(file, purpose_date)
-                self.main_res.is_archi = is_archi
+                self.main_res.options = self.options
             elif file.find("58рез") != -1 and self.main_wa is None:
                 self.main_wa = Report(file, purpose_date)
-                self.main_wa.is_archi = is_archi
+                self.main_wa.options = self.options
             elif file.find("58") != -1 and self.main_res is None:
                 self.main_res = Report(file, purpose_date)
-                self.main_res.is_archi = is_archi
+                self.main_res.options = self.options
             elif file.find("58") != -1 and self.main_wa is None:
                 self.main_wa = Report(file, purpose_date)
-                self.main_wa.is_archi = is_archi
+                self.main_wa.options = self.options
             else:
-                self.items.append(Report(file, purpose_date=purpose_date, is_archi=is_archi))
+                self.items.append(Report(file, purpose_date=purpose_date, **options))
 
     def read(self) -> None:
         pool = Pool()
@@ -60,7 +60,7 @@ class Calc:
         numbers_file = "numbers.dump"
         data_file = "data.dump"
         numbers = []
-        if hasattr(self, "is_archi") and self.is_archi:
+        if self.options.get('option_is_archi'):
             if self.main_wa is not None:
                 numbers = self.main_wa.get_numbers()
             elif self.main_res is not None:

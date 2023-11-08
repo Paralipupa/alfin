@@ -23,18 +23,22 @@ class ExcelExporter:
         self._set_data_xls()
         self.workbook.addSheet("Общий")
         self.write_clients(report)
-        self.workbook.addSheet("Ср.взвешенная")
-        self.write_result_weighted_average(report.wa)
-        self.workbook.addSheet("Категория")
-        self.write_kategoria(report.kategoria)
-        self.workbook.addSheet("Резервы")
-        self.write_reserve(report)
-        self.workbook.addSheet("ОперацииВручную")
-        self.write_payment(report)
-        self.workbook.addSheet("ЦБ")
-        self.write_CBank(report)
-        self.workbook.addSheet("ЦБ2")
-        self.write_CBank2(report)
+        if report.options.get('option_weighted_average'):
+            self.workbook.addSheet("Ср.взвешенная")
+            self.write_result_weighted_average(report.wa)
+        if report.options.get('option_reserve'):
+            self.workbook.addSheet("Категория")
+            self.write_kategoria(report.kategoria)
+            self.workbook.addSheet("Резервы")
+            self.write_reserve(report)
+        if report.options.get('option_handle'):
+            self.workbook.addSheet("ОперацииВручную")
+            self.write_payment(report)
+        if report.options.get('option_cb'):
+            self.workbook.addSheet("ЦБ")
+            self.write_CBank(report)
+            self.workbook.addSheet("ЦБ2")
+            self.write_CBank2(report)
         # self.workbook.addSheet("error")
         # self.write_errors(report.warnings)
         return self.workbook.save()
@@ -96,7 +100,7 @@ class ExcelExporter:
                             "type": "date",
                         },
                     ]
-                    if hasattr(report, "is_arch") and report.is_archi
+                    if report.options.get("option_is_archi")
                     else []
                 )
                 + [
@@ -175,7 +179,7 @@ class ExcelExporter:
                         # {"name": "debet_end_proc", "title": "СальдКон(Д76)", "type": "float"},
                         # {"name": "credit_end_proc", "title": "СальдКон(К76)", "type": "float"},
                     ]
-                    if report.is_archi
+                    if report.options.get("option_is_archi")
                     else []
                 )
             )
@@ -1080,7 +1084,7 @@ class ExcelExporter:
             return
 
         row, col = 0, 0
-        if report.is_archi:
+        if report.options.get("option_is_archi"):
             self.workbook.write(row, 0, "ООО 'МКК Баргузин'")
             self.workbook.write(row, 1, "3827059334")
         else:
@@ -1114,7 +1118,7 @@ class ExcelExporter:
     def write_CBank(self, report: dict):
         def __write_head():
             nonlocal row, col
-            if report.is_archi:
+            if report.options.get("option_is_archi"):
                 self.workbook.write(row, 0, "ООО 'МКК Баргузин'")
                 self.workbook.write(row, 1, "3827059334")
             else:
@@ -1212,7 +1216,7 @@ class ExcelExporter:
     def write_CBank2(self, report: dict):
         def __write_head():
             nonlocal row, col
-            if report.is_archi:
+            if report.options.get("option_is_archi"):
                 self.workbook.write(row, 0, "ООО 'МКК Баргузин'")
                 self.workbook.write(row, 1, "3827059334")
             else:

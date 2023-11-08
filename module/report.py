@@ -25,9 +25,7 @@ PDN_ALL = dict()
 
 
 class Report:
-    def __init__(
-        self, filename: str, purpose_date: datetime.date = None, is_archi: bool = False
-    ):
+    def __init__(self, filename: str, purpose_date: datetime.date = None, **options):
         self.order_type = "Основной договор"
         self.name = str(filename)
         self.current_client_key: str = None
@@ -56,7 +54,7 @@ class Report:
         self.tarifs = [(0, "noname"), (1, "Постоянный"), (2, "Старт")]
         self.discounts = (2, 10, 31, 33, 42, 45, 47, 44, 46, 48, 51, 52)
         self.is_find_columns = False
-        self.is_archi = is_archi
+        self.options = options
 
     def get_parser(self):
         if self.read():
@@ -508,7 +506,7 @@ class Report:
                                 ),
                                 2,
                             )
-                        if self.is_archi and is_recalc_proc is False:
+                        if self.options.get("option_is_archi") and is_recalc_proc is False:
                             if self.__is_find(
                                 PATT_CURRENCY,
                                 "FLD_SUMMA_RESERVE_PROC_PDN",
@@ -753,7 +751,7 @@ class Report:
     def write_to_excel(self) -> str:
         file_name = (
             "report_barguzin"
-            if hasattr(self, "is_archi") and self.is_archi
+            if self.options.get("option_is_archi")
             else "report_irkom"
         )
         exel = ExcelExporter(file_name)
