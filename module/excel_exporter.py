@@ -150,16 +150,16 @@ class ExcelExporter:
                         },
                         # {"name": "summa_reserve_main_58_pdn",
                         #     "title": "резерв по основному долгу (по ставке)", "type": "float"},
-                        {
-                            "name": "summa_reserve_proc_58",
-                            "title": "Дт.63()",
-                            "type": "float",
-                        },
-                        {
-                            "name": "calc_summa_reserve_proc_58",
-                            "title": "",
-                            "type": "float",
-                        },
+                        # {
+                        #     "name": "summa_reserve_proc_58",
+                        #     "title": "Дт.63()",
+                        #     "type": "float",
+                        # },
+                        # {
+                        #     "name": "calc_summa_reserve_proc_58",
+                        #     "title": "",
+                        #     "type": "float",
+                        # },
                         # {"name": "summa_reserve_proc_58_pdn",
                         #     "title": "резерв по процентам (по ставке)", "type": "float"},
                         # {"name": "debet_beg_main", "title": "СальдНач(Д58)", "type": "float"},
@@ -431,6 +431,7 @@ class ExcelExporter:
                     order.link[
                         name["name"] + "_address"
                     ] = f"{self.workbook.sheet.name}!{Utils.rowcol_to_cell(row,name['col'])}"
+                self.workbook.write(row, len(names)+1, client.passport_number)
                 row += 1
 
     # %% Средневзвешенная

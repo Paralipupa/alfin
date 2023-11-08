@@ -138,6 +138,7 @@ class Client:
     orders: List[Order] = field(default_factory=list)
     order_cache: Order = Order()
     documents: List[Document] = field(default_factory=list)
+    passport_number: str = ""
     link: dict = field(default_factory=dict)
 
 

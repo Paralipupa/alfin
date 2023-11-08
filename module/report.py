@@ -839,6 +839,7 @@ class Report:
     def fill_from_archi(self, data: dict):
         if not data:
             return
+        client: Client = None
         for client in self.clients.values():
             order: Order = Order()
             for order in client.orders:
@@ -848,6 +849,15 @@ class Report:
                     order.tarif = Tarif()
                     order.tarif.code = data["order"][order.number][6]
                     order.tarif.name = data["order"][order.number][7]
+                    if (
+                        data["order"][order.number][9]
+                        and data["order"][order.number][10]
+                        and bool(client.passport_number) is False
+                    ):
+                        client.passport_number = "{} {}".format(
+                            data["order"][order.number][9],
+                            data["order"][order.number][10],
+                        )
                 if data["payment"].get(order.number):
                     for payment in data["payment"][order.number]:
                         order.payments_base.append(payment)
