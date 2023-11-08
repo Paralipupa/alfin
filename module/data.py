@@ -123,7 +123,8 @@ class Document:
         result = re.search("(?<=BZ )[а-яА-Яa-zA-Z0-9]+", text)
         if result:
             self.number = result.group(0).strip()
-        result = re.search("(?:[0-9]{2}[:]){2}[0-9]{2}\s.+(?= №)|(?:[0-9]{2}[:]){2}[0-9]{2}\s.+", text)
+        # result = re.search("(?:[0-9]{2}[:]){2}[0-9]{2}\s.+", text)
+        result = re.search("(?:[0-9]{2}[:]){2}[0-9]{2}\s.+(?= от)|(?:[0-9]{2}[:]){2}[0-9]{2}\s.+", text)
         if result:
             self.basis = result.group(0)[8:].strip()
         return
