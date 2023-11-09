@@ -26,7 +26,7 @@ class SQLServer:
         try:
             self.connection = pyodbc.connect(con_string)
         except Exception as ex:
-            logger.error(f"{ex}")
+            logger.error(f"{con_string}\n {ex}")
 
     def get_orders(self, numbers: list = ["0"]):
         mSQL = "SELECT o.ID, o.MAINPERCENT, o.DAYSQUANT, o.NUMBER, cast(c.[CREATIONDATETIME] as DateTime) as CREATEDATE,"

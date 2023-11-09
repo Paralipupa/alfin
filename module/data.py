@@ -149,7 +149,7 @@ class Document:
         result = re.search("(?:[0-9]{2}[:]){2}[0-9]{2}\s.+", text)
         # result = re.search("(?:[0-9]{2}[:]){2}[0-9]{2}\s.+(?= от)|(?:[0-9]{2}[:]){2}[0-9]{2}\s.+", text)
         if result:
-            self.basis = result.group(0)[8:].strip()
+            self.basis = re.sub("(?:[0-9]{2}[:]){2}[0-9]{2}", "", result.group(0)[8:].strip()) 
         return
 
 

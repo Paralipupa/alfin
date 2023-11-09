@@ -1278,7 +1278,17 @@ class ExcelExporter:
                 self.workbook.write(
                     row,
                     col,
-                    "04856",
+                    document.order.payments_1c[0].account_credit
+                    if document.code == "1"
+                    and document.order
+                    and document.order.payments_1c
+                    else (
+                        document.order.payments_1c[0].account_debet
+                        if document.code == "2"
+                        and document.order
+                        and document.order.payments_1c
+                        else ""
+                    ),
                 )
                 col += 1
                 # 4
