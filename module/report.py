@@ -87,6 +87,15 @@ class Report:
         names = re.findall(PATT_NAME, self.record[num])
         if bool(names) is False:
             names = re.findall(PATT_NAME, self.record[num - 1])
+        if bool(names) is False:
+            names = re.findall(PATT_NAME_ALT, self.record[num])
+        if bool(names) is False:
+            names = re.findall(PATT_NAME_ALT, self.record[num - 1])
+        if bool(names) is False:
+            if self.fields.get("FLD_DOCUMENT") is not None and self.__is_find(
+                PATT_PAYMENT_DOCUMENT, "FLD_DOCUMENT"
+            ):
+               names = self.record[num]
         if names:
             self.current_client_key = names[0].replace(" ", "").lower()
             self.clients.setdefault(

@@ -36,12 +36,16 @@ class SQLServer:
         mSQL += " INNER JOIN [CLIENTS] c ON c.[ID]=o.[CLIENTID]"
         mSQL += " INNER JOIN [PERCENT_OPTIONS] p ON o.[POID]=p.[ID]"
         mSQL += " WHERE o.[NUMBER] in ('{}')".format("','".join(numbers))
-        cursor = self.connection.cursor()
-        cursor.execute(mSQL)
-        results = [list(x) for x in cursor.fetchall()]
-        keys = [f"{x[3]}" for x in results]
-        data = dict(zip(keys, results))
-        return data
+        try:
+            cursor = self.connection.cursor()
+            cursor.execute(mSQL)
+            results = [list(x) for x in cursor.fetchall()]
+            keys = [f"{x[3]}" for x in results]
+            data = dict(zip(keys, results))
+            return data
+        except Exception as ex:
+            logger.error(f"{ex}")
+        return []
 
     def get_orders_frost(self, numbers: str = "-1"):
         mSQL = "SELECT o.[ID], o.NUMBER, cast(c.[CREATIONDATETIME] as DateTime) as CREATEDATE "
