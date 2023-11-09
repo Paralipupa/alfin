@@ -85,17 +85,19 @@ class Report:
     def __record_client(self) -> None:
         num = self.fields.get("FLD_NAME")
         names = re.findall(PATT_NAME, self.record[num])
-        if bool(names) is False:
+        if bool(names) is False and num != 0:
             names = re.findall(PATT_NAME, self.record[num - 1])
         if bool(names) is False:
-            names = re.findall(PATT_NAME_ALT, self.record[num])
-        if bool(names) is False:
-            names = re.findall(PATT_NAME_ALT, self.record[num - 1])
+            names = re.findall(PATT_NAME, self.record[num + 1])
         if bool(names) is False:
             if self.fields.get("FLD_DOCUMENT") is not None and self.__is_find(
                 PATT_PAYMENT_DOCUMENT, "FLD_DOCUMENT"
             ):
-               names = self.record[num]
+                names = [
+                    self.record[num]
+                    if self.record[num].find("<") == -1
+                    else (self.record[num - 1] if num != 0 else self.record[num + 1])
+                ]
         if names:
             self.current_client_key = names[0].replace(" ", "").lower()
             self.clients.setdefault(
@@ -515,7 +517,10 @@ class Report:
                                 ),
                                 2,
                             )
-                        if self.options.get("option_is_archi") and is_recalc_proc is False:
+                        if (
+                            self.options.get("option_is_archi")
+                            and is_recalc_proc is False
+                        ):
                             if self.__is_find(
                                 PATT_CURRENCY,
                                 "FLD_SUMMA_RESERVE_PROC_PDN",
@@ -727,7 +732,7 @@ class Report:
         self, date_payment: str, fld_name: str, p_type: str, p_category: str
     ):
         if self.__is_find(PATT_CURRENCY, f"{fld_name}_{self.suf}"):
-            payment : Payment = self.__get_current_payment()
+            payment: Payment = self.__get_current_payment()
             payment.summa = Decimal(
                 self.record[self.fields.get(f"{fld_name}_{self.suf}")]
             )
@@ -736,13 +741,17 @@ class Report:
             payment.type = p_type
             payment.category = p_category
             if self.fields.get(f"FLD_BEG_DEBET_ACCOUNT_{self.suf}") is not None:
-                payment.account_debet = self.record[self.fields.get(f"FLD_BEG_DEBET_ACCOUNT_{self.suf}")]
+                payment.account_debet = self.record[
+                    self.fields.get(f"FLD_BEG_DEBET_ACCOUNT_{self.suf}")
+                ]
             if self.fields.get(f"FLD_BEG_CREDIT_ACCOUNT_{self.suf}") is not None:
-                payment.account_credit = self.record[self.fields.get(f"FLD_BEG_CREDIT_ACCOUNT_{self.suf}")]
+                payment.account_credit = self.record[
+                    self.fields.get(f"FLD_BEG_CREDIT_ACCOUNT_{self.suf}")
+                ]
             numbers = re.search(
                 PATT_PAYMENT_DOCUMENT, self.record[self.fields.get("FLD_DOCUMENT")]
             )
-            
+
             self.__push_current_payment()
 
     # Устанавливаем номера колонок
@@ -767,9 +776,7 @@ class Report:
 
     def write_to_excel(self) -> str:
         file_name = (
-            "report_barguzin"
-            if self.options.get("option_is_archi")
-            else "report_irkom"
+            "report_barguzin" if self.options.get("option_is_archi") else "report_irkom"
         )
         exel = ExcelExporter(file_name)
         return exel.write(self)
