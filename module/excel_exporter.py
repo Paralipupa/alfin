@@ -8,6 +8,7 @@ from module.data import *
 
 logger = logging.getLogger(__name__)
 
+
 class ExcelExporter:
     def __init__(self, file_name: str, page_name: str = None):
         self.name = file_name
@@ -23,18 +24,18 @@ class ExcelExporter:
         self._set_data_xls()
         self.workbook.addSheet("Общий")
         self.write_clients(report)
-        if report.options.get('option_weighted_average'):
+        if report.options.get("option_weighted_average"):
             self.workbook.addSheet("Ср.взвешенная")
             self.write_result_weighted_average(report.wa)
-        if report.options.get('option_reserve'):
+        if report.options.get("option_reserve"):
             self.workbook.addSheet("Категория")
             self.write_kategoria(report.kategoria)
             self.workbook.addSheet("Резервы")
             self.write_reserve(report)
-        if report.options.get('option_handle'):
+        if report.options.get("option_handle"):
             self.workbook.addSheet("ОперацииВручную")
             self.write_payment(report)
-        if report.options.get('option_cb'):
+        if report.options.get("option_cb"):
             self.workbook.addSheet("ЦБ")
             self.write_CBank(report)
             self.workbook.addSheet("ЦБ2")
@@ -435,7 +436,7 @@ class ExcelExporter:
                     order.link[
                         name["name"] + "_address"
                     ] = f"{self.workbook.sheet.name}!{Utils.rowcol_to_cell(row,name['col'])}"
-                self.workbook.write(row, len(names)+1, client.passport_number)
+                self.workbook.write(row, len(names) + 1, client.passport_number)
                 row += 1
 
     # %% Средневзвешенная
@@ -1147,10 +1148,7 @@ class ExcelExporter:
             if document.summa != 0:
                 # 0
                 self.workbook.write(
-                    row,
-                    col,
-                    document.date_period,
-                    num_format_str=r"dd/mm/yyyy"
+                    row, col, document.date_period, num_format_str=r"dd/mm/yyyy"
                 )
                 col += 1
 
@@ -1181,14 +1179,24 @@ class ExcelExporter:
                 self.workbook.write(
                     row,
                     col,
-                    '',
+                    document.order.payments_1c[0].get_account(document.order.payments_1c[0].account_credit) 
+                    if document.code == "1"
+                    and document.order
+                    and document.order.payments_1c
+                    else (
+                        document.order.payments_1c[0].get_account(document.order.payments_1c[0].account_debet) 
+                        if document.code == "2"
+                        and document.order
+                        and document.order.payments_1c
+                        else ""
+                    ),
                 )
                 col += 1
                 # 4
                 self.workbook.write(
                     row,
                     col,
-                    document.summa if document.code == '1' else None,
+                    document.summa if document.code == "1" else None,
                     num_format_str=num_format,
                 )
                 col += 1
@@ -1197,7 +1205,7 @@ class ExcelExporter:
                 self.workbook.write(
                     row,
                     col,
-                    document.summa if document.code == '2' else None,
+                    document.summa if document.code == "2" else None,
                     num_format_str=num_format,
                 )
 
@@ -1212,7 +1220,6 @@ class ExcelExporter:
             client = document.client
             __write(document)
 
-                        
     def write_CBank2(self, report: dict):
         def __write_head():
             nonlocal row, col
@@ -1248,10 +1255,7 @@ class ExcelExporter:
             if document.summa != 0:
                 # 0
                 self.workbook.write(
-                    row,
-                    col,
-                    document.date_period,
-                    num_format_str=r"dd/mm/yyyy"
+                    row, col, document.date_period, num_format_str=r"dd/mm/yyyy"
                 )
                 col += 1
 
@@ -1295,7 +1299,17 @@ class ExcelExporter:
                 self.workbook.write(
                     row,
                     col,
-                    client.account,
+                    document.order.payments_1c[0].get_account(document.order.payments_1c[0].account_credit) 
+                    if document.code == "1"
+                    and document.order
+                    and document.order.payments_1c
+                    else (
+                        document.order.payments_1c[0].get_account(document.order.payments_1c[0].account_debet) 
+                        if document.code == "2"
+                        and document.order
+                        and document.order.payments_1c
+                        else ""
+                    ),
                 )
                 col += 1
                 # 7
@@ -1313,11 +1327,7 @@ class ExcelExporter:
                 )
                 col += 1
                 # 9
-                self.workbook.write(
-                    row,
-                    col,
-                    document.number
-                )
+                self.workbook.write(row, col, document.number)
                 row += 1
             return
 
@@ -1351,6 +1361,3 @@ class ExcelExporter:
         for document in report.documents:
             client = document.client
             __write(document)
-
-
-

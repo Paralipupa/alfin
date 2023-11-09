@@ -1,36 +1,13 @@
 import pyodbc
 from module.settings import *
 
+logger = logging.getLogger(__name__)
 
 class SQLServer:
     def __init__(self):
         self.connection = None
         self.set_connection()
 
-    # 1. install
-    #   sudo apt-get install unixodbc unixodbc-dev freetds-dev tdsodbc
-    # 2. sudo vim /etc/freetds/freetds.conf
-    # [MSSQL]
-    # host = SERVER
-    # port = 1433
-    # tds version = 7.4
-    # client charset = UTF-8
-    # 3. test
-    #   tsql -S MSSQL -U sa -P Raideff86reps$1
-    # https://devicetests.com/connecting-ms-sql-freetds-unixodbc-ubuntu-no-default-driver-error#:~:text=FreeTDS%20is%20a%20set%20of,execute%20statements%20for%20data%20sources
-    # sudo nano /etc/odbcinst.ini
-
-    # install postgresql
-    # https://www.postgresql.org/download/linux/ubuntu/
-    #
-    # /etc/odbc.ini:
-    # [sqlserverdatasource]
-    # Driver = FreeTDS
-    # Description = ODBC connection via FreeTDS
-    # Trace = No
-    # Servername = sqlserver
-    # Database = ArchiCreditW
-    # TDS_Version = 7.4
     def set_connection(self):
         con_string = "DSN=%s;PORT=%s;UID=%s;PWD=%s;DATABASE=%s;" % (
             SQL_CONNECT["dsn"],
@@ -49,7 +26,7 @@ class SQLServer:
         try:
             self.connection = pyodbc.connect(con_string)
         except Exception as ex:
-            pass
+            logger.error(f"{ex}")
 
     def get_orders(self, numbers: list = ["0"]):
         mSQL = "SELECT o.ID, o.MAINPERCENT, o.DAYSQUANT, o.NUMBER, cast(c.[CREATIONDATETIME] as DateTime) as CREATEDATE,"

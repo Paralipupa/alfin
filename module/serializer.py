@@ -4,6 +4,7 @@ from module.settings import PATH_DUMP
 
 
 def serializer(score: list, file_name: str) -> None:
+    os.makedirs(PATH_DUMP, exist_ok=True)
     with open(os.path.join(PATH_DUMP, file_name), "wb") as fp:
         pickle.dump(score, fp)
 

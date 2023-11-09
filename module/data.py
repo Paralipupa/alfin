@@ -33,7 +33,30 @@ class Payment(HashMixin):
     type: str = None  # Сальдо на начала, Обороты, Сальдо на конец
     category: str = None  # Debet,  Credit
     date: date = None
+    account_debet: str = "" #  Счет
+    account_credit: str = "" #  Счет
     summa: Decimal = 0
+    
+    def get_account(self, a:str)->str:
+        if a == '66.03':
+            return '42316'
+        if a == '58.03':
+            return '48801'
+        if a == '76.06':
+            return '48809'
+        if a == '76.09':
+            return '48804'
+        if a == '71.01':
+            return '60308'
+        if a == '94':
+            return '60323'
+        if a == '98.02':
+            return '10614'
+        if a == '75.01':
+            return '10209'
+        if a == '70':
+            return '60305'
+        return a
 
 
 @dataclass

@@ -225,7 +225,7 @@ class Report:
                 self.__add_payment(date_payment, "FLD_BEG_DEBET", "B", "D")
             if self.__is_find(PATT_CURRENCY, f"FLD_BEG_CREDIT_{self.suf}"):
                 date_payment = self.record[self.fields["FLD_DOC_PERIOD"]]
-                self.__add_payment(date_payment, "FLD_BEG_CREDIT_", "O", "C")
+                self.__add_payment(date_payment, "FLD_BEG_CREDIT", "O", "C")
 
     def __record_order_date(self):
         order = self.__get_current_order()
@@ -718,7 +718,7 @@ class Report:
         self, date_payment: str, fld_name: str, p_type: str, p_category: str
     ):
         if self.__is_find(PATT_CURRENCY, f"{fld_name}_{self.suf}"):
-            payment = self.__get_current_payment()
+            payment : Payment = self.__get_current_payment()
             payment.summa = Decimal(
                 self.record[self.fields.get(f"{fld_name}_{self.suf}")]
             )
@@ -726,6 +726,14 @@ class Report:
             payment.kind = self.suf
             payment.type = p_type
             payment.category = p_category
+            if self.fields.get(f"FLD_BEG_DEBET_ACCOUNT_{self.suf}") is not None:
+                payment.account_debet = self.record[self.fields.get(f"FLD_BEG_DEBET_ACCOUNT_{self.suf}")]
+            if self.fields.get(f"FLD_BEG_CREDIT_ACCOUNT_{self.suf}") is not None:
+                payment.account_credit = self.record[self.fields.get(f"FLD_BEG_CREDIT_ACCOUNT_{self.suf}")]
+            numbers = re.search(
+                PATT_PAYMENT_DOCUMENT, self.record[self.fields.get("FLD_DOCUMENT")]
+            )
+            
             self.__push_current_payment()
 
     # Устанавливаем номера колонок

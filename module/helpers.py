@@ -223,6 +223,11 @@ def get_columns_head(suf: str):
             "off_col": 0,
         },
         {
+            "name": [f"FLD_BEG_DEBET_ACCOUNT_{suf}"],
+            "pattern": "^Дебет$",
+            "off_col": 0,
+        },
+        {
             "name": [f"FLD_BEG_DEBET_{suf}"],
             "pattern": "^Дебет$",
             "off_col": 1,
@@ -236,6 +241,11 @@ def get_columns_head(suf: str):
             "name": [f"FLD_END_CREDIT_{suf}"],
             "pattern": "^Сальдо на конец периода$",
             "off_col": 1,
+        },
+        {
+            "name": [f"FLD_BEG_CREDIT_ACCOUNT_{suf}"],
+            "pattern": "^Кредит$",
+            "off_col": 0,
         },
         {
             "name": [f"FLD_BEG_CREDIT_{suf}"],
