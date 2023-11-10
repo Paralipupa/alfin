@@ -85,24 +85,25 @@ class Report:
     def __record_client(self) -> None:
         num = self.fields.get("FLD_NAME")
         names = re.findall(PATT_NAME, self.record[num])
-        if bool(names) is False and num != 0:
-            names = re.findall(PATT_NAME, self.record[num - 1])
         if bool(names) is False:
             names = re.findall(PATT_NAME, self.record[num + 1])
         if bool(names) is False:
             if self.fields.get("FLD_DOCUMENT") is not None and self.__is_find(
-                PATT_PAYMENT_DOCUMENT, "FLD_DOCUMENT"
+                PATT_TIME_IN_DOCUMENT, "FLD_DOCUMENT"
             ):
-                names = [
-                    self.record[num]
-                    if self.record[num].find("<") == -1
-                    else (self.record[num - 1] if num != 0 else self.record[num + 1])
-                ]
+                if self.fields.get("FLD_BEG_DEBET_proc") and bool(
+                    self.record[self.fields.get("FLD_BEG_DEBET_proc")].strip()
+                ):
+                    names = [self.record[num + 1]]
+                elif self.fields.get("FLD_BEG_CREDIT_proc") and bool(
+                    self.record[self.fields.get("FLD_BEG_CREDIT_proc")].strip()
+                ):
+                    names = [self.record[num]]
         if names:
-            self.current_client_key = names[0].replace(" ", "").lower()
+            self.current_client_key = re.sub("<...>|\s|\n", "", names[0].lower())
             self.clients.setdefault(
                 self.current_client_key,
-                Client(name=names[0]),
+                Client(name=re.sub("<...>", "", names[0])),
             )
             self.__set_new_order()
             self.__record_order_summa()
@@ -168,10 +169,21 @@ class Report:
             client.order_cache.client = client
             self.__clean_payment()
 
-    def __set_new_document(self, text: str) -> None:
+    def __set_new_document(self) -> None:
         client: Client = self.__get_current_client()
         if client:
-            document = Document(text)
+            text = self.record[self.fields.get("FLD_DOCUMENT")]
+            debet = (
+                self.record[self.fields.get("FLD_BEG_DEBET_proc")].strip()
+                if self.fields.get("FLD_BEG_DEBET_proc")
+                else ""
+            )
+            credit = (
+                self.record[self.fields.get("FLD_BEG_CREDIT_proc")].strip()
+                if self.fields.get("FLD_BEG_CREDIT_proc")
+                else ""
+            )
+            document = Document(text, debet=debet, credit=credit)
             document.order = self.__get_current_order()
             document.client = client
             client.documents.append(document)
@@ -229,7 +241,7 @@ class Report:
             if self.__is_find(PATT_CURRENCY, f"FLD_END_DEBET_{self.suf}"):
                 self.__add_payment(date_payment, "FLD_END_DEBET", "E", "D")
         if self.fields.get("FLD_DOCUMENT") is not None and self.__is_find(
-            PATT_PAYMENT_DOCUMENT, "FLD_DOCUMENT"
+            PATT_TIME_IN_DOCUMENT, "FLD_DOCUMENT"
         ):
             if self.__is_find(PATT_CURRENCY, f"FLD_BEG_DEBET_{self.suf}"):
                 date_payment = self.record[self.fields["FLD_DOC_PERIOD"]]
@@ -433,10 +445,10 @@ class Report:
         if self.fields.get("FLD_DOCUMENT") is None:
             return
         numbers = re.search(
-            PATT_PAYMENT_DOCUMENT, self.record[self.fields.get("FLD_DOCUMENT")]
+            PATT_TIME_IN_DOCUMENT, self.record[self.fields.get("FLD_DOCUMENT")]
         )
         if numbers:
-            self.__set_new_document(self.record[self.fields.get("FLD_DOCUMENT")])
+            self.__set_new_document()
         return
 
     # Период

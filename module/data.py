@@ -1,8 +1,9 @@
-import hashlib,re
+import hashlib, re
 from typing import List
 from dataclasses import dataclass, field
 from datetime import datetime, date
 from decimal import Decimal
+from .settings import PATT_TIME_IN_DOCUMENT
 
 
 def _hashit(s):
@@ -33,29 +34,29 @@ class Payment(HashMixin):
     type: str = None  # Сальдо на начала, Обороты, Сальдо на конец
     category: str = None  # Debet,  Credit
     date: date = None
-    account_debet: str = "" #  Счет
-    account_credit: str = "" #  Счет
+    account_debet: str = ""  #  Счет
+    account_credit: str = ""  #  Счет
     summa: Decimal = 0
-    
-    def get_account(self, a:str)->str:
-        if a == '66.03':
-            return '42316'
-        if a == '58.03':
-            return '48801'
-        if a == '76.06':
-            return '48809'
-        if a == '76.09':
-            return '48809'
-        if a == '71.01':
-            return '60308'
-        if a == '94':
-            return '60323'
-        if a == '98.02':
-            return '10614'
-        if a == '75.01':
-            return '60330'
-        if a == '70':
-            return '60305'
+
+    def get_account(self, a: str) -> str:
+        if a == "66.03":
+            return "42316"
+        if a == "58.03":
+            return "48801"
+        if a == "76.06":
+            return "48809"
+        if a == "76.09":
+            return "48809"
+        if a == "71.01":
+            return "60308"
+        if a == "94":
+            return "60323"
+        if a == "98.02":
+            return "10614"
+        if a == "75.01":
+            return "60330"
+        if a == "70":
+            return "60305"
         return a
 
 
@@ -116,12 +117,13 @@ class Order:
 
     def get_date(self):
         try:
-            date_order_str = "{}.{}.{}".format(self.number[-6:-2],self.number[-8:-6],self.number[-10:-8])
-            date_order = datetime.strptime(date_order_str,"%Y.%m.%d")
+            date_order_str = "{}.{}.{}".format(
+                self.number[-6:-2], self.number[-8:-6], self.number[-10:-8]
+            )
+            date_order = datetime.strptime(date_order_str, "%Y.%m.%d")
             return date_order
         except:
             return None
-
 
 
 @dataclass
@@ -136,22 +138,22 @@ class Document:
     client = None
     is_print: bool = False
 
-    def __init__(self, text: str):
+    def __init__(self, text: str, debet: str = "", credit: str = ""):
         self.text = text
         self.is_print = False
-        if text.find("Приходный") != -1:
+        if bool(debet):
             self.code = "1"
-        elif text.find("Расходный") != -1:
+        elif bool(credit):
             self.code = "2"
-        result = re.search("(?<=BZ )[а-яА-Яa-zA-Z0-9]+", text)
+        result = re.search("(?<=BZ )[а-яА-Яa-zA-Z0-9]+|(?<=BZ)[а-яА-Яa-zA-Z0-9]+", text)
         if result:
             self.number = result.group(0).strip()
-        result = re.search("(?:[0-9]{1,2}[:]){2}[0-9]{2}\s.+", text)
-        # result = re.search("(?:[0-9]{2}[:]){2}[0-9]{2}\s.+(?= от)|(?:[0-9]{2}[:]){2}[0-9]{2}\s.+", text)
+        result = re.search(f"{PATT_TIME_IN_DOCUMENT}\s.+", text)
         if result:
-            self.basis = re.sub("(?:[0-9]{2}[:]){2}[0-9]{2}", "", result.group(0)[8:].strip()) 
+            self.basis = re.sub(
+                f"{PATT_TIME_IN_DOCUMENT}|<...>", "", result.group(0).strip()
+            )
         return
-
 
 
 @dataclass

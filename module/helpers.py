@@ -189,7 +189,7 @@ def get_attributes(obj) -> list:
 
 def get_columns_head(suf: str):
     return [
-        {"name": ["FLD_NAME"], "pattern": f"{PATT_NAME}|^Контрагенты$", "off_col": 0},
+        {"name": ["FLD_NAME"], "pattern": f"^Аналитика Дт$|{PATT_NAME}|^Контрагенты$", "off_col": 0},
         {"name": ["FLD_NUMBER", "FLD_DATE"], "pattern": f"{PATT_DOG_NUMBER}|^Контрагенты$", "off_col": 0},
         {"name": ["FLD_DATE"], "pattern": "^Дата выдачи", "off_col": 0},
         {
