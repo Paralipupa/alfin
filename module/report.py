@@ -748,9 +748,6 @@ class Report:
                 payment.account_credit = self.record[
                     self.fields.get(f"FLD_BEG_CREDIT_ACCOUNT_{self.suf}")
                 ]
-            numbers = re.search(
-                PATT_PAYMENT_DOCUMENT, self.record[self.fields.get("FLD_DOCUMENT")]
-            )
 
             self.__push_current_payment()
 
