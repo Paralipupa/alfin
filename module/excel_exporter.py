@@ -1179,12 +1179,16 @@ class ExcelExporter:
                 self.workbook.write(
                     row,
                     col,
-                    document.order.payments_1c[0].get_account(document.order.payments_1c[0].account_credit) 
+                    document.order.payments_1c[0].get_account(
+                        document.order.payments_1c[0].account_credit
+                    )
                     if document.code == "1"
                     and document.order
                     and document.order.payments_1c
                     else (
-                        document.order.payments_1c[0].get_account(document.order.payments_1c[0].account_debet) 
+                        document.order.payments_1c[0].get_account(
+                            document.order.payments_1c[0].account_debet
+                        )
                         if document.code == "2"
                         and document.order
                         and document.order.payments_1c
@@ -1309,12 +1313,16 @@ class ExcelExporter:
                 self.workbook.write(
                     row,
                     col,
-                    document.order.payments_1c[0].get_account(document.order.payments_1c[0].account_credit) 
+                    document.order.payments_1c[0].get_account(
+                        document.order.payments_1c[0].account_credit
+                    )
                     if document.code == "1"
                     and document.order
                     and document.order.payments_1c
                     else (
-                        document.order.payments_1c[0].get_account(document.order.payments_1c[0].account_debet) 
+                        document.order.payments_1c[0].get_account(
+                            document.order.payments_1c[0].account_debet
+                        )
                         if document.code == "2"
                         and document.order
                         and document.order.payments_1c
@@ -1344,30 +1352,21 @@ class ExcelExporter:
         row, col = 0, 0
         __write_head()
         row += 1
-        num_format = "#,##0.00"
-        # client: Client = None
-        # sort_clients = sorted(report.clients.values(), key=lambda x: x.name)
-        # for client in sort_clients:
-        #     if client.documents:
-        #         document: Document = None
-        #         sort_documents = sorted(client.documents, key=lambda x: (x.date_period, int(x.code),))
-        #         for document in sort_documents:
-        #             __write(document)
+        client: Client = None
+        sort_clients = sorted(report.clients.values(), key=lambda x: x.name)
+        for client in sort_clients:
+            if client.documents:
+                document: Document = None
+                sort_documents = sorted(
+                    client.documents,
+                    key=lambda x: (
+                        x.date_period,
+                        int(x.code),
+                    ),
+                )
+                for document in sort_documents:
+                    __write(document)
 
-        # order : Order = None
-        # for order in report.documents:
-        #     if order.client.documents:
-        #         client : Client = order.client
-        #         document: Document = None
-        #         sort_documents = sorted([x for x in client.documents if x.is_print is False], key=lambda x: (x.date_period, int(x.code),))
-        #         date_period = None
-        #         for document in sort_documents:
-        #             if date_period is not None and date_period != document.date_period:
-        #                 break
-        #             __write(document)
-        #             document.is_print = True
-        #             date_period = document.date_period
-
-        for document in report.documents:
-            client = document.client
-            __write(document)
+        # for document in report.documents:
+        #     client = document.client
+        #     __write(document)
