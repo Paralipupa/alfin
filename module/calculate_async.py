@@ -1,3 +1,4 @@
+import logging
 from multiprocessing import Pool, Manager
 from datetime import datetime
 from module.report import Report
@@ -6,12 +7,11 @@ from module.helpers import timing
 from module.serializer import serializer, deserializer
 
 calc_cashe = {}
+logger = logging.getLogger(__name__)
 
 
 class Calc:
-    def __init__(
-        self, files: list, purpose_date: datetime.date, **options
-    ):
+    def __init__(self, files: list, purpose_date: datetime.date, **options):
         self.main_wa: Report = None
         self.main_res: Report = None
         self.archi_data = None
@@ -57,10 +57,12 @@ class Calc:
             self.main_res.fill_from_archi(self.archi_data)
 
     def read_from_archi(self):
+        logger.info("Чтение данных из MSSQL")
+
         numbers_file = "numbers.dump"
         data_file = "data.dump"
         numbers = []
-        if self.options.get('option_is_archi'):
+        if self.options.get("option_is_archi"):
             if self.main_wa is not None:
                 numbers = self.main_wa.get_numbers()
             elif self.main_res is not None:
@@ -108,6 +110,8 @@ class Calc:
     @timing(start_message="Начало")
     def run(self) -> str:
         self.read()
+        logger.info("Формирование отчетов")
         self.report_kategoria()
         self.report_weighted_average()
+        logger.info("Запись в MS Excel")
         return self.write()
