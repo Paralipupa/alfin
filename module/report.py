@@ -101,9 +101,12 @@ class Report:
                     names = [self.record[num]]
         if names:
             self.current_client_key = re.sub("<...>|\s|\n", "", names[0].lower())
+            pattern = f".+(?=: начислено)|.+"
+            name = re.sub(f"<...>|{PATT_TIME_IN_DOCUMENT}", "", names[0])
+            name = re.search(pattern, name).group(0)
             self.clients.setdefault(
                 self.current_client_key,
-                Client(name=re.sub("<...>", "", names[0])),
+                Client(name=name),
             )
             self.__set_new_order()
             self.__record_order_summa()

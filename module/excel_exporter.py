@@ -30,16 +30,20 @@ class ExcelExporter:
 
     def write(self, report) -> str:
         self._set_data_xls()
-        write_clients(self, report)
+        if report.options.get("option_clients"):
+            write_clients(self, report)
         if report.options.get("option_weighted_average"):
             write_result_weighted_average(self, report.wa)
-        if report.options.get("option_reserve"):
+        if report.options.get("option_kategory"):
             write_kategoria(self, report.kategoria)
+        if report.options.get("option_reserve"):
             write_reserve(self, report)
         if report.options.get("option_handle"):
             write_payment(self, report)
-        if report.options.get("option_cb"):
+        if report.options.get("option_cb_common"):
             write_CBank_common(self, report)
+        if report.options.get("option_cb_kassa"):
             write_CBank_kassa(self, report)
+        if report.options.get("option_cb_rs"):
             write_CBank_rs(self, report)
         return self.workbook.save()

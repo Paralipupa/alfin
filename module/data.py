@@ -148,7 +148,10 @@ class Document:
         result = re.search("(?<=BZ )[а-яА-Яa-zA-Z0-9]+|(?<=BZ)[а-яА-Яa-zA-Z0-9]+", text)
         if result:
             self.number = result.group(0).strip()
-        result = re.search(f"{PATT_TIME_IN_DOCUMENT}\s.+", text)
+        pattern = f"{PATT_TIME_IN_DOCUMENT}\s.+(?=адрес)"
+        pattern = f"|{PATT_TIME_IN_DOCUMENT}\s.+(?=\()"
+        pattern = f"|{PATT_TIME_IN_DOCUMENT}\s.+"
+        result = re.search(pattern, text)
         if result:
             self.basis = re.sub(
                 f"{PATT_TIME_IN_DOCUMENT}|<...>", "", result.group(0).strip()
