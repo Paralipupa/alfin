@@ -57,6 +57,25 @@ class Payment(HashMixin):
             return "60330"
         if a == "70":
             return "60305"
+        if a == '69.01':
+            return '60335'
+        if a == '91.02':
+            return '71702'
+        if a == '68.04.1':
+            return '60328'
+        if a == '76.05':
+            return '48806'
+        if a == '60.02':
+            return '60312'
+        if a == '60.01':
+            return '60311'
+        if a == '68.01.1':
+            return '60301'
+        if a == '69.11':
+            return '60335'
+        if a == '69.09':
+            return '60335'
+        
         return a
 
 

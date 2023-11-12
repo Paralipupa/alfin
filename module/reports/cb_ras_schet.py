@@ -3,7 +3,7 @@ from module.data import *
 
 def write_CBank_rs(self, report: dict):
     def __write_head():
-        nonlocal row, col
+        nonlocal row
         if report.options.get("option_is_archi"):
             self.workbook.write(row, 0, "ООО 'МКК Баргузин'")
             self.workbook.write(row, 1, "3827059334")
@@ -11,17 +11,27 @@ def write_CBank_rs(self, report: dict):
             self.workbook.write(row, 0, "МКК 'Ирком'")
             self.workbook.write(row, 1, "3808200398")
         row += 1
-        self.workbook.write(row, 0, "Дата")
-        self.workbook.write(row, 1, "Сумма")
-        self.workbook.write(row, 2, "Валюта")
-        self.workbook.write(row, 3, "Наименование контрагента")
-        self.workbook.write(row, 4, "Номер счета")
-        self.workbook.write(row, 5, "ИНН")
-        self.workbook.write(row, 6, "БИК")
-        self.workbook.write(row, 7, "Содержание операции")
-        self.workbook.write(row, 8, "Приход")
-        self.workbook.write(row, 9, "Расход")
-        self.workbook.write(row, 10, "Счет корр")
+        col = 0
+        self.workbook.write(row, col, "Дата")
+        col += 1
+        self.workbook.write(row, col, "Приход")
+        col += 1
+        self.workbook.write(row, col, "Расход")
+        col += 1
+        self.workbook.write(row, col, "Валюта")
+        col += 1
+        self.workbook.write(row, col, "Наименование контрагента")
+        col += 1
+        self.workbook.write(row, col, "Номер счета")
+        col += 1
+        self.workbook.write(row, col, "ИНН")
+        col += 1
+        self.workbook.write(row, col, "БИК")
+        col += 1
+        self.workbook.write(row, col, "Содержание операции")
+        col += 1
+        self.workbook.write(row, col, "Счет корр")
+        col += 1
         return
 
     def __write(document: Document):
@@ -35,11 +45,21 @@ def write_CBank_rs(self, report: dict):
             )
             col += 1
 
-            # 1
+            # 8
             self.workbook.write(
                 row,
                 col,
-                document.summa,
+                document.summa if document.code == "1" else None,
+                num_format_str=num_format,
+            )
+            col += 1
+
+            # 9
+            self.workbook.write(
+                row,
+                col,
+                document.summa if document.code == "2" else None,
+                num_format_str=num_format,
             )
             col += 1
 
@@ -91,23 +111,6 @@ def write_CBank_rs(self, report: dict):
             )
             col += 1
 
-            # 8
-            self.workbook.write(
-                row,
-                col,
-                document.summa if document.code == "1" else None,
-                num_format_str=num_format,
-            )
-            col += 1
-
-            # 9
-            self.workbook.write(
-                row,
-                col,
-                document.summa if document.code == "2" else None,
-                num_format_str=num_format,
-            )
-            col += 1
 
             # 10
             self.workbook.write(
