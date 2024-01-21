@@ -49,8 +49,10 @@ class ExcelExporter:
         if report.options.get("option_reserve"):
             write_reserve(self, report)
         if report.options.get("option_handle"):
-            # write_payment_reserve(self, report)
-            write_payment_kassa(self, report)
+            if report.options.get("option_reserve"):
+                write_payment_reserve(self, report)
+            else:
+                write_payment_kassa(self, report)
         if report.options.get("option_cb_common"):
             write_CBank_common(self, report)
         if report.options.get("option_cb_kassa"):
