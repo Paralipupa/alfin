@@ -2,7 +2,30 @@ from xlwt import Utils, Formula
 
 from module.data import *
 
-def write_payment(self, report: dict):
+def write_payment_reserve(self, report: dict):
+    
+    def __write_handle():
+        nonlocal row
+        if report.options.get("option_is_archi"):
+            self.workbook.write(row, 0, "ООО 'МКК Баргузин'")
+            self.workbook.write(row, 1, "3827059334")
+        else:
+            self.workbook.write(row, 0, "МКК 'Ирком'")
+            self.workbook.write(row, 1, "3808200398")
+        row += 1
+        self.workbook.write(row, 0, "ФИО")
+        self.workbook.write(row, 1, "Договор")
+        self.workbook.write(row, 2, "в 1С")
+        self.workbook.write(row, 3, "Расчет")
+        self.workbook.write(row, 4, "Сумма начисления")
+        self.workbook.write(row, 5, "Дата начисления")
+        self.workbook.write(row, 6, "Дебет")
+        self.workbook.write(row, 7, "Кредит")
+        self.workbook.write(row, 8, "Субконто")
+        self.workbook.write(row, 9, "Назначение")
+        self.workbook.write(row, 10, "Содержание")
+        self.workbook.write(row, 11, "Процент")
+    
     def __write_down(sub: str):
         nonlocal client, order, row, col, num_format
         pattern_style_negative = (
@@ -233,25 +256,7 @@ def write_payment(self, report: dict):
     
     self.workbook.addSheet("ОперацииВручную")
     row, col = 0, 0
-    if report.options.get("option_is_archi"):
-        self.workbook.write(row, 0, "ООО 'МКК Баргузин'")
-        self.workbook.write(row, 1, "3827059334")
-    else:
-        self.workbook.write(row, 0, "МКК 'Ирком'")
-        self.workbook.write(row, 1, "3808200398")
-    row += 1
-    self.workbook.write(row, 0, "ФИО")
-    self.workbook.write(row, 1, "Договор")
-    self.workbook.write(row, 2, "в 1С")
-    self.workbook.write(row, 3, "Расчет")
-    self.workbook.write(row, 4, "Сумма начисления")
-    self.workbook.write(row, 5, "Дата начисления")
-    self.workbook.write(row, 6, "Дебет")
-    self.workbook.write(row, 7, "Кредит")
-    self.workbook.write(row, 8, "Субконто")
-    self.workbook.write(row, 9, "Назначение")
-    self.workbook.write(row, 10, "Содержание")
-    self.workbook.write(row, 11, "Процент")
+    __write_handle()
     row += 1
     num_format = "#,##0.00"
     for client in report.clients.values():

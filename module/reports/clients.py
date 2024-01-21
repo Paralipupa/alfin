@@ -37,7 +37,7 @@ def write_clients(self, report) -> bool:
                 },
                 {"name": "credit_end_main", "title": "Кт.59", "type": "float"},
                 {"name": "credit_end_proc", "title": "Кт.63", "type": "float"},
-                # {"name": "rate", "title": "Ставка", "type": "float"},
+                {"name": "rate", "title": "Ставка", "type": "float"},
                 {"name": "tarif", "title": "Тариф", "type": ""},
                 # {"name": "count_days", "title": "Срок", "type": "float"},
                 {"name": "pdn", "title": "ПДН", "type": "float"},

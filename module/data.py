@@ -37,6 +37,10 @@ class Payment(HashMixin):
     account_debet: str = ""  #  Счет
     account_credit: str = ""  #  Счет
     summa: Decimal = 0
+    is_check: bool = False
+    
+    def __init__(self):
+        self.is_check = False
 
     def get_account(self, a: str) -> str:
         if a == "66.03":

@@ -61,7 +61,8 @@ class SQLServer:
         return data
 
     def get_orders_payments(self, numbers: str = "-1"):
-        mSQL = "SELECT o.[ID], o.[NUMBER], c.[COSTALL], cast(c.[CREATIONDATETIME] as DateTime) as CREATEDATE,c.[ENABLED], c.[KIND] "
+        mSQL = "SELECT o.[ID], o.[NUMBER] AS 'NUMBER_ORDER', c.[COSTALL], cast(c.[CREATIONDATETIME] as DateTime) as CREATEDATE,"
+        mSQL +="c.[ENABLED], c.[KIND],c.[NUMBER] AS 'NUMBER_PAYMENT'  "
         mSQL = mSQL + " FROM [Orders] o "
         mSQL = mSQL + " INNER JOIN [Order_Payment] c ON c.[ORDERID]=o.[ID]"
         mSQL = mSQL + " WHERE o.[NUMBER] in ('{}')".format("','".join(numbers))

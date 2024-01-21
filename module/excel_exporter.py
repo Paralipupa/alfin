@@ -8,7 +8,8 @@ from module.data import *
 from module.reports.cb_kassa import write_CBank_kassa
 from module.reports.cb_common import write_CBank_common
 from module.reports.cb_ras_schet import write_CBank_rs
-from module.reports.payment_handle import write_payment
+from alfin.module.reports.payment_handle_reserve import write_payment_reserve
+from alfin.module.reports.payment_handle_kassa import write_payment_kassa
 from module.reports.reserve import write_reserve
 from module.reports.kategoria import write_kategoria
 from module.reports.weighted_average import write_result_weighted_average
@@ -22,14 +23,23 @@ class ExcelExporter:
         self.name = file_name
         self.workbook = None
 
-    def _set_data_xls(self):
-        WritterClass = get_file_write(self.name)
-        self.workbook = WritterClass(self.name)
+    def _set_data_xls(self, report):
+        dop_name = ""
+        if report.options.get("option_weighted_average"):
+            dop_name = "_average"
+        elif report.options.get("option_kategory") or report.options.get("option_reserve"):
+            dop_name = "_reserve"
+        elif report.options.get("option_handle"):
+            dop_name = "_handle"
+        elif report.options.get("option_cb_common") or report.options.get("option_cb_kassa") or report.options.get("option_cb_rs"):
+            dop_name = "_CB"
+        WritterClass = get_file_write(self.name+dop_name)
+        self.workbook = WritterClass(self.name+dop_name)
         if not self.workbook:
-            raise Exception(f"file reading error: {self.name}")
+            raise Exception(f"file reading error: {self.name+dop_name}")
 
     def write(self, report) -> str:
-        self._set_data_xls()
+        self._set_data_xls(report)
         if report.options.get("option_clients"):
             write_clients(self, report)
         if report.options.get("option_weighted_average"):
@@ -39,7 +49,8 @@ class ExcelExporter:
         if report.options.get("option_reserve"):
             write_reserve(self, report)
         if report.options.get("option_handle"):
-            write_payment(self, report)
+            # write_payment_reserve(self, report)
+            write_payment_kassa(self, report)
         if report.options.get("option_cb_common"):
             write_CBank_common(self, report)
         if report.options.get("option_cb_kassa"):

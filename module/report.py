@@ -211,16 +211,18 @@ class Report:
             order.payment_cache = Payment()
 
     def __record_order_name(self):
-        if self.__is_find("Договор", "FLD_NUMBER"):
-            client: Client = self.__get_current_client()
-            if client:
-                order_cache = client.order_cache
-                self.__set_new_order()
-                if order_cache.client is not None and len(client.orders) == 0:
-                    self.__set_current_order(order_cache)
-                order = self.__get_current_order()
-                order.type = self.order_type
-                order.name = client.name
+        pass
+        # if self.__is_find("Договор", "FLD_NUMBER"):
+            # client: Client = self.__get_current_client()
+            # if client:
+            #     order_cache = client.order_cache
+            #     self.__set_new_order()
+            #     if order_cache.client is not None and len(client.orders) == 0:
+            #         self.__set_current_order(order_cache)
+            #     order = self.__get_current_order()
+            #     order.type = self.order_type
+            #     order.name = client.name
+                
 
     def __record_order_type(self):
         if self.__is_find(PATT_DOG_TYPE, "FLD_NUMBER"):
@@ -432,16 +434,29 @@ class Report:
 
     # Номер договора
     def __record_order_number(self, index: int):
-        if self.fields.get("FLD_NUMBER") is None:
-            return
-        numbers = re.search(PATT_DOG_NUMBER, self.record[self.fields.get("FLD_NUMBER")])
+        numbers = []
+        if self.fields.get("FLD_NUMBER") is not None:
+            numbers = re.search(PATT_DOG_NUMBER, self.record[self.fields.get("FLD_NUMBER")])
+        elif self.fields.get("FLD_DOCUMENT") is not None:
+            numbers = re.search(PATT_DOG_NUMBER, self.record[self.fields.get("FLD_DOCUMENT")])
         if numbers:
-            order = self.__get_current_order()
-            order.number = get_order_number(numbers[0])
-            order.row = index
-            self.reference.setdefault(order.number, order)
-            self.__record_order_summa(True)
-            self.__push_current_order()
+            client: Client = self.__get_current_client()
+            if client:
+                order_cache = client.order_cache
+                self.__set_new_order()
+                if order_cache.client is not None and len(client.orders) == 0:
+                    self.__set_current_order(order_cache)
+                order = self.__get_current_order()
+                order.type = self.order_type
+                order.name = client.name
+                order = self.__get_current_order()
+                number = get_order_number(numbers[0])
+                order.number = number
+                order.row = index
+                self.reference.setdefault(order.number, order)
+                self.__record_order_summa(True)
+                self.__push_current_order()
+                return
 
     # Документ
     def __record_document(self):
@@ -843,6 +858,8 @@ class Report:
                         for attr in order_attrs:
                             if not getattr(order, attr) and getattr(order_item, attr):
                                 setattr(order, attr, getattr(order_item, attr))
+                            if (re.search('^debet[a-z_]+proc$',attr)) and (getattr(order, attr) != getattr(order_item, attr)):
+                                setattr(order, attr, getattr(order, attr)+getattr(order_item, attr))
                         if order_item.tarif.code != 0:
                             order.tarif = order_item.tarif
                         payment: Payment

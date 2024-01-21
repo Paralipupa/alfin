@@ -46,6 +46,14 @@ SQL_CONNECT = {
     "password": os.environ.get("SQL_PASSWORD", "11111"),
 }
 
+COL_PAY_ARCHI_ID = 0
+COL_PAY_ARCHI_ORDER_NUMBER = 1
+COL_PAY_ARCHI_COST= 2
+COL_PAY_ARCHI_DATE = 3
+COL_PAY_ARCHI_ENABLE = 4
+COL_PAY_ARCHI_KIND = 5
+COL_PAY_ARCHI_PAY_NUMBER = 6
+
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
