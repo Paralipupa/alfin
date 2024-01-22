@@ -2,86 +2,106 @@ from xlwt import Utils, Formula
 
 from module.data import *
 
+
 def write_clients(self, report) -> bool:
     def get_names():
         return (
             [
                 {"name": "number", "title": "Номер", "type": ""},
                 {"name": "summa", "title": "Сумма", "type": "float"},
-                {
-                    "name": "debet_end_main",
-                    "title": "Дт.58",
-                    "type": "float",
-                },
-                {
-                    "name": "debet_end_proc",  # "calc_debet_end_proc",
-                    "title": "Дт.76",
-                    "type": "float",
-                },
-                {
-                    "name": "calc_reserve_main",
-                    "title": "Дт.59",
-                    "type": "float",
-                },
-                {
-                    "name": "calc_reserve_proc",
-                    "title": "Дт.63",
-                    "type": "float",
-                },
-                {"name": "reserve_percent", "title": "%", "type": "int"},
-                {"name": "credit_main", "title": "Кт.58", "type": "float"},
-                {
-                    "name": "calc_credit_proc",
-                    "title": "Кт.76",
-                    "type": "float",
-                },
-                {"name": "credit_end_main", "title": "Кт.59", "type": "float"},
-                {"name": "credit_end_proc", "title": "Кт.63", "type": "float"},
+            ]
+            + (
+                [
+                    {
+                        "name": "debet_end_main",
+                        "title": "Дт.58",
+                        "type": "float",
+                    },
+                    {
+                        "name": "debet_end_proc",  # "calc_debet_end_proc",
+                        "title": "Дт.76",
+                        "type": "float",
+                    },
+                    {
+                        "name": "calc_reserve_main",
+                        "title": "Дт.59",
+                        "type": "float",
+                    },
+                    {
+                        "name": "calc_reserve_proc",
+                        "title": "Дт.63",
+                        "type": "float",
+                    },
+                    {"name": "reserve_percent", "title": "%", "type": "int"},
+                    {"name": "credit_main", "title": "Кт.58", "type": "float"},
+                    {
+                        "name": "calc_credit_proc",
+                        "title": "Кт.76",
+                        "type": "float",
+                    },
+                    {"name": "credit_end_main", "title": "Кт.59", "type": "float"},
+                    {"name": "credit_end_proc", "title": "Кт.63", "type": "float"},
+                ]
+                if not report.options.get("option_weighted_average")
+                else []
+            )
+            + [
                 {"name": "rate", "title": "Ставка", "type": "float"},
                 {"name": "tarif", "title": "Тариф", "type": ""},
-                # {"name": "count_days", "title": "Срок", "type": "float"},
-                {"name": "pdn", "title": "ПДН", "type": "float"},
-                {"name": "date_begin", "title": "Дата начала", "type": "date"},
+                {"name": "count_days", "title": "Срок", "type": "float"},
             ]
+            + (
+                [
+                    {"name": "pdn", "title": "ПДН", "type": "float"},
+                    {"name": "date_begin", "title": "ДтН.", "type": "date"},
+                ]
+                if not report.options.get("option_weighted_average")
+                else []
+            )
             + (
                 [
                     # {"name": "payments_base", "title": "Archi", "type": "float"},
                     {
                         "name": "date_frozen",
-                        "title": "Дата заморозки",
+                        "title": "ДтЗ.",
                         "type": "date",
                     },
                 ]
                 if report.options.get("option_is_archi")
+                and not report.options.get("option_weighted_average")
                 else []
             )
-            + [
-                {
-                    "name": "count_days_common",
-                    "title": "Дн.\n(всего)",
-                    "type": "int",
-                },
-                {
-                    "name": "count_days_delay",
-                    "title": "Дн.\n(проср.)",
-                    "type": "int",
-                },
-                # {
-                #     "name": "calculate_percent",
-                #     "title": "Проц.всего",
-                #     "type": "float",
-                # },
-                # {
-                #     "name": "count_days_period",
-                #     "title": "Дней\n(месяц)",
-                #     "type": "int",
-                # },
-                # {
-                #     "name": "summa_percent",
-                #     "title": "Проц.месяц",
-                #     "type": "float",
-                # },
-            ]
+            + (
+                [
+                    {
+                        "name": "count_days_common",
+                        "title": "Дн.\n(всего)",
+                        "type": "int",
+                    },
+                    {
+                        "name": "count_days_delay",
+                        "title": "Дн.\n(пр.)",
+                        "type": "int",
+                    },
+                    # {
+                    #     "name": "calculate_percent",
+                    #     "title": "Проц.всего",
+                    #     "type": "float",
+                    # },
+                    # {
+                    #     "name": "count_days_period",
+                    #     "title": "Дней\n(месяц)",
+                    #     "type": "int",
+                    # },
+                    # {
+                    #     "name": "summa_percent",
+                    #     "title": "Проц.месяц",
+                    #     "type": "float",
+                    # },
+                ]
+                if not report.options.get("option_weighted_average")
+                else []
+            )
             + (
                 [
                     {
@@ -132,6 +152,7 @@ def write_clients(self, report) -> bool:
                     # {"name": "credit_end_proc", "title": "СальдКон(К76)", "type": "float"},
                 ]
                 if report.options.get("option_is_archi")
+                and not report.options.get("option_weighted_average")
                 else []
             )
         )
@@ -141,9 +162,7 @@ def write_clients(self, report) -> bool:
         try:
             if name["name"] == "date_calculate":
                 if value != report.report_date:
-                    self.workbook.write(
-                        row, name["col"], value, type_name=name["type"]
-                    )
+                    self.workbook.write(row, name["col"], value, type_name=name["type"])
             elif name["name"] == "tarif":
                 self.workbook.write(
                     row, name["col"], value.code, type_name=name["type"]
@@ -165,9 +184,7 @@ def write_clients(self, report) -> bool:
             elif name["name"] == "payments_base":
                 if value:
                     value = sum([x[2] for x in value])
-                    self.workbook.write(
-                        row, name["col"], value, type_name=name["type"]
-                    )
+                    self.workbook.write(row, name["col"], value, type_name=name["type"])
             else:
                 self.workbook.write(row, name["col"], value, type_name=name["type"])
         except Exception as ex:
@@ -288,7 +305,9 @@ def write_clients(self, report) -> bool:
                 )
             elif name["name"] == "count_days_delay":
                 f = f'IF({Utils.rowcol_to_cell(row,get_col("count_days_common"),col_abs=True)}-'
-                f += f'{Utils.rowcol_to_cell(row,get_col("count_days"),col_abs=True)}>0,'
+                f += (
+                    f'{Utils.rowcol_to_cell(row,get_col("count_days"),col_abs=True)}>0,'
+                )
                 f += f'{Utils.rowcol_to_cell(row,get_col("count_days_common"),col_abs=True)}-'
                 f += f'{Utils.rowcol_to_cell(row,get_col("count_days"),col_abs=True)},'
                 f += f'"")'

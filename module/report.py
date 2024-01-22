@@ -27,6 +27,7 @@ PDN_ALL = dict()
 class Report:
     def __init__(self, filename: str, purpose_date: datetime.date = None, **options):
         self.order_type = "Основной договор"
+        self.filename = str(filename)
         self.name = str(filename)
         self.current_client_key: str = None
         self.clients: OrderedDict = OrderedDict()  # клиенты
@@ -117,7 +118,7 @@ class Report:
         else:
             return None
 
-    def __get_current_order(self, is_cashed: bool = False) -> Order:
+    def __get_current_order(self, is_cached: bool = False) -> Order:
         client: Client = self.__get_current_client()
         if client:
             return client.order_cache
@@ -213,16 +214,15 @@ class Report:
     def __record_order_name(self):
         pass
         # if self.__is_find("Договор", "FLD_NUMBER"):
-            # client: Client = self.__get_current_client()
-            # if client:
-            #     order_cache = client.order_cache
-            #     self.__set_new_order()
-            #     if order_cache.client is not None and len(client.orders) == 0:
-            #         self.__set_current_order(order_cache)
-            #     order = self.__get_current_order()
-            #     order.type = self.order_type
-            #     order.name = client.name
-                
+        # client: Client = self.__get_current_client()
+        # if client:
+        #     order_cache = client.order_cache
+        #     self.__set_new_order()
+        #     if order_cache.client is not None and len(client.orders) == 0:
+        #         self.__set_current_order(order_cache)
+        #     order = self.__get_current_order()
+        #     order.type = self.order_type
+        #     order.name = client.name
 
     def __record_order_type(self):
         if self.__is_find(PATT_DOG_TYPE, "FLD_NUMBER"):
@@ -436,9 +436,13 @@ class Report:
     def __record_order_number(self, index: int):
         numbers = []
         if self.fields.get("FLD_NUMBER") is not None:
-            numbers = re.search(PATT_DOG_NUMBER, self.record[self.fields.get("FLD_NUMBER")])
+            numbers = re.search(
+                PATT_DOG_NUMBER, self.record[self.fields.get("FLD_NUMBER")]
+            )
         elif self.fields.get("FLD_DOCUMENT") is not None:
-            numbers = re.search(PATT_DOG_NUMBER, self.record[self.fields.get("FLD_DOCUMENT")])
+            numbers = re.search(
+                PATT_DOG_NUMBER, self.record[self.fields.get("FLD_DOCUMENT")]
+            )
         if numbers:
             client: Client = self.__get_current_client()
             if client:
@@ -530,23 +534,27 @@ class Report:
                     summa_percent_max = order.summa * Decimal(
                         get_max_margin_rate(order.date_order)
                     )
+
                     if order.debet_end_proc == 0:
                         if order.debet_end_proc_58 != 0:
                             order.debet_end_proc = order.debet_end_proc_58
-                        else:
-                            order.debet_end_proc = round(
-                                max(
-                                    min(summa_percent_max, order.summa_percent_all)
-                                    - order.summa_payment
-                                    - (
-                                        order.credit_proc
-                                        if order.summa_payment == 0
-                                        else 0
-                                    ),
-                                    0,
-                                ),
-                                2,
-                            )
+                        # else:
+                        #     # order.debet_end_proc = round(
+                        #     debet_end_proc = round(
+                        #         max(
+                        #             min(summa_percent_max, order.summa_percent_all)
+                        #             - order.summa_payment
+                        #             - (
+                        #                 order.credit_proc
+                        #                 if order.summa_payment == 0
+                        #                 else 0
+                        #             ),
+                        #             0,
+                        #         ),
+                        #         2,
+                        #     )
+                        #     if debet_end_proc !=0:
+                        #         print("Вычисляем дебет")
                         if (
                             self.options.get("option_is_archi")
                             and is_recalc_proc is False
@@ -558,6 +566,26 @@ class Report:
                                 True,
                             ):
                                 order.debet_end_proc = order.debet_end_proc_58
+
+                    debet_end_proc = round(
+                        max(
+                            min(summa_percent_max, order.summa_percent_all)
+                            - order.summa_payment
+                            - (order.credit_proc if order.summa_payment == 0 else 0),
+                            0,
+                        ),
+                        2,
+                    )
+                    if debet_end_proc != order.debet_end_proc:
+                        print(
+                            "{4}\tПроцент не совпадает с расчетным\t {2}\t{3}\t{0}\t{1}".format(
+                                order.name,
+                                order.number,
+                                order.debet_end_proc,
+                                debet_end_proc,
+                                order.debet_end_proc - debet_end_proc,
+                            )
+                        )
 
                     order.percent = self.__get_reserve_persent(order)
                     if order.percent == 0:
@@ -808,6 +836,20 @@ class Report:
         exel = ExcelExporter(file_name)
         return exel.write(self)
 
+    def check_order_exist(self, x, number):
+        order = x.reference.get(number)
+        if order:
+            order.is_cached = True
+            return True
+        else:
+            return False
+
+    def check_items(self, items):
+        for item in items:
+            for key, order in item.reference.items():
+                if order.is_cached is False:
+                    print("не найден договор {}".format(order.number))
+
     def union_all(self, items):
         pattern: re.Pattern = re.compile("_proc|_main|pdn|rate|count_|date|percent")
         if not items:
@@ -850,7 +892,7 @@ class Report:
                 order_items = [
                     x.reference[order.number]
                     for x in items
-                    if x.reference.get(order.number)
+                    if self.check_order_exist(x, order.number)
                 ]
                 order_item: Order
                 for order_item in order_items:
@@ -858,8 +900,14 @@ class Report:
                         for attr in order_attrs:
                             if not getattr(order, attr) and getattr(order_item, attr):
                                 setattr(order, attr, getattr(order_item, attr))
-                            if (re.search('^debet[a-z_]+proc$',attr)) and (getattr(order, attr) != getattr(order_item, attr)):
-                                setattr(order, attr, getattr(order, attr)+getattr(order_item, attr))
+                            if (re.search("^debet[a-z_]+proc$", attr)) and (
+                                getattr(order, attr) != getattr(order_item, attr)
+                            ):
+                                setattr(
+                                    order,
+                                    attr,
+                                    getattr(order, attr) + getattr(order_item, attr),
+                                )
                         if order_item.tarif.code != 0:
                             order.tarif = order_item.tarif
                         payment: Payment
@@ -886,6 +934,7 @@ class Report:
                                     order, attr, getattr(client_item.order_cache, attr)
                                 )
                 self.__set_order_count_days(order)
+        self.check_items(items)
 
     def fill_from_archi(self, data: dict):
         if not data:
@@ -926,7 +975,8 @@ class Report:
                 tarif_name = order.tarif.name
                 rate = order.rate
                 if period and summa and tarif and rate:
-                    key = f"{tarif_name}_{rate}"
+                    calc_period = period - 7 if tarif in self.discounts else period
+                    key = f"{tarif_name}_{rate}_{30 if calc_period <= 30 else 31}"
                     data = self.wa.get(key)
                     period = float(period)
                     if not data:
@@ -937,13 +987,15 @@ class Report:
                             "koef": 226.065
                             if tarif in self.discounts
                             else 365 * float(rate),
-                            "period": period - 7 if tarif in self.discounts else period,
+                            "period": 30 if calc_period <= 30 else 31,
                             "summa_free": 0,
                             "summa": 0,
                             "count": 0,
                             "value": {},
                         }
-                    self.wa[key]["parent"].append(order)
+                    self.wa[key]["parent"].append(
+                        {"period": calc_period, "order": order}
+                    )
                     s = self.wa[key]["value"].get(summa)
                     if not s:
                         self.wa[key]["value"][summa] = 1

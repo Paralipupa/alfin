@@ -108,7 +108,7 @@ class Order:
     date_frozen: datetime.date = None
     date_calculate: datetime.date = None
     row: int = 0
-    is_cashed: bool = False
+    is_cached: bool = False
     debet_beg_main: Decimal = 0
     credit_beg_main: Decimal = 0  #
     debet_main: Decimal = 0  # начислено по основному долгу
