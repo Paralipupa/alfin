@@ -53,7 +53,7 @@ def write_clients(self, report) -> bool:
             + (
                 [
                     {"name": "pdn", "title": "ПДН", "type": "float"},
-                    {"name": "date_begin", "title": "ДтН.", "type": "date"},
+                    {"name": "date_begin", "title": "ДатНач.", "type": "date"},
                 ]
                 if not report.options.get("option_weighted_average")
                 else []
@@ -63,7 +63,7 @@ def write_clients(self, report) -> bool:
                     # {"name": "payments_base", "title": "Archi", "type": "float"},
                     {
                         "name": "date_frozen",
-                        "title": "ДтЗ.",
+                        "title": "ДатЗам.",
                         "type": "date",
                     },
                 ]
@@ -75,12 +75,12 @@ def write_clients(self, report) -> bool:
                 [
                     {
                         "name": "count_days_common",
-                        "title": "Дн.\n(всего)",
+                        "title": "Дн.всего",
                         "type": "int",
                     },
                     {
                         "name": "count_days_delay",
-                        "title": "Дн.\n(пр.)",
+                        "title": "Дн.пр.",
                         "type": "int",
                     },
                     # {

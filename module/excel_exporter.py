@@ -8,6 +8,7 @@ from module.data import *
 from module.reports.cb_kassa import write_CBank_kassa
 from module.reports.cb_common import write_CBank_common
 from module.reports.cb_ras_schet import write_CBank_rs
+from module.reports.errors import write_errors
 from alfin.module.reports.payment_handle_reserve import write_payment_reserve
 from alfin.module.reports.payment_handle_kassa import write_payment_kassa
 from module.reports.reserve import write_reserve
@@ -27,14 +28,20 @@ class ExcelExporter:
         dop_name = ""
         if report.options.get("option_weighted_average"):
             dop_name = "_average"
-        elif report.options.get("option_kategory") or report.options.get("option_reserve"):
+        elif report.options.get("option_kategory") or report.options.get(
+            "option_reserve"
+        ):
             dop_name = "_reserve"
         elif report.options.get("option_handle"):
             dop_name = "_handle"
-        elif report.options.get("option_cb_common") or report.options.get("option_cb_kassa") or report.options.get("option_cb_rs"):
+        elif (
+            report.options.get("option_cb_common")
+            or report.options.get("option_cb_kassa")
+            or report.options.get("option_cb_rs")
+        ):
             dop_name = "_CB"
-        WritterClass = get_file_write(self.name+dop_name)
-        self.workbook = WritterClass(self.name+dop_name)
+        WritterClass = get_file_write(self.name + dop_name)
+        self.workbook = WritterClass(self.name + dop_name)
         if not self.workbook:
             raise Exception(f"file reading error: {self.name+dop_name}")
 
@@ -59,4 +66,6 @@ class ExcelExporter:
             write_CBank_kassa(self, report)
         if report.options.get("option_cb_rs"):
             write_CBank_rs(self, report)
+        if bool(report.errors) is True:
+            write_errors(self, report)
         return self.workbook.save()

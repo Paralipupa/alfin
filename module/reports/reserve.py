@@ -5,41 +5,41 @@ from module.data import *
 
 def write_reserve(self, report: dict):
     def fill_table(nrow_start: int, row: int, col: int):
-        nonlocal pattern_style_3, num_format
+        nonlocal pattern_style_3, num_format_2
         f = (
             f"COUNTIF({Utils.rowcol_pair_to_cellrange(nrow_start,col,nrow_start+len(report.clients),col)},"
             + f"{Utils.rowcol_to_cell(row,col,col_abs=True)}"
             + ")"
         )
-        self.workbook.write(row, col + 2, Formula(f), pattern_style_3, num_format)
+        self.workbook.write(row, col + 2, Formula(f), pattern_style_3, num_format_2)
         f = (
             f"SUMIF({Utils.rowcol_pair_to_cellrange(nrow_start,col,nrow_start+len(report.clients),col)},"
             + f"{Utils.rowcol_to_cell(row,col,col_abs=True)},"
             + f"{Utils.rowcol_pair_to_cellrange(nrow_start,col+3,nrow_start+len(report.clients),col+3)}"
             + ")"
         )
-        self.workbook.write(row, col + 3, Formula(f), pattern_style_3, num_format)
+        self.workbook.write(row, col + 3, Formula(f), pattern_style_3, num_format_2)
         f = (
             f"SUMIF({Utils.rowcol_pair_to_cellrange(nrow_start,col,nrow_start+len(report.clients),col)},"
             + f"{Utils.rowcol_to_cell(row,col,col_abs=True)},"
             + f"{Utils.rowcol_pair_to_cellrange(nrow_start,col+4,nrow_start+len(report.clients),col+4)}"
             + ")"
         )
-        self.workbook.write(row, col + 4, Formula(f), pattern_style_3, num_format)
+        self.workbook.write(row, col + 4, Formula(f), pattern_style_3, num_format_2)
         f = (
             f"SUMIF({Utils.rowcol_pair_to_cellrange(nrow_start,col,nrow_start+len(report.clients),col)},"
             + f"{Utils.rowcol_to_cell(row,col,col_abs=True)},"
             + f"{Utils.rowcol_pair_to_cellrange(nrow_start,col+5,nrow_start+len(report.clients),col+5)}"
             + ")"
         )
-        self.workbook.write(row, col + 5, Formula(f), pattern_style_5, num_format)
+        self.workbook.write(row, col + 5, Formula(f), pattern_style_5, num_format_2)
         f = (
             f"SUMIF({Utils.rowcol_pair_to_cellrange(nrow_start,col,nrow_start+len(report.clients),col)},"
             + f"{Utils.rowcol_to_cell(row,col,col_abs=True)},"
             + f"{Utils.rowcol_pair_to_cellrange(nrow_start,col+6,nrow_start+len(report.clients),col+6)}"
             + ")"
         )
-        self.workbook.write(row, col + 6, Formula(f), pattern_style_5, num_format)
+        self.workbook.write(row, col + 6, Formula(f), pattern_style_5, num_format_2)
         return
 
     self.workbook.addSheet("Резервы")
@@ -59,8 +59,10 @@ def write_reserve(self, report: dict):
     row += 1
     col = 0
     nrow_start = len(report.reserve) + 3
+    pattern_style = "font: height 160;"
     pattern_style_5 = "pattern: pattern solid, fore_colour green; font: color yellow;"
-    num_format = "#,##0.00"
+    num_format_2 = "#,##0.00"
+    num_format_0 = "#,##0"
     pattern_style_3 = "pattern: pattern solid, fore_colour orange; font: color white"
     for value in report.reserve:
         reserve: Reserve = value[1]
@@ -75,7 +77,7 @@ def write_reserve(self, report: dict):
     for name in names[2:]:
         self.workbook.write(row, col, name, "align: horiz center")
         col += 1
-    self.workbook.write(row, col, "Дней просрочки")
+    self.workbook.write(row, col, "Дн.пр.")
     row += 1
     col = 0
     nrow_start = 1
@@ -101,7 +103,7 @@ def write_reserve(self, report: dict):
                 Formula(order.link["debet_end_main_address"])
                 if order.link.get("debet_end_main_address")
                 else order.debet_main,
-                num_format_str=num_format,
+                num_format_str=num_format_2,
             )
             self.workbook.write(
                 row,
@@ -109,13 +111,13 @@ def write_reserve(self, report: dict):
                 Formula(order.link["debet_end_proc_address"])
                 if order.link.get("debet_end_proc_address")
                 else order.debet_proc,
-                num_format_str=num_format,
+                num_format_str=num_format_2,
             )
 
             f = order.link.get("calc_reserve_main_address", "")
-            self.workbook.write(row, col + 5, Formula(f), num_format_str=num_format)
+            self.workbook.write(row, col + 5, Formula(f), num_format_str=num_format_2)
             f = order.link.get("calc_reserve_proc_address")
-            self.workbook.write(row, col + 6, Formula(f), num_format_str=num_format)
+            self.workbook.write(row, col + 6, Formula(f), num_format_str=num_format_2)
             m = order.link.get("count_days_delay_address", "")
             f = f'IF({m}=0,"",{m})'
             self.workbook.write(
@@ -124,7 +126,7 @@ def write_reserve(self, report: dict):
                 Formula(f)
                 if order.link.get("count_days_delay_address")
                 else order.count_days_delay,
-                num_format_str=num_format,
+                num_format_str=num_format_0,
             )
             nrow_start += 1
             row += 1

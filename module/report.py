@@ -3,6 +3,7 @@ import random
 from collections import OrderedDict
 from datetime import datetime, timedelta
 from dateutil import parser
+from typing import List
 from module.excel_importer import ExcelImporter
 from module.excel_exporter import ExcelExporter
 from module.helpers import (
@@ -18,6 +19,7 @@ from module.helpers import (
 from module.settings import *
 from module.data import *
 from .helpers import get_max_margin_rate
+from .error_report import ErrorReport
 
 
 logger = logging.getLogger(__name__)
@@ -56,6 +58,7 @@ class Report:
         self.discounts = (2, 10, 31, 33, 42, 45, 47, 44, 46, 48, 51, 52)
         self.is_find_columns = False
         self.options = options
+        self.errors: List[ErrorReport] = list()
 
     def get_parser(self):
         if self.read():
@@ -577,15 +580,14 @@ class Report:
                         2,
                     )
                     if debet_end_proc != order.debet_end_proc:
-                        print(
-                            "{4}\tПроцент не совпадает с расчетным\t {2}\t{3}\t{0}\t{1}".format(
-                                order.name,
-                                order.number,
-                                order.debet_end_proc,
-                                debet_end_proc,
-                                order.debet_end_proc - debet_end_proc,
-                            )
-                        )
+                        error = ErrorReport()
+                        error.number = order.number
+                        error.name = order.name
+                        error.summa = float(order.debet_end_proc)
+                        error.summa_dop_1 = float(debet_end_proc)
+                        error.summa_dop_2 = float(order.debet_end_proc - debet_end_proc)
+                        error.description = "Остаток по Дт.76 не совпадает с расчетным "
+                        self.errors.append(error)
 
                     order.percent = self.__get_reserve_persent(order)
                     if order.percent == 0:
@@ -723,10 +725,17 @@ class Report:
                 (
                     last_day_on_period - order.date_begin - timedelta(order.count_days)
                 ).days
-                - ((order.count_days // 31) - 1 if order.count_days >= 31 else 0)
                 if last_day_on_period > order.date_end
                 else 0
             )
+            # return (
+            #     (
+            #         last_day_on_period - order.date_begin - timedelta(order.count_days)
+            #     ).days
+            #     - ((order.count_days // 31) - 1 if order.count_days >= 31 else 0)
+            #     if last_day_on_period > order.date_end
+            #     else 0
+            # )
         except Exception as ex:
             logger.exception("__get_count_days_delay:")
 
@@ -847,8 +856,17 @@ class Report:
     def check_items(self, items):
         for item in items:
             for key, order in item.reference.items():
-                if order.is_cached is False:
-                    print("не найден договор {}".format(order.number))
+                if (
+                    order.is_cached is False
+                    and item.name.find("76") != -1
+                    and order.debet_end_proc != 0
+                ):
+                    error = ErrorReport()
+                    error.number = order.number
+                    error.name = order.name
+                    error.summa_dop_1 = float(order.debet_end_proc)
+                    error.description = "Не найден договор в {}".format(item.name)
+                    self.errors.append(error)
 
     def union_all(self, items):
         pattern: re.Pattern = re.compile("_proc|_main|pdn|rate|count_|date|percent")

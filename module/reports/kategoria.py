@@ -87,7 +87,7 @@ def write_kategoria(self, kategoria):
     self.workbook.write(row, col + 4, "(5)основная")
     self.workbook.write(row, col + 5, "(3,6)основная")
     self.workbook.write(row, col + 6, "(3,6)процент")
-    self.workbook.write(row, col + 7, "Дней просрочки")
+    self.workbook.write(row, col + 7, "Дн.пр.")
     for key, value in kategoria.items():
         row += 1
         self.workbook.write(row, col, key)
