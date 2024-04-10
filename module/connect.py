@@ -1,7 +1,11 @@
 import pyodbc
+import sys
+
+sys.path.append("alfin")
 from module.settings import *
 
 logger = logging.getLogger(__name__)
+
 
 class SQLServer:
     def __init__(self):
@@ -25,8 +29,10 @@ class SQLServer:
 
         try:
             self.connection = pyodbc.connect(con_string)
+            return True
         except Exception as ex:
             logger.error(f"{con_string}\n {ex}")
+        return False
 
     def get_orders(self, numbers: list = ["0"]):
         mSQL = "SELECT o.ID, o.MAINPERCENT, o.DAYSQUANT, o.NUMBER, cast(c.[CREATIONDATETIME] as DateTime) as CREATEDATE,"
@@ -62,7 +68,7 @@ class SQLServer:
 
     def get_orders_payments(self, numbers: str = "-1"):
         mSQL = "SELECT o.[ID], o.[NUMBER] AS 'NUMBER_ORDER', c.[COSTALL], cast(c.[CREATIONDATETIME] as DateTime) as CREATEDATE,"
-        mSQL +="c.[ENABLED], c.[KIND],c.[NUMBER] AS 'NUMBER_PAYMENT'  "
+        mSQL += "c.[ENABLED], c.[KIND],c.[NUMBER] AS 'NUMBER_PAYMENT'  "
         mSQL = mSQL + " FROM [Orders] o "
         mSQL = mSQL + " INNER JOIN [Order_Payment] c ON c.[ORDERID]=o.[ID]"
         mSQL = mSQL + " WHERE o.[NUMBER] in ('{}')".format("','".join(numbers))
@@ -84,11 +90,42 @@ class SQLServer:
         self.connection.close()
         return data
 
+    def get_data_clients(self):
+        mSQL = """SELECT TOP 100
+	   c.[ID]
+      ,[FULLNAME]
+      ,[BIRTHDATE]
+      ,[DOCS]
+      ,[DOCNUM]
+      ,[DOCBEGINDATE]
+      ,[DOCCONTENT]
+      ,[ADDRESS_REG]
+      ,[ADDRESS_FACT]
+      ,[OLDFIO]
+      ,[PHONE]
+      ,[MOBILEPHONE]
+      ,[BLACKLIST]
+      ,[BIRTHPLACE]
+      ,[CREDITHISTORY]
+	  , h.[HISTORY]
+  FROM [ArchiCredit].[dbo].[CLIENTS] c
+  LEFT JOIN dbo.CLIENTS_CREDIT_HISTORY h
+  ON c.id=h.CLIENTID
+  WHERE Len(FULLNAME) > 8
+  ORDER BY ID DESC, FULLNAME        """
+        cursor = self.connection.cursor()
+        cursor.execute(mSQL)
+        for x in cursor.fetchall():
+            yield list(x)
+        # results = (list(x) for x in cursor.fetchall())cursor.fetchall()
+        
+        # data = next(results)
+        # return data
+
 
 if __name__ == "__main__":
     q = SQLServer()
     if q.set_connection():
-        [print(x) for x in q.get_orders().values()]
-        [print(x) for x in q.get_orders_frost().values()]
-        [print(x) for x in q.get_orders_payments().values()]
+        data = next(q.get_data_clients() )
         q.connection.close()
+    print("OK")

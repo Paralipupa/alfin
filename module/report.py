@@ -72,7 +72,6 @@ class Report:
                     self.__record_order_type()
                     self.__record_client()
                     if self.__get_current_client():
-                        self.__record_order_name()
                         self.__record_order_number(index)
                         self.__record_document()
                         self.__record_order_date()
@@ -213,19 +212,6 @@ class Report:
         order: Order = self.__get_current_order()
         if order:
             order.payment_cache = Payment()
-
-    def __record_order_name(self):
-        pass
-        # if self.__is_find("Договор", "FLD_NUMBER"):
-        # client: Client = self.__get_current_client()
-        # if client:
-        #     order_cache = client.order_cache
-        #     self.__set_new_order()
-        #     if order_cache.client is not None and len(client.orders) == 0:
-        #         self.__set_current_order(order_cache)
-        #     order = self.__get_current_order()
-        #     order.type = self.order_type
-        #     order.name = client.name
 
     def __record_order_type(self):
         if self.__is_find(PATT_DOG_TYPE, "FLD_NUMBER"):
@@ -579,7 +565,7 @@ class Report:
                         ),
                         2,
                     )
-                    if debet_end_proc != order.debet_end_proc:
+                    if debet_end_proc != order.debet_end_proc and order.debet_end_proc == 0:
                         error = ErrorReport()
                         error.number = order.number
                         error.name = order.name
@@ -840,7 +826,7 @@ class Report:
 
     def write_to_excel(self) -> str:
         file_name = (
-            "report_barguzin" if self.options.get("option_is_archi") else "report_irkom"
+            "report_irkom" if self.options.get("option_is_archi") else "report_irkom"
         )
         exel = ExcelExporter(file_name)
         return exel.write(self)
@@ -1005,7 +991,8 @@ class Report:
                             "koef": 226.065
                             if tarif in self.discounts
                             else 365 * float(rate),
-                            "period": 30 if calc_period <= 30 else 31,
+                            "period": period,
+                            # "period": period  if calc_period <= 30 else 31,
                             "summa_free": 0,
                             "summa": 0,
                             "count": 0,

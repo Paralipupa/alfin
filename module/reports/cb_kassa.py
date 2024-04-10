@@ -4,8 +4,8 @@ def write_CBank_kassa(self, report: dict):
         def __write_head():
             nonlocal row, col
             if report.options.get("option_is_archi"):
-                self.workbook.write(row, 0, "ООО 'МКК Баргузин'")
-                self.workbook.write(row, 1, "3827059334")
+                self.workbook.write(row, 0, "МКК 'Ирком'")
+                self.workbook.write(row, 1, "3808200398")
             else:
                 self.workbook.write(row, 0, "МКК 'Ирком'")
                 self.workbook.write(row, 1, "3808200398")

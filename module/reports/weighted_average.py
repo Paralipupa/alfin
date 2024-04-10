@@ -213,7 +213,7 @@ def write_result_weighted_average(self, wa: dict):
         2,
         3,
         Formula(
-            f"SUM({Utils.rowcol_pair_to_cellrange(3,0,3,len_30*5)})/COUNT({Utils.rowcol_pair_to_cellrange(3,0,3,len_30*5)})"
+            f"SUM({Utils.rowcol_pair_to_cellrange(3,0,3,len(wa)*5)})/COUNT({Utils.rowcol_pair_to_cellrange(3,0,3,len(wa)*5)})"
         ),
         style_string=pattern_style_wa,
         num_format_str=num_format_3,
@@ -222,7 +222,7 @@ def write_result_weighted_average(self, wa: dict):
         2,
         4,
         Formula(
-            f"SUM({Utils.rowcol_pair_to_cellrange(3,len_30*5+1,3,len(wa)*5)})/COUNT({Utils.rowcol_pair_to_cellrange(3,len_30*5+1,3,len(wa)*5)})"
+            f"SUM({Utils.rowcol_pair_to_cellrange(3,len_30*5,3,len(wa)*5)})/COUNT({Utils.rowcol_pair_to_cellrange(3,len_30*5,3,len(wa)*5)})"
         ),
         style_string=pattern_style_wa,
         num_format_str=num_format_3,
