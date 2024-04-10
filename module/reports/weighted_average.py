@@ -213,17 +213,11 @@ def write_result_weighted_average(self, wa: dict):
         2,
         3,
         Formula(
-            f"SUM({Utils.rowcol_pair_to_cellrange(3,0,3,len(wa)*5)})/COUNT({Utils.rowcol_pair_to_cellrange(3,0,3,len(wa)*5)})"
+            f"SUM({Utils.rowcol_pair_to_cellrange(5,0,5,len(wa)*5)})/SUM({Utils.rowcol_pair_to_cellrange(4,0,4,len(wa)*5)})"
         ),
-        style_string=pattern_style_wa,
-        num_format_str=num_format_3,
-    )
-    self.workbook.write(
-        2,
-        4,
-        Formula(
-            f"SUM({Utils.rowcol_pair_to_cellrange(3,len_30*5,3,len(wa)*5)})/COUNT({Utils.rowcol_pair_to_cellrange(3,len_30*5,3,len(wa)*5)})"
-        ),
+        # Formula(
+        #     f"SUM({Utils.rowcol_pair_to_cellrange(6,0,6,len(wa)*5)})/COUNT({Utils.rowcol_pair_to_cellrange(6,0,6,len(wa)*5)})"
+        # ),
         style_string=pattern_style_wa,
         num_format_str=num_format_3,
     )

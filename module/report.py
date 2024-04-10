@@ -978,7 +978,7 @@ class Report:
                 tarif = order.tarif.code
                 tarif_name = order.tarif.name
                 rate = order.rate
-                if period and summa and tarif and rate:
+                if period and summa and tarif:
                     calc_period = period - 7 if tarif in self.discounts else period
                     key = f"{tarif_name}_{rate}_{30 if calc_period <= 30 else 31}"
                     data = self.wa.get(key)
@@ -990,7 +990,7 @@ class Report:
                             "stavka": float(rate),
                             "koef": 226.065
                             if tarif in self.discounts
-                            else 365 * float(rate),
+                            else 365 * float(rate) if rate != 0 else 0.8,
                             "period": period,
                             # "period": period  if calc_period <= 30 else 31,
                             "summa_free": 0,
