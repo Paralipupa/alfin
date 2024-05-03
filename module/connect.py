@@ -1,5 +1,6 @@
 import pyodbc
-import sys
+import sys, time, os
+import pandas as pd
 
 sys.path.append("alfin")
 from module.settings import *
@@ -90,8 +91,8 @@ class SQLServer:
         self.connection.close()
         return data
 
-    def get_data_clients(self):
-        mSQL = """SELECT TOP 100
+    def get_data_clients(self, letter):
+        mSQL = f"""SELECT 
 	   c.[ID]
       ,[FULLNAME]
       ,[BIRTHDATE]
@@ -107,25 +108,39 @@ class SQLServer:
       ,[BLACKLIST]
       ,[BIRTHPLACE]
       ,[CREDITHISTORY]
-	  , h.[HISTORY]
   FROM [ArchiCredit].[dbo].[CLIENTS] c
   LEFT JOIN dbo.CLIENTS_CREDIT_HISTORY h
   ON c.id=h.CLIENTID
-  WHERE Len(FULLNAME) > 8
-  ORDER BY ID DESC, FULLNAME        """
+  WHERE (Len(FULLNAME) > 8)  AND c.[NAME] Like '{letter}%' ORDER BY NAME,NAME1,NAME2        """
         cursor = self.connection.cursor()
         cursor.execute(mSQL)
-        for x in cursor.fetchall():
-            yield list(x)
-        # results = (list(x) for x in cursor.fetchall())cursor.fetchall()
-        
-        # data = next(results)
-        # return data
+        results = [list(x) for x in cursor.fetchall()]
+        return results
 
 
 if __name__ == "__main__":
+    ascii_uppercase = 'АБВГДЕЖЗИКЛМНОПРСТУФХЦЧШЩЭЮЯ'
     q = SQLServer()
+    start= time.time()
     if q.set_connection():
-        data = next(q.get_data_clients() )
+        for letter in ascii_uppercase:
+            file_name = f"clients/{letter}"
+            if not os.path.exists(f"{file_name}.csv"):
+                print(letter, flush=True, end="")
+                data = q.get_data_clients(letter)
+                idents = set([x[0] for x in data])
+                items = list()
+                for item in data:
+                    if item[0] in idents:
+                        items.append(item)
+                        idents.remove(item[0])
+                client_df = pd.DataFrame([x[:-1] for x in items])
+                history_df = pd.DataFrame([(x[0], x[-1]) for x in items])
+                client_df.to_csv(
+                    f"{file_name}.csv", index=False, header=False, sep=";"
+                )
+                history_df.to_csv(
+                    f"{file_name}_history.csv", index=False, header=False, sep=";"
+                )
         q.connection.close()
-    print("OK")
+    print(f"\nOK {(time.time()-start):10.2f} сек")

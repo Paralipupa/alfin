@@ -306,13 +306,13 @@ def write_clients(self, report) -> bool:
             elif name["name"] == "count_days_delay":
                 f = f'IF({Utils.rowcol_to_cell(row,get_col("count_days_common"),col_abs=True)}-'
                 f += (
-                    f'{Utils.rowcol_to_cell(row,get_col("count_days"),col_abs=True)}>0,'
+                    f'{Utils.rowcol_to_cell(row,get_col("count_days") if get_col("count_days") else 31,col_abs=True)}>0,'
                 )
                 f += f'{Utils.rowcol_to_cell(row,get_col("count_days_common"),col_abs=True)}-'
-                f += f'{Utils.rowcol_to_cell(row,get_col("count_days"),col_abs=True)},'
+                f += f'{Utils.rowcol_to_cell(row,get_col("count_days") if get_col("count_days") else 31,col_abs=True)},'
                 f += f'"")'
                 self.workbook.write(
-                    row, name["col"], order.count_days_delay, type_name=name["type"]
+                    row, name["col"], order.count_days_delay  if get_col("count_days") else get_col("count_days_common") - 31, type_name=name["type"]
                 )
             elif name["name"] == "calc_reserve_main":
                 calculate_rezerves_main()

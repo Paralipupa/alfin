@@ -494,6 +494,8 @@ class Report:
     def __set_order_count_days(self, order: Order = None):
         if order is None:
             order = self.__get_current_order()
+        if order.count_days == 0:
+            order.count_days = 31
         if order and order.count_days != 0:
             try:
                 if order.date_begin:
