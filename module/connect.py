@@ -135,12 +135,16 @@ if __name__ == "__main__":
                         items.append(item)
                         idents.remove(item[0])
                 client_df = pd.DataFrame([x[:-1] for x in items])
-                history_df = pd.DataFrame([(x[0], x[-1]) for x in items])
+                history_xml = [[x[0], x[1], x[-1]] for x in items]
                 client_df.to_csv(
                     f"{file_name}.csv", index=False, header=False, sep=";"
                 )
-                history_df.to_csv(
-                    f"{file_name}_history.csv", index=False, header=False, sep=";"
-                )
+                path = f"clients/history/{letter}"
+                os.makedirs(path, exist_ok=True)
+                for his in history_xml:
+                    if his[-1] is not None:
+                        name = "{0}_{1}".format(his[0], his[1])
+                        with open(f"{path}/{name}.xml", mode="w") as f:
+                            f.write(his[-1])
         q.connection.close()
-    print(f"\nOK {(time.time()-start):10.2f} сек")
+    print(f"\nОк ({time.strftime('%H:%M:%S', time.gmtime(time.time()-start))} сек)")
