@@ -123,6 +123,8 @@ if __name__ == "__main__":
     q = SQLServer()
     start= time.time()
     if q.set_connection():
+        path = "clients"
+        os.makedirs(path, exist_ok=True)
         for letter in ascii_uppercase:
             file_name = f"clients/{letter}"
             if not os.path.exists(f"{file_name}.csv"):
