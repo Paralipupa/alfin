@@ -28,10 +28,10 @@ class ExcelExporter:
         dop_name = ""
         if report.options.get("option_weighted_average"):
             dop_name = "_average"
-        elif report.options.get("option_kategory") or report.options.get(
-            "option_reserve"
-        ):
+        elif report.options.get("option_reserve"):
             dop_name = "_reserve"
+        elif report.options.get("option_kategory"):
+            dop_name = "_pdn"
         elif report.options.get("option_handle"):
             dop_name = "_handle"
         elif (

@@ -50,6 +50,15 @@ def write_kategoria(self, kategoria):
                 self.workbook.write(
                     row, col + 5, Formula(s), pattern_style_3, num_format
                 )
+                self.workbook.write(
+                    row,
+                    col + 9,
+                    Formula(
+                        f"SUM({Utils.rowcol_pair_to_cellrange(nrow_start,col+9,nrow_start+value['count4']-1,col+10)})"
+                    ),
+                    pattern_style_3,
+                    num_format,
+                )
             nrow_start += value["count4"] + 1
             row += 1
     self.workbook.write(row, col + 1, "Всего", "align: horiz left")
@@ -84,10 +93,13 @@ def write_kategoria(self, kategoria):
         )
 
     row += 2
+    self.workbook.write(row, col + 3, "ПДН")
     self.workbook.write(row, col + 4, "(5)основная")
     self.workbook.write(row, col + 5, "(3,6)основная")
     self.workbook.write(row, col + 6, "(3,6)процент")
     self.workbook.write(row, col + 7, "Дн.пр.")
+    self.workbook.write(row, col + 9, "Кт.59")
+    self.workbook.write(row, col + 10, "Кт.63")
     for key, value in kategoria.items():
         row += 1
         self.workbook.write(row, col, key)
@@ -136,5 +148,19 @@ def write_kategoria(self, kategoria):
                 Formula(order.link["count_days_delay_address"])
                 if order.link.get("count_days_delay_address")
                 else order.count_days_delay,
+            )
+            self.workbook.write(
+                row,
+                col + 9,
+                Formula(order.link["credit_end_main_address"])
+                if order.link.get("credit_end_main_address")
+                else order.credit_end_main,
+            )
+            self.workbook.write(
+                row,
+                col + 10,
+                Formula(order.link["credit_end_proc_address"])
+                if order.link.get("credit_end_proc_address")
+                else order.credit_end_proc,
             )
             row += 1

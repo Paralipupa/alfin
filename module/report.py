@@ -444,7 +444,7 @@ class Report:
                 order.name = client.name
                 order = self.__get_current_order()
                 number = get_order_number(numbers[0])
-                order.number = number
+                order.number = f"{number.strip():0>12}"
                 order.row = index
                 self.reference.setdefault(order.number, order)
                 self.__record_order_summa(True)

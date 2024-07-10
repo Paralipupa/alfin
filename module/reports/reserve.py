@@ -1,6 +1,8 @@
+import logging
 from xlwt import Utils, Formula
-
 from module.data import *
+
+logger = logging.getLogger(__name__)
 
 
 def write_reserve(self, report: dict):
@@ -84,9 +86,13 @@ def write_reserve(self, report: dict):
     client: Client = Client()
     for client in report.clients.values():
         for order in client.orders:
-            self.workbook.write(
-                row, col, Formula(order.link.get("reserve_percent_address", ""))
-            )
+            try:
+                formula_string = order.link.get("reserve_percent_address", "")
+                self.workbook.write(
+                    row, col, Formula(formula_string)
+                )
+            except Exception as ex:
+                logger.info(f"{ex}: \n {formula_string}")
             self.workbook.write(
                 row,
                 col + 1,
@@ -100,33 +106,48 @@ def write_reserve(self, report: dict):
             self.workbook.write(
                 row,
                 col + 3,
-                Formula(order.link["debet_end_main_address"])
-                if order.link.get("debet_end_main_address")
-                else order.debet_main,
+                (
+                    Formula(order.link["debet_end_main_address"])
+                    if order.link.get("debet_end_main_address")
+                    else order.debet_main
+                ),
                 num_format_str=num_format_2,
             )
             self.workbook.write(
                 row,
                 col + 4,
-                Formula(order.link["debet_end_proc_address"])
-                if order.link.get("debet_end_proc_address")
-                else order.debet_proc,
+                (
+                    Formula(order.link["debet_end_proc_address"])
+                    if order.link.get("debet_end_proc_address")
+                    else order.debet_proc
+                ),
                 num_format_str=num_format_2,
             )
 
             f = order.link.get("calc_reserve_main_address", "")
-            self.workbook.write(row, col + 5, Formula(f), num_format_str=num_format_2)
+            try:
+                self.workbook.write(row, col + 5, Formula(f), num_format_str=num_format_2)
+            except Exception as ex:
+                logger.info(f"{ex}: {f}")
             f = order.link.get("calc_reserve_proc_address")
-            self.workbook.write(row, col + 6, Formula(f), num_format_str=num_format_2)
+            try:
+                self.workbook.write(row, col + 6, Formula(f), num_format_str=num_format_2)
+            except Exception as ex:
+                logger.info(f"{ex}: {f}")
             m = order.link.get("count_days_delay_address", "")
             f = f'IF({m}=0,"",{m})'
-            self.workbook.write(
-                row,
-                col + 7,
-                Formula(f)
-                if order.link.get("count_days_delay_address")
-                else order.count_days_delay,
-                num_format_str=num_format_0,
-            )
+            try:
+                self.workbook.write(
+                    row,
+                    col + 7,
+                    (
+                        Formula(f)
+                        if order.link.get("count_days_delay_address")
+                        else order.count_days_delay
+                    ),
+                    num_format_str=num_format_0,
+                )
+            except Exception as ex:
+                logger.info(f"{ex}: {f}")
             nrow_start += 1
             row += 1

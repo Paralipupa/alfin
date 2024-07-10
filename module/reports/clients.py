@@ -55,7 +55,7 @@ def write_clients(self, report) -> bool:
                     {"name": "pdn", "title": "ПДН", "type": "float"},
                     {"name": "date_begin", "title": "ДатНач.", "type": "date"},
                 ]
-                if not report.options.get("option_weighted_average")
+                if report.options.get("option_kategory")
                 else []
             )
             + (

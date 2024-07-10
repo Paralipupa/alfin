@@ -119,7 +119,7 @@ class SQLServer:
 
 
 if __name__ == "__main__":
-    ascii_uppercase = 'АБВГДЕЖЗИКЛМНОПРСТУФХЦЧШЩЭЮЯ'
+    ascii_uppercase = 'АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЫЭЮЯ'
     q = SQLServer()
     start= time.time()
     if q.set_connection():
